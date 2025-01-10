@@ -1,6 +1,6 @@
 # Anomalies
 
-There is support in the package to switch between the various anomalies -- True, Eccentric, and Mean along with a Kepler Solver based on a Netwon iterative method. These may be moved out to a separate package later to better support and experiment with various Kepler Solver methodologies. 
+There is support in the package to switch between the various anomalies -- True, Eccentric, and Mean along with a Kepler Solver based on a Newton iterative method. These may be moved out to a separate package later to better support and experiment with various Kepler Solver methodologies. 
 
 ![image](../assets/anomalies.png)
 *Comparison of Anomalies [1]*
