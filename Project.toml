@@ -27,7 +27,7 @@ Mooncake = "0.4"
 PolyesterForwardDiff = "0.1"
 StaticArrays = "1.9"
 Test = "1"
-Zygote = "0.6"
+Zygote = "0.6, 0.7"
 julia = "1.10"
 
 [extras]
