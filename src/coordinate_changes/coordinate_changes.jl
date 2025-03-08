@@ -69,12 +69,15 @@ function cart2koe(
             eSE = dot(r, v) / √(μ * a)
             eCE = (rmag * vmag^2) / μ - 1.0
             E = atan(eSE, eCE)
-            f = eccentricAnomaly2TrueAnomaly(E, emag)
+            f = rem2pi(eccentricAnomaly2TrueAnomaly(E, emag), RoundDown)
         else
             eSH = dot(r, v) / √(-μ * a)
             eCH = (rmag * vmag^2) / μ - 1.0
             F = log((eCH + eSH) / (eCH - eSH)) / 2.0
-            f = 2.0 * atan(√(1.0 + emag) * sinh(F / 2.0), √(emag - 1.0) * cosh(F / 2.0))
+            f = rem2pi(
+                2.0 * atan(√(1.0 + emag) * sinh(F / 2.0), √(emag - 1.0) * cosh(F / 2.0)),
+                RoundDown,
+            )
         end
 
         #* RAAN
