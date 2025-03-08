@@ -80,7 +80,7 @@ function cart2koe(
         #* RAAN
         #* Line of Nodes
         n = cross(k̂, h)
-        Ω = atan(n[2], n[1])
+        Ω = rem2pi(atan(n[2], n[1]), RoundDown)
 
         #* Argument of Perigee
         px = dot(r, n)
