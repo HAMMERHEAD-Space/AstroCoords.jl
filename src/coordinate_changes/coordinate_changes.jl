@@ -240,7 +240,7 @@ function USM72koe(u::AbstractVector{T}, μ::V) where {T<:Number,V<:Number}
 end
 
 """
-    USM72USM6(u::AbstractVector{T}, μ::Number) where {T<:Number}
+    USM72USM6(u::AbstractVector{T}, μ::V) where {T<:Number,V<:Number}
 
 Converts USM with quaternions to USM with Modified Rodrigue Parameters.
 
@@ -251,18 +251,20 @@ Converts USM with quaternions to USM with Modified Rodrigue Parameters.
 # Returns
 -`u_USM6::SVector{6, <:Number}`: The USM6 State vector [C; Rf1; Rf2; σ1; σ2; σ3].
 """
-function USM72USM6(u::AbstractVector{T}, μ::Number) where {T<:Number}
+function USM72USM6(u::AbstractVector{T}, μ::V) where {T<:Number,V<:Number}
+    RT = promote_type(T, V)
+
     C, Rf1, Rf2, ϵO1, ϵO2, ϵO3, η0 = u
 
     EPs = SVector{4}(η0, ϵO1, ϵO2, ϵO3)
 
     σ = EP2MRP(EPs)
 
-    return SVector{6,T}(C, Rf1, Rf2, σ[1], σ[2], σ[3])
+    return SVector{6,RT}(C, Rf1, Rf2, σ[1], σ[2], σ[3])
 end
 
 """
-    USM62USM7(u::AbstractVector{T}, μ::Number) where {T<:Number}
+    USM62USM7(u::AbstractVector{T}, μ::V) where {T<:Number,V<:Number}
 
 Converts USM with Modified Rodrigue Parameters to USM with quaternions.
 
@@ -273,18 +275,20 @@ Converts USM with Modified Rodrigue Parameters to USM with quaternions.
 # Returns
 -`u_USM::SVector{6, <:Number}`: The Unified State Model vector [C; Rf1; Rf2; ϵO1; ϵO2; ϵO3; η0].
 """
-function USM62USM7(u::AbstractVector{T}, μ::Number) where {T<:Number}
+function USM62USM7(u::AbstractVector{T}, μ::V) where {T<:Number,V<:Number}
+    RT = promote_type(T, V)
+
     C, Rf1, Rf2, σ1, σ2, σ3 = u
 
     MRPs = SVector{3}(σ1, σ2, σ3)
 
     η0, ϵO1, ϵO2, ϵO3 = MRP2EP(MRPs)
 
-    return SVector{7,T}(C, Rf1, Rf2, ϵO1, ϵO2, ϵO3, η0)
+    return SVector{7,RT}(C, Rf1, Rf2, ϵO1, ϵO2, ϵO3, η0)
 end
 
 """
-    USM72USMEM(u::AbstractVector{T}, μ::Number) where {T<:Number}
+    USM72USMEM(u::AbstractVector{T}, μ::V) where {T<:Number,V<:Number}
 
 Converts USM with quaternions to USM with exponential mapping.
 
@@ -293,32 +297,37 @@ Converts USM with quaternions to USM with exponential mapping.
 -`μ::Number`: Standard graviational parameter of central body.
 
 # Returns
--`u_USMEM::SVector{6, <:Number}`: The USMEM State Vector [C; Rf1; Rf2; a1; a2; a3, Φ].
+-`u_USMEM::SVector{6, <:Number}`: The USMEM State Vector [C; Rf1; Rf2; a1; a2; a3].
 """
-function USM72USMEM(u::AbstractVector{T}, μ::Number) where {T<:Number}
+function USM72USMEM(u::AbstractVector{T}, μ::V) where {T<:Number,V<:Number}
+    RT = promote_type(T, V)
+
     C, Rf1, Rf2, ϵO1, ϵO2, ϵO3, η0 = u
 
     Φ = 2.0 * acos(η0)
-    a = SVector{3}(ϵO1 / sin(Φ / 2.0), ϵO2 / sin(Φ / 2.0), ϵO3 / sin(Φ / 2.0))
+    denom = sin(Φ / 2.0)
+    a = SVector{3}(ϵO1 / denom, ϵO2 / denom, ϵO3 / denom)
 
     em = Φ * a
 
-    return SVector{6,T}(C, Rf1, Rf2, em[1], em[2], em[3])
+    return SVector{6,RT}(C, Rf1, Rf2, em[1], em[2], em[3])
 end
 
 """
-    USMEM2USM7(u::AbstractVector{T}, μ::Number) where {T<:Number}
+    USMEM2USM7(u::AbstractVector{T}, μ::V) where {T<:Number,V<:Number}
 
 Converts USM with exponential mapping to USM with quaternions.
 
 # Arguments
--`u::AbstractVector{<:Number}`: The USMEM vector [C; Rf1; Rf2; a1; a2; a3, Φ].
+-`u::AbstractVector{<:Number}`: The USMEM vector [C; Rf1; Rf2; a1; a2; a3].
 -`μ::Number`: Standard graviational parameter of central body.
 
 # Returns
 -`u_USM::SVector{7, <:Number}`: The Unified State Model vector [C; Rf1; Rf2; ϵO1; ϵO2; ϵO3; η0].
 """
-function USMEM2USM7(u::AbstractVector{T}, μ::Number) where {T<:Number}
+function USMEM2USM7(u::AbstractVector{T}, μ::V) where {T<:Number,V<:Number}
+    RT = promote_type(T, V)
+
     C, Rf1, Rf2, a1, a2, a3 = u
 
     a = SVector{3}(a1, a2, a3)
@@ -327,11 +336,11 @@ function USMEM2USM7(u::AbstractVector{T}, μ::Number) where {T<:Number}
     ϵ = sin(Φ / 2.0) / Φ * a
     η0 = cos(Φ / 2.0)
 
-    return SVector{7,T}(C, Rf1, Rf2, ϵ[1], ϵ[2], ϵ[3], η0)
+    return SVector{7,RT}(C, Rf1, Rf2, ϵ[1], ϵ[2], ϵ[3], η0)
 end
 
 """
-    koe2ModEq(u::AbstractVector{T}, μ::Number) where {T<:Number}
+    koe2ModEq(u::AbstractVector{T}, μ::V) where {T<:Number,V<:Number}
 
 Converts Keplerian elements into the Modified Equinoctial elements.
 
@@ -345,7 +354,9 @@ Converts Keplerian elements into the Modified Equinoctial elements.
 # Returns
 -`u_ModEq::SVector{6, <:Number}`: The Modified Equinoctial state vector [p; f; g; h; k; l].
 """
-function koe2ModEq(u::AbstractVector{T}, μ::Number) where {T<:Number}
+function koe2ModEq(u::AbstractVector{T}, μ::V) where {T<:Number,V<:Number}
+    RT = promote_type(T, V)
+
     a, e, i, Ω, ω, ν = u
 
     p = a * (1 - e^2)
@@ -355,11 +366,11 @@ function koe2ModEq(u::AbstractVector{T}, μ::Number) where {T<:Number}
     k = tan(i / 2) * sin(Ω)
     L = Ω + ω + ν
 
-    return SVector{6,T}(p, f, g, h, k, L)
+    return SVector{6,RT}(p, f, g, h, k, L)
 end
 
 """
-    ModEq2koe(u::AbstractVector{T}, μ::Number) where {T<:Number}
+    ModEq2koe(u::AbstractVector{T}, μ::V) where {T<:Number,V<:Number}
 
 Converts Modified Equinoctial elements into the Keplerian elements.
 
@@ -373,7 +384,9 @@ Converts Modified Equinoctial elements into the Keplerian elements.
 # Returns
 -`u_koe::SVector{6, <:Number}`: The Keplerian state vector [a; e; i; Ω(RAAN); ω(AOP); ν(True Anomaly)].
 """
-function ModEq2koe(u::AbstractVector{T}, μ::Number) where {T<:Number}
+function ModEq2koe(u::AbstractVector{T}, μ::V) where {T<:Number,V<:Number}
+    RT = promote_type(T, V)
+
     p, f, g, h, k, L = u
 
     a = p / (1 - f^2 - g^2)
@@ -383,7 +396,7 @@ function ModEq2koe(u::AbstractVector{T}, μ::Number) where {T<:Number}
     ω = atan(g * h - f * k, f * h + g * k)
     ν = L - Ω - ω
 
-    return SVector{6,T}(a, e, i, Ω, ω, ν)
+    return SVector{6,RT}(a, e, i, Ω, ω, ν)
 end
 
 """
@@ -490,7 +503,7 @@ function Mil2cart(
 end
 
 """
-   cart2cylind(u::AbstractVector{T}, μ::Number) where {T<:Number}
+   cart2cylind(u::AbstractVector{T}, μ::V) where {T<:Number,V<:Number}
 
 Computes the cylindrical orbital elements from a Cartesian set.
 
@@ -504,7 +517,9 @@ Computes the cylindrical orbital elements from a Cartesian set.
 # Returns
 -`u_cylind::SVector{6, <:Number}``: The cylindrical orbital element vector [r; θ; z; ṙ; θdot; ż].
 """
-function cart2cylind(u::AbstractVector{T}, μ::Number) where {T<:Number}
+function cart2cylind(u::AbstractVector{T}, μ::V) where {T<:Number,V<:Number}
+    RT = promote_type(T, V)
+
     x, y, z, ẋ, ẏ, ż = u
 
     ρ_vec = SVector{2}(x, y)
@@ -515,7 +530,7 @@ function cart2cylind(u::AbstractVector{T}, μ::Number) where {T<:Number}
     ρdot = (x * ẋ + y * ẏ) / ρ
     θdot = (x * ẏ - y * ẋ) / ρ
 
-    return SVector{6,T}(ρ, θ, z, ρdot, θdot, ż)
+    return SVector{6,RT}(ρ, θ, z, ρdot, θdot, ż)
 end
 
 """
@@ -533,7 +548,9 @@ Computes the Cartesian orbital elements from a cylindrical set.
 # Returns
 -`u_cart::SVector{6, <:Number}`: The Cartesian orbital element vector [x; y; z; ẋ; ẏ; ż].
 """
-function cylind2cart(u::AbstractVector{T}, μ::Number) where {T<:Number}
+function cylind2cart(u::AbstractVector{T}, μ::V) where {T<:Number,V<:Number}
+    RT = promote_type(T, V)
+
     ρ, θ, z, ρdot, θdot, ż = u
 
     x = ρ * cos(θ)
@@ -542,11 +559,11 @@ function cylind2cart(u::AbstractVector{T}, μ::Number) where {T<:Number}
     ẋ = ρdot * cos(θ) - θdot * sin(θ)
     ẏ = ρdot * sin(θ) + θdot * cos(θ)
 
-    return SVector{6,T}(x, y, z, ẋ, ẏ, ż)
+    return SVector{6,RT}(x, y, z, ẋ, ẏ, ż)
 end
 
 """
-    cart2sphere(u::AbstractVector{T}, μ::Number) where {T<:Number}
+    cart2sphere(u::AbstractVector{T}, μ::V) where {T<:Number,V<:Number}
 
 Computes the spherical orbital elements from a spherical set.
 
@@ -560,7 +577,9 @@ Computes the spherical orbital elements from a spherical set.
 # Returns
 -'u_sphere::SVector{6, <:Number}': Spherical Orbital Element Vector [r; θ; ϕ; ṙ; θdot; ϕdot]
 """
-function cart2sphere(u::AbstractVector{T}, μ::Number) where {T<:Number}
+function cart2sphere(u::AbstractVector{T}, μ::V) where {T<:Number,V<:Number}
+    RT = promote_type(T, V)
+
     x, y, z, ẋ, ẏ, ż = u
 
     r_vec = SVector{3}(x, y, z)
@@ -573,11 +592,11 @@ function cart2sphere(u::AbstractVector{T}, μ::Number) where {T<:Number}
     θdot = (x * ẏ - ẋ * y) / (x^2 + y^2)
     ϕdot = (z * (x * ẋ + y * ẏ) - ż * (x^2 + y^2)) / (√(x^2.0 + y^2.0) * r^2)
 
-    return SVector{6,T}(r, θ, ϕ, ṙ, θdot, ϕdot)
+    return SVector{6,RT}(r, θ, ϕ, ṙ, θdot, ϕdot)
 end
 
 """
-    sphere2cart(u::AbstractVector{T}, μ::Number) where {T<:Number}
+    sphere2cart(u::AbstractVector{T}, μ::V) where {T<:Number,V<:Number}
 
 Computes the Cartesian orbital elements from a spherical set.
 
@@ -591,7 +610,9 @@ Computes the Cartesian orbital elements from a spherical set.
 # Returns
 -'u_cart::SVector{6, <:Number}': The Cartesian orbital element vector [x; y; z; ẋ; ẏ; ż].
 """
-function sphere2cart(u::AbstractVector{T}, μ::Number) where {T<:Number}
+function sphere2cart(u::AbstractVector{T}, μ::V) where {T<:Number,V<:Number}
+    RT = promote_type(T, V)
+
     r, θ, ϕ, ṙ, θdot, ϕdot = u
 
     x = r * cos(θ) * sin(ϕ)
@@ -602,7 +623,7 @@ function sphere2cart(u::AbstractVector{T}, μ::Number) where {T<:Number}
     ẏ = ṙ * sin(θ) * sin(ϕ) + r * θdot * cos(θ) * sin(ϕ) + r * ϕdot * sin(θ) * cos(ϕ)
     ż = ṙ * cos(ϕ) - r * ϕdot * sin(ϕ)
 
-    return SVector{6,T}(x, y, z, ẋ, ẏ, ż)
+    return SVector{6,RT}(x, y, z, ẋ, ẏ, ż)
 end
 
 """
@@ -623,12 +644,17 @@ Laskar, Jacques. "Andoyer construction for Hill and Delaunay variables." Celesti
 """
 function cart2delaunay(u::AbstractVector{T}, μ::V) where {T<:Number,V<:Number}
     RT = promote_type(T, V)
-    a, e, i, Ω, ω, f = cart2koe(u, μ)
+    a, e, _, Ω, ω, f = cart2koe(u, μ)
     M = trueAnomaly2MeanAnomaly(f, e)
 
+    r = SVector{3}(u[1], u[2], u[3])
+    v = SVector{3}(u[4], u[5], u[6])
+
+    h = cross(r, v)
+
     L = √(μ * a)
-    G = L * √(1.0 - e^2)
-    H = G * cos(i)
+    G = norm(h)
+    H = h[3]
 
     return SVector{6,RT}(L, G, H, M, ω, Ω)
 end

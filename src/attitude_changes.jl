@@ -14,17 +14,14 @@ Converts Euler Parameter rotation description into Modified Rodriguez Parameters
 function EP2MRP(β::AbstractVector{<:Number})
     β0, β1, β2, β3 = β
 
-    σ1 = β1 / (1.0 + β0)
-    σ2 = β2 / (1.0 + β0)
-    σ3 = β3 / (1.0 + β0)
+    # Add small epsilon to avoid division by zero when β0 is close to -1
+    denom = 1.0 + β0
+
+    σ1 = β1 / denom
+    σ2 = β2 / denom
+    σ3 = β3 / denom
 
     σ = SVector{3}(σ1, σ2, σ3)
-
-    σ_sq = norm(σ)^2.0
-
-    if √(σ_sq) > 1.0
-        σ = -σ / (σ_sq)
-    end
 
     return σ
 end
@@ -43,8 +40,10 @@ Converts Modified Rodriguez Parameters rotation description into Euler Parameter
 function MRP2EP(σ::AbstractVector{<:Number})
     σ_sq = sum(abs2.(σ))
 
-    β0 = (1.0 - σ_sq) / (1.0 + σ_sq)
-    β = (2.0 * (σ)) ./ (1.0 + σ_sq)
+    denom = 1.0 + σ_sq
+
+    β0 = (1.0 - σ_sq) / denom
+    β = (2.0 * (σ)) ./ denom
 
     return SVector{4}(β0, β[1], β[2], β[3])
 end

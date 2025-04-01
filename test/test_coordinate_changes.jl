@@ -13,9 +13,11 @@
     cart_state = Cartesian(state)
 
     for coord in _COORDINATE_SETS
-        println(coord)
         coord_state = coord(cart_state, μ)
-        cart_state_round_trip = Cartesian(coord_state, μ)
-        @test params(cart_state) ≈ params(cart_state_round_trip) rtol = 1e-14
+        for coord2 in _COORDINATE_SETS
+            coord_state2 = coord2(coord_state, μ)
+            coord_state_round_trip2 = coord(coord_state2, μ)
+            @test params(coord_state) ≈ params(coord_state_round_trip2) rtol = 1e-14
+        end
     end
 end
