@@ -1,5 +1,5 @@
 # Unified State Model
-The Unified State Model (USM) is an alternative approach to modeling and propagating satellite orbits. It was developed to address the limitations of traditional Cartesian coordinates and Keplerian elements. USM combines quaternion-based rotational models and hodograph-based velocity models, offering increased numerical stability and improved computational efficiency, especially for complex or perturbed orbits. There are multiple variant of the USM. Beyond the quaternion based approach there is also a Modified Rodriguez Parameters appoach and an exponential mapping approach.
+The Unified State Model (USM) is an alternative approach to modeling and propagating satellite orbits. It was developed to address the limitations of traditional Cartesian coordinates and Keplerian elements. USM combines quaternion-based rotational models and hodograph-based velocity models, offering increased numerical stability and improved computational efficiency, especially for complex or perturbed orbits. There are multiple variant of the USM. Beyond the quaternion based approach there is also a Modified Rodriguez Parameters approach and an exponential mapping approach.
 
 ![image](../assets/usm.png)
 *Image of USM Orbital Elements [1]*
