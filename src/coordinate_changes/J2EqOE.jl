@@ -293,12 +293,12 @@ end
 end
 
 """
-    function J2IOE2IOE(J2::J2IOE{T}, μ::V) where {T<:Number, V<:Number}
+    function J2IOE2IOE(u::AbstractVector{T}, μ::V) where {T<:Number, V<:Number}
 
 Computes the Intermediate Orbit Elements from a J2 Perturbed Intermediate Orbit Element set.
 
 # Arguments
--`J2::J2IOE{<:Number}`: The J2 Perturbed Intermediate Orbit Element vector [a; e; i; Ω(RAAN); ω(AOP); f(True Anomaly)].
+-`u::AbstractVector{<:Number}`: The J2 Perturbed Intermediate Orbit Element vector [a; e; i; Ω(RAAN); ω(AOP); f(True Anomaly)].
 -`μ::Number`: Standard graviational parameter of central body.
 
 # Returns
@@ -322,7 +322,7 @@ function J2IOE2IOE(
 end
 
 """
-    function IOE2J2IOE(u::IOE{T}, μ::V) where {T<:Number, V<:Number}
+    function IOE2J2IOE(u::AbstractVector{T}, μ::V) where {T<:Number, V<:Number}
 
 Computes the J2 Perturbed Intermediate Orbit Elements from a Intermediate Orbit Element set.
 
@@ -342,42 +342,64 @@ function IOE2J2IOE(
 ) where {T<:Number,V<:Number,W<:Number}
     RT = promote_type(T, V, W)
 
-    scale = SVector{6}(Req, 1.0, 1.0, 1.0, 1.0, 1.0)
+    # Pre-allocate vectors for iteration
+    scale = SVector{6,RT}(Req, 1.0, 1.0, 1.0, 1.0, 1.0)
+    u_J2IOE_guess = SVector{6,RT}(u[1], u[2], u[3], u[4], u[5], u[6])
+    u_IOE_guess = similar(u_J2IOE_guess)
+    residual = similar(u_J2IOE_guess)
 
-    #* Step 1
-    u_J2IOE_guess = MVector{6,RT}(u[1], u[2], u[3], u[4], u[5], u[6])
-    clamp!(u_J2IOE_guess, 1e-2, Inf)
+    # Initial guess setup
+    u_J2IOE_guess = SVector{6,RT}(
+        max(u_J2IOE_guess[1], 1e-2),
+        clamp(u_J2IOE_guess[2], -1.0, 1.0),
+        clamp(u_J2IOE_guess[3], -1.0, 1.0),
+        clamp(u_J2IOE_guess[4], -1.0, 1.0),
+        clamp(u_J2IOE_guess[5], -1.0, 1.0),
+        u_J2IOE_guess[6],
+    )
 
-    #* Step 2
+    # Iteration variables
     iter = 0
     error = typemax(Float64)
     best_residual = error
-    best_guess = zeros(6)
-
-    u_IOE_guess = MVector{6,RT}(u[1], u[2], u[3], u[4], u[5], u[6])
+    best_guess = u_J2IOE_guess
 
     while error > tol && iter < max_iter
         iter += 1
 
-        #* Step 2a
-        u_IOE_guess .= J2IOE2IOE(u_J2IOE_guess, μ) ./ scale
+        # Compute IOE guess from J2IOE guess
+        u_IOE_guess = J2IOE2IOE(u_J2IOE_guess, μ) ./ scale
 
-        #* Step 2b
+        # Branch cut correction
         b_cut = u_J2IOE_guess[6] - π
-        u_IOE_guess[6] = u_IOE_guess[6] + 2π * ceil((b_cut - u_IOE_guess[6]) / (2π))
+        u_IOE_guess = SVector{6,RT}(
+            u_IOE_guess[1],
+            u_IOE_guess[2],
+            u_IOE_guess[3],
+            u_IOE_guess[4],
+            u_IOE_guess[5],
+            u_IOE_guess[6] + 2π * ceil((b_cut - u_IOE_guess[6]) / (2π)),
+        )
 
-        #* Step 2c
+        # Compute residual
         residual = u ./ scale - u_IOE_guess
 
+        # Update error and best guess if needed
         error = norm(residual)
         if error < best_residual
             best_residual = error
-            best_guess = SVector{6,RT}(u_J2IOE_guess...)
+            best_guess = u_J2IOE_guess
         end
 
-        #* Step 2d
-        u_J2IOE_guess += residual .* scale
-        clamp!(u_J2IOE_guess[2:5], -1.0, 1.0)
+        # Update guess
+        u_J2IOE_guess = SVector{6,RT}(
+            u_J2IOE_guess[1] + residual[1] * Req,
+            clamp(u_J2IOE_guess[2] + residual[2], -1.0, 1.0),
+            clamp(u_J2IOE_guess[3] + residual[3], -1.0, 1.0),
+            clamp(u_J2IOE_guess[4] + residual[4], -1.0, 1.0),
+            clamp(u_J2IOE_guess[5] + residual[5], -1.0, 1.0),
+            u_J2IOE_guess[6] + residual[6],
+        )
     end
 
     return best_guess
