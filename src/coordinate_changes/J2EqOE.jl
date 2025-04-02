@@ -73,7 +73,7 @@ function modEqN2IOE(u::AbstractVector{T}, μ::V) where {T<:Number,V<:Number}
 
     n, f, g, h, k, L = u
 
-    I1 = ∛(μ / n^2)
+    I1 = (μ / n^2)^(1 / 3)
     I2 = g * sin(L) - f * cos(L)
     I3 = f * sin(L) + g * cos(L)
     I4 = h / √(1 + h^2 + k^2)
@@ -101,7 +101,8 @@ function IOE2modEqN(u::AbstractVector{T}, μ::V) where {T<:Number,V<:Number}
     I1, I2, I3, I4, I5, I6 = u
 
     a = I1
-    n = √(μ / a^3)
+    # Use power operation instead of sqrt for better AD compatibility
+    n = (μ / a^3)^(1 / 2)
     f = I3 * sin(I6) - I2 * cos(I6)
     g = I2 * sin(I6) + I3 * cos(I6)
     h = I4 / √(1 - I4^2 - I5^2)
