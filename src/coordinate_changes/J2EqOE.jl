@@ -42,11 +42,11 @@ Computes the Keplerian orbital elements from a Intermediate Orbit Element set.
 function IOE2koe(u::AbstractVector{T}, μ::V) where {T<:Number,V<:Number}
     RT = promote_type(T, V)
 
-    I1, I2, I3, I4, I5, I6 = u 
+    I1, I2, I3, I4, I5, I6 = u
 
     a = I1
-    e = (I2^2 + I3^2) ^ (1 /2)
-    i = 2.0 * asin((I4^2 + I5^2) ^ (1 / 2))
+    e = (I2^2 + I3^2)^(1 / 2)
+    i = 2.0 * asin((I4^2 + I5^2)^(1 / 2))
     Ω = atan(I4, I5)
     M = atan(I2, I3)
     ω = I6 - Ω - M
@@ -73,11 +73,11 @@ function modEqN2IOE(u::AbstractVector{T}, μ::V) where {T<:Number,V<:Number}
 
     n, f, g, h, k, L = u
 
-    I1 = (μ / n^2) ^ (1 / 3)
+    I1 = (μ / n^2)^(1 / 3)
     I2 = g * sin(L) - f * cos(L)
     I3 = f * sin(L) + g * cos(L)
-    I4 = h / ((1 + h^2 + k^2) ^ (1 / 2))
-    I5 = k / ((1 + h^2 + k^2) ^ (1 / 2))
+    I4 = h / ((1 + h^2 + k^2)^(1 / 2))
+    I5 = k / ((1 + h^2 + k^2)^(1 / 2))
     I6 = L
 
     return SVector{6,RT}(I1, I2, I3, I4, I5, I6)
@@ -102,11 +102,11 @@ function IOE2modEqN(u::AbstractVector{T}, μ::V) where {T<:Number,V<:Number}
 
     a = I1
     # Use power operation instead of sqrt for better AD compatibility
-    n = (μ / a^3) ^ (1 / 2)
+    n = (μ / a^3)^(1 / 2)
     f = I3 * sin(I6) - I2 * cos(I6)
     g = I2 * sin(I6) + I3 * cos(I6)
-    h = I4 / ((1 - I4^2 - I5^2) ^ (1 / 2))
-    k = I5 / ((1 - I4^2 - I5^2) ^ (1 / 2))
+    h = I4 / ((1 - I4^2 - I5^2)^(1 / 2))
+    k = I5 / ((1 - I4^2 - I5^2)^(1 / 2))
     L = I6
 
     return SVector{6,RT}(n, f, g, h, k, L)
@@ -131,7 +131,7 @@ end
 
 @inline function _step2(J2::Number, Req::Number, eⱼ₂::Number, aⱼ₂::Number, Iⱼ₂::Number)
     k = 0.5 * J2 * Req^2
-    η = (1.0 - eⱼ₂^2) ^ (1 /2)
+    η = (1.0 - eⱼ₂^2)^(1 / 2)
     γ = k / aⱼ₂^2
     γ′ = γ / η^4
     θ = cos(Iⱼ₂)
@@ -260,7 +260,7 @@ end
         0.5 *
         γ′ *
         θ *
-        ((1 - θ^2) ^ (1 / 2)) *
+        ((1 - θ^2)^(1 / 2)) *
         (
             3 * cos(2 * gⱼ₂ + 2 * νⱼ₂) +
             3 * eⱼ₂ * cos(2 * gⱼ₂ + νⱼ₂) +
