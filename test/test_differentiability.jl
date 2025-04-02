@@ -4,7 +4,7 @@
 #
 ########################################################################################
 # Currently Supported & Tested
-# Diffractor, Enzyme, ForwardDiff, FiniteDiff, Mooncake, PolyesterForwardDiff, Zygote
+# Enzyme, ForwardDiff, FiniteDiff, Mooncake, PolyesterForwardDiff, Zygote
 ########################################################################################
 
 const _BACKENDS = (
@@ -31,9 +31,6 @@ const _BACKENDS = (
         testset_name = "Coordinate Set Transformation " * backend[1]
         @testset "$testset_name" begin
             for set in _COORDINATE_SETS
-                if set == J2EqOE
-                    continue
-                end
                 f_fd, df_fd = value_and_jacobian(
                     (x) -> set(Cartesian(x), μ), AutoFiniteDiff(), state
                 )
@@ -47,13 +44,7 @@ const _BACKENDS = (
                 )
 
                 @test f_fd == f_ad
-
-                #TODO: Diffractor has some issue with the USM sets
-                if backend[1] == "Diffractor"
-                    @test df_fd ≈ df_ad rtol = 2e0
-                else
-                    @test df_fd ≈ df_ad atol = 1e-2
-                end
+                @test df_fd ≈ df_ad atol = 1e-2
 
                 f_ad2, df_ad2 = value_and_derivative(
                     (x) -> Array(params(set(Cartesian(state), x))), backend[2], μ
@@ -67,9 +58,6 @@ const _BACKENDS = (
 
     @testset "Coordinate Set Transformation Zygote" begin
         for set in _COORDINATE_SETS
-            if set == J2EqOE
-                continue
-            end
             f_fd, df_fd = value_and_jacobian(
                 (x) -> set(Cartesian(x), μ), AutoFiniteDiff(), state
             )
