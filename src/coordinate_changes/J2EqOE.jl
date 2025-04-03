@@ -317,7 +317,9 @@ function J2IOE2IOE(
     Σlgh = _step6(γ′, θ, νⱼ₂, Lⱼ₂, eⱼ₂, gⱼ₂, hⱼ₂, δh)
     _, _, _, _, δe, e″δL = _step7(νⱼ₂, eⱼ₂, η, aⱼ₂, rⱼ₂, γ, γ′, θ, gⱼ₂)
     δI, sin_half_I″_δh = _step8(γ′, θ, νⱼ₂, eⱼ₂, gⱼ₂, δh, Iⱼ₂)
-    I1, I2, I3, I4, I5, I6 = _step9(a, eⱼ₂, δe, e″δL, Lⱼ₂, Iⱼ₂, δI, sin_half_I″_δh, hⱼ₂, Σlgh)
+    I1, I2, I3, I4, I5, I6 = _step9(
+        a, eⱼ₂, δe, e″δL, Lⱼ₂, Iⱼ₂, δI, sin_half_I″_δh, hⱼ₂, Σlgh
+    )
 
     return SVector{6,RT}(I1, I2, I3, I4, I5, I6)
 end
