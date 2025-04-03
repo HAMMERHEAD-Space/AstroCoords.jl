@@ -10,7 +10,7 @@ Computes the Intermediate Orbit Elements from a Keplerian set.
 # Returns
 -`u_IOE::SVector{6, <:Number}`: The Intermediate Orbit Element vector [I1; I2; I3; I4; I5; I6].
 """
-function koe2IOE(u::AbstractVector{T}, μ::V) where {T<:Number, V<:Number}
+function koe2IOE(u::AbstractVector{T}, μ::V) where {T<:Number,V<:Number}
     RT = promote_type(T, V)
 
     a, e, i, Ω, ω, f = u
@@ -235,7 +235,10 @@ end
         0.5 *
         η^2.0 *
         (
-            γ * ((-1.0 + 3.0 * θ^2.0) * v2 + 3.0 * (1.0 - θ^2.0) * v3 * cos(2.0 * gⱼ₂ + 2.0 * νⱼ₂)) -
+            γ * (
+                (-1.0 + 3.0 * θ^2.0) * v2 +
+                3.0 * (1.0 - θ^2.0) * v3 * cos(2.0 * gⱼ₂ + 2.0 * νⱼ₂)
+            ) -
             γ′ * (1.0 - θ^2.0) * (3.0 * cos(2.0 * gⱼ₂ + νⱼ₂) + cos(2.0 * gⱼ₂ + 3.0 * νⱼ₂))
         )
     e″δL =
@@ -246,7 +249,10 @@ end
             2.0 * (-1.0 + 3.0 * θ^2.0) * (v4 + 1.0) * sin(νⱼ₂) +
             3.0 *
             (1.0 - θ^2.0) *
-            ((-v4 + 1.0) * sin(2.0 * gⱼ₂ + νⱼ₂) + (v4 + 1.0 / 3.0) * sin(2.0 * gⱼ₂ + 3.0 * νⱼ₂))
+            (
+                (-v4 + 1.0) * sin(2.0 * gⱼ₂ + νⱼ₂) +
+                (v4 + 1.0 / 3.0) * sin(2.0 * gⱼ₂ + 3.0 * νⱼ₂)
+            )
         )
 
     return v1, v2, v3, v4, δe, e″δL
