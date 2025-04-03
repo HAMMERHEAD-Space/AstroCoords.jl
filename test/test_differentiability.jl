@@ -140,7 +140,7 @@ const _BACKENDS = (
 
             try
                 f_ad3, df_ad3 = value_and_jacobian(
-                    (x) -> Cartesian(set(x), μ), backend[2], coord
+                    (x) -> Cartesian(set(x), μ), AutoZygote(), coord
                 )
                 @test f_fd3 == f_ad3
                 @test df_fd3 ≈ df_ad3 atol = 1e-2
@@ -154,7 +154,7 @@ const _BACKENDS = (
 
             try
                 f_ad4, df_ad4 = value_and_derivative(
-                    (x) -> Cartesian(set(coord), x), backend[2], μ
+                    (x) -> Cartesian(set(coord), x), AutoZygote(), μ
                 )
                 @test f_fd4 == f_ad4
                 @test df_fd4 ≈ df_ad4 atol = 1e-4
