@@ -6,7 +6,6 @@
 # Currently Supported & Tested
 # Diffractor, Enzyme, ForwardDiff, FiniteDiff, Mooncake, PolyesterForwardDiff, Zygote
 ########################################################################################
-
 const _BACKENDS = (
     ("ForwardDiff", AutoForwardDiff()),
     ("Diffractor", AutoDiffractor()),
@@ -31,9 +30,6 @@ const _BACKENDS = (
         testset_name = "Coordinate Set Transformation " * backend[1]
         @testset "$testset_name" begin
             for set in _COORDINATE_SETS
-                if set == J2EqOE
-                    continue
-                end
                 f_fd, df_fd = value_and_jacobian(
                     (x) -> set(Cartesian(x), μ), AutoFiniteDiff(), state
                 )
@@ -61,15 +57,41 @@ const _BACKENDS = (
 
                 @test f_fd2 == f_ad2
                 @test df_fd2 ≈ df_ad2 atol = 1e-4
+
+                coord = Array(params(set(Cartesian(state), μ)))
+
+                f_fd3, df_fd3 = value_and_jacobian(
+                    (x) -> Array(params(Cartesian(set(x), μ))), AutoFiniteDiff(), coord
+                )
+
+                f_fd4, df_fd4 = value_and_derivative(
+                    (x) -> Array(params(Cartesian(set(coord), x))), AutoFiniteDiff(), μ
+                )
+
+                f_ad3, df_ad3 = value_and_jacobian(
+                    (x) -> Array(params(Cartesian(set(x), μ))), backend[2], coord
+                )
+
+                f_ad4, df_ad4 = value_and_derivative(
+                    (x) -> Array(params(Cartesian(set(coord), x))), backend[2], μ
+                )
+
+                @test f_fd3 == f_ad3
+
+                if backend[1] == "Diffractor"
+                    @test df_fd3 ≈ df_ad3 rtol = 2e0
+                else
+                    @test df_fd3 ≈ df_ad3 atol = 1e-2
+                end
+
+                @test f_fd4 == f_ad4
+                @test df_fd4 ≈ df_ad4 atol = 1e-4
             end
         end
     end
 
     @testset "Coordinate Set Transformation Zygote" begin
         for set in _COORDINATE_SETS
-            if set == J2EqOE
-                continue
-            end
             f_fd, df_fd = value_and_jacobian(
                 (x) -> set(Cartesian(x), μ), AutoFiniteDiff(), state
             )
@@ -98,6 +120,44 @@ const _BACKENDS = (
                 )
                 @test f_fd2 == f_ad2
                 @test df_fd2 ≈ something.(df_ad2, 0.0) atol = 1e-4
+            catch err
+                @test err isa MethodError
+                @test startswith(
+                    sprint(showerror, err),
+                    "MethodError: no method matching iterate(::Nothing)",
+                )
+            end
+
+            coord = Array(params(set(Cartesian(state), μ)))
+
+            f_fd3, df_fd3 = value_and_jacobian(
+                (x) -> Cartesian(set(x), μ), AutoFiniteDiff(), coord
+            )
+
+            f_fd4, df_fd4 = value_and_derivative(
+                (x) -> Cartesian(set(coord), x), AutoFiniteDiff(), μ
+            )
+
+            try
+                f_ad3, df_ad3 = value_and_jacobian(
+                    (x) -> Cartesian(set(x), μ), AutoZygote(), coord
+                )
+                @test f_fd3 == f_ad3
+                @test df_fd3 ≈ df_ad3 atol = 1e-2
+            catch err
+                @test err isa MethodError
+                @test startswith(
+                    sprint(showerror, err),
+                    "MethodError: no method matching iterate(::Nothing)",
+                )
+            end
+
+            try
+                f_ad4, df_ad4 = value_and_derivative(
+                    (x) -> Cartesian(set(coord), x), AutoZygote(), μ
+                )
+                @test f_fd4 == f_ad4
+                @test df_fd4 ≈ df_ad4 atol = 1e-4
             catch err
                 @test err isa MethodError
                 @test startswith(

@@ -45,8 +45,8 @@ function IOE2koe(u::AbstractVector{T}, μ::V) where {T<:Number,V<:Number}
     I1, I2, I3, I4, I5, I6 = u
 
     a = I1
-    e = √(I2^2 + I3^2)
-    i = 2.0 * asin(√(I4^2 + I5^2))
+    e = √(I2^2.0 + I3^2.0)
+    i = 2.0 * asin(√(I4^2.0 + I5^2.0))
     Ω = atan(I4, I5)
     M = atan(I2, I3)
     ω = I6 - Ω - M
@@ -73,11 +73,11 @@ function modEqN2IOE(u::AbstractVector{T}, μ::V) where {T<:Number,V<:Number}
 
     n, f, g, h, k, L = u
 
-    I1 = ∛(μ / n^2)
+    I1 = ∛(μ / n^2.0)
     I2 = g * sin(L) - f * cos(L)
     I3 = f * sin(L) + g * cos(L)
-    I4 = h / √(1 + h^2 + k^2)
-    I5 = k / √(1 + h^2 + k^2)
+    I4 = h / √(1.0 + h^2.0 + k^2.0)
+    I5 = k / √(1.0 + h^2.0 + k^2.0)
     I6 = L
 
     return SVector{6,RT}(I1, I2, I3, I4, I5, I6)
@@ -101,11 +101,11 @@ function IOE2modEqN(u::AbstractVector{T}, μ::V) where {T<:Number,V<:Number}
     I1, I2, I3, I4, I5, I6 = u
 
     a = I1
-    n = √(μ / a^3)
+    n = √(μ / (a^3.0))
     f = I3 * sin(I6) - I2 * cos(I6)
     g = I2 * sin(I6) + I3 * cos(I6)
-    h = I4 / √(1 - I4^2 - I5^2)
-    k = I5 / √(1 - I4^2 - I5^2)
+    h = I4 / √(1.0 - I4^2.0 - I5^2.0)
+    k = I5 / √(1.0 - I4^2.0 - I5^2.0)
     L = I6
 
     return SVector{6,RT}(n, f, g, h, k, L)
@@ -129,10 +129,10 @@ end
 end
 
 @inline function _step2(J2::Number, Req::Number, eⱼ₂::Number, aⱼ₂::Number, Iⱼ₂::Number)
-    k = 0.5 * J2 * Req^2
-    η = √(1.0 - eⱼ₂^2)
-    γ = k / aⱼ₂^2
-    γ′ = γ / η^4
+    k = 0.5 * J2 * Req^2.0
+    η = √(1.0 - eⱼ₂^2.0)
+    γ = k / aⱼ₂^2.0
+    γ′ = γ / η^4.0
     θ = cos(Iⱼ₂)
 
     return k, η, γ, γ′, θ
@@ -168,10 +168,10 @@ end
 )
     a =
         aⱼ₂ * (
-            1 +
+            1.0 +
             γ * (
-                (-1 + 3 * θ^2) * ((aⱼ₂^3) / (rⱼ₂^3) - η^(-3)) +
-                3 * (1 - θ^2) * (aⱼ₂^3) / (rⱼ₂^3) * cos(2 * gⱼ₂ + 2 * νⱼ₂)
+                (-1.0 + 3.0 * θ^2.0) * ((aⱼ₂^3.0) / (rⱼ₂^3.0) - η^(-3.0)) +
+                3.0 * (1.0 - θ^2.0) * (aⱼ₂^3.0) / (rⱼ₂^3.0) * cos(2.0 * gⱼ₂ + 2.0 * νⱼ₂)
             )
         )
     δh =
@@ -179,8 +179,8 @@ end
         γ′ *
         θ *
         (
-            6 * (νⱼ₂ - Lⱼ₂ + eⱼ₂ * sin(νⱼ₂)) - 3 * sin(2 * gⱼ₂ + 2 * νⱼ₂) -
-            3 * eⱼ₂ * sin(2 * gⱼ₂ + νⱼ₂) - eⱼ₂ * sin(2 * gⱼ₂ + 3 * νⱼ₂)
+            6.0 * (νⱼ₂ - Lⱼ₂ + eⱼ₂ * sin(νⱼ₂)) - 3.0 * sin(2.0 * gⱼ₂ + 2.0 * νⱼ₂) -
+            3.0 * eⱼ₂ * sin(2.0 * gⱼ₂ + νⱼ₂) - eⱼ₂ * sin(2.0 * gⱼ₂ + 3.0 * νⱼ₂)
         )
 
     return a, δh
@@ -200,11 +200,11 @@ end
         0.25 *
         γ′ *
         (
-            6 * (-1 + 5 * θ^2) * (νⱼ₂ - Lⱼ₂ + eⱼ₂ * sin(νⱼ₂)) +
-            (3 - 5 * θ^2) * (
-                3 * sin(2 * gⱼ₂ + 2 * νⱼ₂) +
-                3 * eⱼ₂ * sin(2 * gⱼ₂ + νⱼ₂) +
-                eⱼ₂ * sin(2 * gⱼ₂ + 3 * νⱼ₂)
+            6.0 * (-1.0 + 5.0 * θ^2.0) * (νⱼ₂ - Lⱼ₂ + eⱼ₂ * sin(νⱼ₂)) +
+            (3.0 - 5.0 * θ^2.0) * (
+                3.0 * sin(2.0 * gⱼ₂ + 2.0 * νⱼ₂) +
+                3.0 * eⱼ₂ * sin(2.0 * gⱼ₂ + νⱼ₂) +
+                eⱼ₂ * sin(2.0 * gⱼ₂ + 3.0 * νⱼ₂)
             )
         ) +
         δh +
@@ -226,27 +226,33 @@ end
     θ::Number,
     gⱼ₂::Number,
 )
-    v1 = 3 * cos(νⱼ₂) + 3 * eⱼ₂ * cos(νⱼ₂)^2 + eⱼ₂^2 * cos(νⱼ₂)^3
-    v2 = η^(-6) * (eⱼ₂ * η + eⱼ₂ / (1 + η) + v1)
-    v3 = η^(-6) * (eⱼ₂ + v1)
-    v4 = ((aⱼ₂ * η) / rⱼ₂)^2 + aⱼ₂ / rⱼ₂
+    v1 = 3.0 * cos(νⱼ₂) + 3.0 * eⱼ₂ * cos(νⱼ₂)^2.0 + eⱼ₂^2.0 * cos(νⱼ₂)^3.0
+    v2 = η^(-6.0) * (eⱼ₂ * η + eⱼ₂ / (1.0 + η) + v1)
+    v3 = η^(-6.0) * (eⱼ₂ + v1)
+    v4 = ((aⱼ₂ * η) / rⱼ₂)^2.0 + aⱼ₂ / rⱼ₂
 
     δe =
         0.5 *
-        η^2 *
+        η^2.0 *
         (
-            γ * ((-1 + 3 * θ^2) * v2 + 3 * (1 - θ^2) * v3 * cos(2 * gⱼ₂ + 2 * νⱼ₂)) -
-            γ′ * (1 - θ^2) * (3 * cos(2 * gⱼ₂ + νⱼ₂) + cos(2 * gⱼ₂ + 3 * νⱼ₂))
+            γ * (
+                (-1.0 + 3.0 * θ^2.0) * v2 +
+                3.0 * (1.0 - θ^2.0) * v3 * cos(2.0 * gⱼ₂ + 2.0 * νⱼ₂)
+            ) -
+            γ′ * (1.0 - θ^2.0) * (3.0 * cos(2.0 * gⱼ₂ + νⱼ₂) + cos(2.0 * gⱼ₂ + 3.0 * νⱼ₂))
         )
     e″δL =
         -0.25 *
-        η^3 *
+        η^3.0 *
         γ′ *
         (
-            2 * (-1 + 3 * θ^2) * (v4 + 1) * sin(νⱼ₂) +
-            3 *
-            (1 - θ^2) *
-            ((-v4 + 1) * sin(2 * gⱼ₂ + νⱼ₂) + (v4 + 1 / 3) * sin(2 * gⱼ₂ + 3 * νⱼ₂))
+            2.0 * (-1.0 + 3.0 * θ^2.0) * (v4 + 1.0) * sin(νⱼ₂) +
+            3.0 *
+            (1.0 - θ^2.0) *
+            (
+                (-v4 + 1.0) * sin(2.0 * gⱼ₂ + νⱼ₂) +
+                (v4 + 1.0 / 3.0) * sin(2.0 * gⱼ₂ + 3.0 * νⱼ₂)
+            )
         )
 
     return v1, v2, v3, v4, δe, e″δL
@@ -259,13 +265,13 @@ end
         0.5 *
         γ′ *
         θ *
-        √(1 - θ^2) *
+        √(1.0 - θ^2.0) *
         (
-            3 * cos(2 * gⱼ₂ + 2 * νⱼ₂) +
-            3 * eⱼ₂ * cos(2 * gⱼ₂ + νⱼ₂) +
-            eⱼ₂ * cos(2 * gⱼ₂ + 3 * νⱼ₂)
+            3.0 * cos(2.0 * gⱼ₂ + 2.0 * νⱼ₂) +
+            3.0 * eⱼ₂ * cos(2.0 * gⱼ₂ + νⱼ₂) +
+            eⱼ₂ * cos(2.0 * gⱼ₂ + 3.0 * νⱼ₂)
         )
-    sin_half_I″_δh = (sin(Iⱼ₂) * δh) / (2 * cos(0.5 * Iⱼ₂))
+    sin_half_I″_δh = (sin(Iⱼ₂) * δh) / (2.0 * cos(0.5 * Iⱼ₂))
 
     return δI, sin_half_I″_δh
 end
@@ -317,8 +323,11 @@ function J2IOE2IOE(
     Σlgh = _step6(γ′, θ, νⱼ₂, Lⱼ₂, eⱼ₂, gⱼ₂, hⱼ₂, δh)
     _, _, _, _, δe, e″δL = _step7(νⱼ₂, eⱼ₂, η, aⱼ₂, rⱼ₂, γ, γ′, θ, gⱼ₂)
     δI, sin_half_I″_δh = _step8(γ′, θ, νⱼ₂, eⱼ₂, gⱼ₂, δh, Iⱼ₂)
+    I1, I2, I3, I4, I5, I6 = _step9(
+        a, eⱼ₂, δe, e″δL, Lⱼ₂, Iⱼ₂, δI, sin_half_I″_δh, hⱼ₂, Σlgh
+    )
 
-    return SVector{6,RT}(_step9(a, eⱼ₂, δe, e″δL, Lⱼ₂, Iⱼ₂, δI, sin_half_I″_δh, hⱼ₂, Σlgh))
+    return SVector{6,RT}(I1, I2, I3, I4, I5, I6)
 end
 
 """
@@ -337,7 +346,7 @@ function IOE2J2IOE(
     u::AbstractVector{T},
     μ::V;
     Req::W=6.378137e+03,
-    tol::AbstractFloat=10 * eps(promote_type(T, V)),
+    tol::AbstractFloat=10.0 * eps(promote_type(T, V)),
     max_iter::Int=100,
 ) where {T<:Number,V<:Number,W<:Number}
     RT = promote_type(T, V, W)
@@ -360,7 +369,7 @@ function IOE2J2IOE(
 
     # Iteration variables
     iter = 0
-    error = typemax(Float64)
+    error = typemax(RT)
     best_residual = error
     best_guess = u_J2IOE_guess
 
@@ -368,7 +377,15 @@ function IOE2J2IOE(
         iter += 1
 
         # Compute IOE guess from J2IOE guess
-        u_IOE_guess = J2IOE2IOE(u_J2IOE_guess, μ) ./ scale
+        u_IOE_guess = J2IOE2IOE(u_J2IOE_guess, μ)
+        u_IOE_guess = (
+            u_IOE_guess[1] / scale[1],
+            u_IOE_guess[2] / scale[2],
+            u_IOE_guess[3] / scale[3],
+            u_IOE_guess[4] / scale[4],
+            u_IOE_guess[5] / scale[5],
+            u_IOE_guess[6] / scale[6],
+        )
 
         # Branch cut correction
         b_cut = u_J2IOE_guess[6] - π
@@ -378,11 +395,18 @@ function IOE2J2IOE(
             u_IOE_guess[3],
             u_IOE_guess[4],
             u_IOE_guess[5],
-            u_IOE_guess[6] + 2π * ceil((b_cut - u_IOE_guess[6]) / (2π)),
+            u_IOE_guess[6] + 2.0π * ceil((b_cut - u_IOE_guess[6]) / (2.0π)),
         )
 
         # Compute residual
-        residual = u ./ scale - u_IOE_guess
+        residual = (
+            u[1] / scale[1] - u_IOE_guess[1],
+            u[2] / scale[2] - u_IOE_guess[2],
+            u[3] / scale[3] - u_IOE_guess[3],
+            u[4] / scale[4] - u_IOE_guess[4],
+            u[5] / scale[5] - u_IOE_guess[5],
+            u[6] / scale[6] - u_IOE_guess[6],
+        )
 
         # Update error and best guess if needed
         error = norm(residual)
