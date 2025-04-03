@@ -61,19 +61,19 @@ const _BACKENDS = (
                 coord = Array(params(set(Cartesian(state), μ)))
 
                 f_fd3, df_fd3 = value_and_jacobian(
-                    (x) -> Cartesian(set(x), μ), AutoFiniteDiff(), coord
+                    (x) -> Array(params(Cartesian(set(x), μ))), AutoFiniteDiff(), coord
                 )
 
                 f_fd4, df_fd4 = value_and_derivative(
-                    (x) -> Cartesian(set(coord), x), AutoFiniteDiff(), μ
+                    (x) -> Array(params(Cartesian(set(coord), x))), AutoFiniteDiff(), μ
                 )
 
                 f_ad3, df_ad3 = value_and_jacobian(
-                    (x) -> Cartesian(set(x), μ), backend[2], coord
+                    (x) -> Array(params(Cartesian(set(x), μ))), backend[2], coord
                 )
 
                 f_ad4, df_ad4 = value_and_derivative(
-                    (x) -> Cartesian(set(coord), x), backend[2], μ
+                    (x) -> Array(params(Cartesian(set(coord), x))), backend[2], μ
                 )
 
                 @test f_fd3 == f_ad3
