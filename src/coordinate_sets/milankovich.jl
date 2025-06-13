@@ -25,10 +25,12 @@ struct Milankovich{T} <: AstroCoord{7,T}
     ey::T
     ez::T
     L::T
-    @inline Milankovich{T}(hx, hy, hz, ex, ey, ez, L) where {T} =
-        new{T}(hx, hy, hz, ex, ey, ez, L)
-    @inline Milankovich{T}(X::Milankovich{T}) where {T} =
-        new{T}(X.hx, X.hy, X.hz, X.ex, X.ey, X.ez, X.L)
+    @inline Milankovich{T}(hx, hy, hz, ex, ey, ez, L) where {T} = new{T}(
+        hx, hy, hz, ex, ey, ez, L
+    )
+    @inline Milankovich{T}(X::Milankovich{T}) where {T} = new{T}(
+        X.hx, X.hy, X.hz, X.ex, X.ey, X.ez, X.L
+    )
 end
 
 # ~~~~~~~~~~~~~~~ Constructors ~~~~~~~~~~~~~~~ #

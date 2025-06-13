@@ -4,7 +4,7 @@ using AstroCoords
 makedocs(;
     modules=[AstroCoords],
     format=Documenter.HTML(;
-        prettyurls=!("local" in ARGS), highlights=["yaml"], ansicolor=true
+        prettyurls=(!("local" in ARGS)), highlights=["yaml"], ansicolor=true
     ),
     sitename="AstroCoords.jl",
     authors="Jordan Murphy",
