@@ -24,8 +24,9 @@ struct Cartesian{T} <: AstroCoord{6,T}
     ẏ::T
     ż::T
     @inline Cartesian{T}(x, y, z, ẋ, ẏ, ż) where {T} = new{T}(x, y, z, ẋ, ẏ, ż)
-    @inline Cartesian{T}(p::Cartesian{T}) where {T} =
-        new{T}(p.x, p.y, p.z, p.ẋ, p.ẏ, p.ż)
+    @inline Cartesian{T}(p::Cartesian{T}) where {T} = new{T}(
+        p.x, p.y, p.z, p.ẋ, p.ẏ, p.ż
+    )
 end
 
 # ~~~~~~~~~~~~~~~ Constructors ~~~~~~~~~~~~~~~ #

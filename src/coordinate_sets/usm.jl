@@ -25,10 +25,12 @@ struct USM7{T} <: AstroCoord{7,T}
     ϵO2::T
     ϵO3::T
     η0::T
-    @inline USM7{T}(C, Rf1, Rf2, ϵO1, ϵO2, ϵO3, η0) where {T} =
-        new{T}(C, Rf1, Rf2, ϵO1, ϵO2, ϵO3, η0)
-    @inline USM7{T}(p::USM7{T}) where {T} =
-        new{T}(p.C, p.Rf1, p.Rf2, p.ϵO1, p.ϵO2, p.ϵO3, p.η0)
+    @inline USM7{T}(C, Rf1, Rf2, ϵO1, ϵO2, ϵO3, η0) where {T} = new{T}(
+        C, Rf1, Rf2, ϵO1, ϵO2, ϵO3, η0
+    )
+    @inline USM7{T}(p::USM7{T}) where {T} = new{T}(
+        p.C, p.Rf1, p.Rf2, p.ϵO1, p.ϵO2, p.ϵO3, p.η0
+    )
 end
 
 # ~~~~~~~~~~~~~~~ Constructors ~~~~~~~~~~~~~~~ #

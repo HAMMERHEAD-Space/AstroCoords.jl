@@ -11,8 +11,6 @@ AstroCoords.jl
 
 This package is intended to be a one stop shop for all things related to astrodynamics coordinate systems. In addition to being non-allocating and highly performant all transformations found here are also differentiable with compatibility with a number of different automatic and finite differencing schemas.
 
-Note: The J2 Modified Equinoctial elements are not yet differentiable with all method. YMMV depending on the backend used.
-
 Currently this package implements:
 - [x] Cartesian
 - [x] Keplerian

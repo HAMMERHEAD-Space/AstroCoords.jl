@@ -368,7 +368,15 @@ function IOE2J2IOE(
         iter += 1
 
         # Compute IOE guess from J2IOE guess
-        u_IOE_guess = J2IOE2IOE(u_J2IOE_guess, μ) ./ scale
+        u_IOE_guess = J2IOE2IOE(u_J2IOE_guess, μ)
+        u_IOE_guess = (
+            u_IOE_guess[1] / scale[1],
+            u_IOE_guess[2] / scale[2],
+            u_IOE_guess[3] / scale[3],
+            u_IOE_guess[4] / scale[4],
+            u_IOE_guess[5] / scale[5],
+            u_IOE_guess[6] / scale[6],
+        )
 
         # Branch cut correction
         b_cut = u_J2IOE_guess[6] - π
@@ -382,7 +390,14 @@ function IOE2J2IOE(
         )
 
         # Compute residual
-        residual = u ./ scale - u_IOE_guess
+        residual = (
+            u[1] / scale[1] - u_IOE_guess[1],
+            u[2] / scale[2] - u_IOE_guess[2],
+            u[3] / scale[3] - u_IOE_guess[3],
+            u[4] / scale[4] - u_IOE_guess[4],
+            u[5] / scale[5] - u_IOE_guess[5],
+            u[6] / scale[6] - u_IOE_guess[6],
+        )
 
         # Update error and best guess if needed
         error = norm(residual)
