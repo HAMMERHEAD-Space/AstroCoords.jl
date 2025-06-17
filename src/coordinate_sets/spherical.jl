@@ -23,10 +23,12 @@ struct Spherical{T} <: AstroCoord{6,T}
     ṙ::T
     θdot::T
     ϕdot::T
-    @inline Spherical{T}(r, θ, ϕ, ṙ, θdot, ϕdot) where {T} =
-        new{T}(r, θ, ϕ, ṙ, θdot, ϕdot)
-    @inline Spherical{T}(X::Spherical{T}) where {T} =
-        new{T}(X.r, X.θ, X.ϕ, X.ṙ, X.θdot, X.ϕdot)
+    @inline Spherical{T}(r, θ, ϕ, ṙ, θdot, ϕdot) where {T} = new{T}(
+        r, θ, ϕ, ṙ, θdot, ϕdot
+    )
+    @inline Spherical{T}(X::Spherical{T}) where {T} = new{T}(
+        X.r, X.θ, X.ϕ, X.ṙ, X.θdot, X.ϕdot
+    )
 end
 
 # ~~~~~~~~~~~~~~~ Constructors ~~~~~~~~~~~~~~~ #
@@ -92,10 +94,12 @@ struct Cylindrical{T} <: AstroCoord{6,T}
     ρdot::T
     θdot::T
     ż::T
-    @inline Cylindrical{T}(ρ, θ, z, ρdot, θdot, ż) where {T} =
-        new{T}(ρ, θ, z, ρdot, θdot, ż)
-    @inline Cylindrical{T}(X::Cylindrical{T}) where {T} =
-        new{T}(X.ρ, X.θ, X.z, X.ρdot, X.θdot, X.ż)
+    @inline Cylindrical{T}(ρ, θ, z, ρdot, θdot, ż) where {T} = new{T}(
+        ρ, θ, z, ρdot, θdot, ż
+    )
+    @inline Cylindrical{T}(X::Cylindrical{T}) where {T} = new{T}(
+        X.ρ, X.θ, X.z, X.ρdot, X.θdot, X.ż
+    )
 end
 
 # ~~~~~~~~~~~~~~~ Constructors ~~~~~~~~~~~~~~~ #

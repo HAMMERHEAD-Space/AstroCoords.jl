@@ -132,7 +132,7 @@ end
     k = 0.5 * J2 * Req^2
     η = √(1.0 - eⱼ₂^2)
     γ = k / aⱼ₂^2
-    γ′ = γ / η^4
+    γ′ = γ / η^4.0
     θ = cos(Iⱼ₂)
 
     return k, η, γ, γ′, θ
@@ -170,8 +170,8 @@ end
         aⱼ₂ * (
             1 +
             γ * (
-                (-1 + 3 * θ^2) * ((aⱼ₂^3) / (rⱼ₂^3) - η^(-3)) +
-                3 * (1 - θ^2) * (aⱼ₂^3) / (rⱼ₂^3) * cos(2 * gⱼ₂ + 2 * νⱼ₂)
+                (-1 + 3 * θ^2) * ((aⱼ₂^3.0) / (rⱼ₂^3.0) - η^(-3.0)) +
+                3 * (1 - θ^2) * (aⱼ₂^3.0) / (rⱼ₂^3.0) * cos(2 * gⱼ₂ + 2 * νⱼ₂)
             )
         )
     δh =
@@ -227,8 +227,8 @@ end
     gⱼ₂::Number,
 )
     v1 = 3 * cos(νⱼ₂) + 3 * eⱼ₂ * cos(νⱼ₂)^2 + eⱼ₂^2 * cos(νⱼ₂)^3
-    v2 = η^(-6) * (eⱼ₂ * η + eⱼ₂ / (1 + η) + v1)
-    v3 = η^(-6) * (eⱼ₂ + v1)
+    v2 = η^(-6.0) * (eⱼ₂ * η + eⱼ₂ / (1 + η) + v1)
+    v3 = η^(-6.0) * (eⱼ₂ + v1)
     v4 = ((aⱼ₂ * η) / rⱼ₂)^2 + aⱼ₂ / rⱼ₂
 
     δe =
@@ -368,7 +368,15 @@ function IOE2J2IOE(
         iter += 1
 
         # Compute IOE guess from J2IOE guess
-        u_IOE_guess = J2IOE2IOE(u_J2IOE_guess, μ) ./ scale
+        u_IOE_guess = J2IOE2IOE(u_J2IOE_guess, μ)
+        u_IOE_guess = (
+            u_IOE_guess[1] / scale[1],
+            u_IOE_guess[2] / scale[2],
+            u_IOE_guess[3] / scale[3],
+            u_IOE_guess[4] / scale[4],
+            u_IOE_guess[5] / scale[5],
+            u_IOE_guess[6] / scale[6],
+        )
 
         # Branch cut correction
         b_cut = u_J2IOE_guess[6] - π
@@ -382,7 +390,14 @@ function IOE2J2IOE(
         )
 
         # Compute residual
-        residual = u ./ scale - u_IOE_guess
+        residual = (
+            u[1] / scale[1] - u_IOE_guess[1],
+            u[2] / scale[2] - u_IOE_guess[2],
+            u[3] / scale[3] - u_IOE_guess[3],
+            u[4] / scale[4] - u_IOE_guess[4],
+            u[5] / scale[5] - u_IOE_guess[5],
+            u[6] / scale[6] - u_IOE_guess[6],
+        )
 
         # Update error and best guess if needed
         error = norm(residual)
