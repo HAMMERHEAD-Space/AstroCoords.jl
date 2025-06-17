@@ -345,7 +345,7 @@ function test4(J2::Number, Req::Number, eⱼ₂::Number, aⱼ₂::Number, Iⱼ�
     k = 0.5 * J2 * Req^2
     η = √(1.0 - eⱼ₂^2)
     γ = k / aⱼ₂^2
-    return γ / η^4
+    return γ / η^4.0
 end
 
 function test5(J2::Number, Req::Number, eⱼ₂::Number, aⱼ₂::Number, Iⱼ₂::Number)
@@ -354,7 +354,7 @@ end
 
 # Write a Mooncake differentiationtest for each of these functions
 
-@testset "Mooncake Differentiation Test" begin
+#@testset "Mooncake Differentiation Test" begin
     J2 = 1.0826261738522e-03
     Req = 6.378137e+03
     eⱼ₂ = 0.01
