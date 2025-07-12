@@ -42,6 +42,27 @@
 
         @test NRG ≈ NRG2 rtol = 1e-14
         @test h_vec ≈ h_vec2 rtol = 1e-14
-        @test h ≈ h rtol = 1e-14
+        @test h ≈ h2 rtol = 1e-14
+    end
+
+    @testset "Test EDromo Quantities" begin
+        for W in (0.0, 1e-8)
+            for t₀ in (0.0, 100.0)
+                for flag_time in (PhysicalTime(), ConstantTime(), LinearTime())
+                    edromo_params = get_edromo_defaults(
+                        state, μ; W=W, t₀=t₀, flag_time=flag_time
+                    )
+
+                    edromo_state = EDromo(cart_state, μ; edromo_params...)
+                    NRG2 = orbitalNRG(edromo_state, μ; edromo_params...)
+                    h_vec2 = angularMomentumVector(edromo_state, μ; edromo_params...)
+                    h2 = angularMomentumQuantity(edromo_state, μ; edromo_params...)
+
+                    @test NRG ≈ NRG2 rtol = 1e-12
+                    @test h_vec ≈ h_vec2 rtol = 1e-12
+                    @test h ≈ h2 rtol = 1e-12
+                end
+            end
+        end
     end
 end

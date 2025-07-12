@@ -55,8 +55,8 @@ struct ComposedTransformation{T1<:Transformation,T2<:Transformation} <: Transfor
     t2::T2
 end
 
-@inline function (trans::ComposedTransformation)(x::AstroCoord, μ::Number)
-    return trans.t1(trans.t2(x, μ), μ)
+@inline function (trans::ComposedTransformation)(x::AstroCoord, μ::Number; kwargs...)
+    return trans.t1(trans.t2(x, μ; kwargs...), μ; kwargs...)
 end
 
 function compose(trans1::T, trans2::V) where {T<:Transformation} where {V<:Transformation}

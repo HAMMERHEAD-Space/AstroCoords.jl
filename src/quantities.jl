@@ -27,8 +27,8 @@ Computes the Keplerian mean motion about a central body.
 # Returns
 - `n::Number`: The orbital mean motion.
 """
-function meanMotion(X::AstroCoord, μ::Number)
-    kep = Keplerian(X, μ)
+function meanMotion(X::AstroCoord, μ::Number; kwargs...)
+    kep = Keplerian(X, μ; kwargs...)
 
     return meanMotion(kep.a, μ)
 end
@@ -62,8 +62,8 @@ Computes the Keplerian orbital period about a central body.
 # Returns
 -`T::Number`: The orbital period.
 """
-function orbitalPeriod(X::AstroCoord, μ::Number)
-    kep = Keplerian(X, μ)
+function orbitalPeriod(X::AstroCoord, μ::Number; kwargs...)
+    kep = Keplerian(X, μ; kwargs...)
 
     return orbitalPeriod(kep.a, μ)
 end
@@ -97,8 +97,8 @@ Computes the keplerian orbital energy.
 # Returns
 -`NRG::Number`: The orbital energy. 
 """
-function orbitalNRG(X::AstroCoord, μ::Number)
-    kep = Keplerian(X, μ)
+function orbitalNRG(X::AstroCoord, μ::Number; kwargs...)
+    kep = Keplerian(X, μ; kwargs...)
 
     return orbitalNRG(kep.a, μ)
 end
@@ -134,8 +134,8 @@ Computes the instantaneous angular momentum vector from a Cartesian state vector
 # Returns
 -`angular_momentum::Vector{<:Number}`: 3-Dimensional angular momemtum vector.
 """
-function angularMomentumVector(X::AstroCoord, μ::Number)
-    cart = Cartesian(X, μ)
+function angularMomentumVector(X::AstroCoord, μ::Number; kwargs...)
+    cart = Cartesian(X, μ; kwargs...)
 
     return angularMomentumVector(params(cart))
 end
@@ -168,8 +168,8 @@ Computes the instantaneous angular momentum.
 # Returns
 -`angular_momentum::Number`: Angular momentum of the body.
 """
-function angularMomentumQuantity(X::AstroCoord, μ::Number)
-    cart = Cartesian(X, μ)
+function angularMomentumQuantity(X::AstroCoord, μ::Number; kwargs...)
+    cart = Cartesian(X, μ; kwargs...)
 
     return angularMomentumQuantity(params(cart))
 end

@@ -15,8 +15,8 @@ Currently this package implements:
     - [x] USM6
     - [x] USMEM
 - [x] Milankovich
-- [ ] J2 Modified Equinoctial
-- [ ] EDROMO
+- [x] J2 Modified Equinoctial
+- [x] EDROMO
 - [ ] Kustaanheimo-Stiefel
 - [ ] Stiefel-Scheifel
 

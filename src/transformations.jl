@@ -26,7 +26,7 @@ macro define_transformation_pair(
     quote
         struct $base_to_target_transform <: AstroCoordTransformation end
         @inline function (::$base_to_target_transform)(
-            x::$BaseFrameType{T}, μ::V
+            x::$BaseFrameType{T}, μ::V; kwargs...
         ) where {T<:Number,V<:Number}
             RT = promote_type(T, V)
             return $TargetFrameType{RT}($(esc(base_to_target_backend))(params(x), μ))
@@ -35,7 +35,7 @@ macro define_transformation_pair(
 
         struct $target_to_base_transform <: AstroCoordTransformation end
         @inline function (::$target_to_base_transform)(
-            x::$TargetFrameType{T}, μ::V
+            x::$TargetFrameType{T}, μ::V; kwargs...
         ) where {T<:Number,V<:Number}
             RT = promote_type(T, V)
             return $BaseFrameType{RT}($(esc(target_to_base_backend))(params(x), μ))
@@ -63,6 +63,48 @@ end
 const KeplerianToModifiedEquinoctial = KeplerianToModEq
 const ModifiedEquinoctialToKeplerian = ModEqToKeplerian
 
+# ~~~~~~~~~~~~~~~ EDromo Transformations ~~~~~~~~~~~~~~~ #
+export CartesianToEDromo, EDromoToCartesian
+
+struct CartesianToEDromoTransform{DT,TT,WT,PT,TT2,FT} <: AstroCoordTransformation
+    DU::DT
+    TU::TT
+    W::WT
+    ϕ₀::PT
+    t₀::TT2
+    flag_time::FT
+end
+function CartesianToEDromoTransform()
+    CartesianToEDromoTransform(nothing, nothing, nothing, nothing, nothing, nothing)
+end
+
+struct EDromoToCartesianTransform{DT,TT,WT,PT,TT2,FT} <: AstroCoordTransformation
+    DU::DT
+    TU::TT
+    W::WT
+    ϕ₀::PT
+    t₀::TT2
+    flag_time::FT
+end
+function EDromoToCartesianTransform()
+    EDromoToCartesianTransform(nothing, nothing, nothing, nothing, nothing, nothing)
+end
+
+function (t::CartesianToEDromoTransform)(x::Cartesian, μ::Number; kwargs...)
+    edromo_vec = cart2EDromo(params(x), μ; kwargs...)
+    return EDromo(edromo_vec...)
+end
+const CartesianToEDromo = CartesianToEDromoTransform()
+
+function (t::EDromoToCartesianTransform)(x::EDromo, μ::Number; kwargs...)
+    cart_vec = EDromo2cart(params(x), μ; kwargs...)
+    return Cartesian(cart_vec...)
+end
+const EDromoToCartesian = EDromoToCartesianTransform()
+
+Base.inv(::CartesianToEDromoTransform) = EDromoToCartesianTransform()
+Base.inv(::EDromoToCartesianTransform) = CartesianToEDromoTransform()
+
 # ~~~~~~~~~~~~~~~ All Composed Transformations ~~~~~~~~~~~~~~~ #
 const COORD_TYPES = (
     Cartesian,
@@ -76,6 +118,7 @@ const COORD_TYPES = (
     Spherical,
     Delaunay,
     J2EqOE,
+    EDromo,
 )
 const COORD_NAMES = Dict(
     Cartesian => :Cartesian,
@@ -89,6 +132,7 @@ const COORD_NAMES = Dict(
     Spherical => :Spherical,
     Delaunay => :Delaunay,
     J2EqOE => :J2EqOE,
+    EDromo => :EDromo,
 )
 
 # Build a graph of transformations to find paths
@@ -111,6 +155,7 @@ add_transform_edge(Cartesian, Cylindrical)
 add_transform_edge(Cartesian, Spherical)
 add_transform_edge(Cartesian, Delaunay)
 add_transform_edge(Cartesian, J2EqOE)
+add_transform_edge(Cartesian, EDromo)
 add_transform_edge(Keplerian, USM7)
 add_transform_edge(Keplerian, ModEq)
 add_transform_edge(USM7, USM6)
@@ -192,11 +237,12 @@ for ToCoord in COORD_TYPES
             ToCoordTransformName = COORD_NAMES[ToCoord]
             FromCoordTransformName = COORD_NAMES[FromCoord]
             Transform = Symbol(FromCoordTransformName, :To, ToCoordTransformName)
-            @eval ($ToCoordName)(X::$FromCoord{T}, μ::Number) where {T<:Number} = $(getfield(
-                @__MODULE__, Transform
-            ))(
-                X, μ
-            )
+            @eval function ($ToCoordName)(
+                X::$FromCoord{T}, μ::Number; kwargs...
+            ) where {T<:Number}
+                transform = $(getfield(@__MODULE__, Transform))
+                return transform(X, μ; kwargs...)
+            end
         end
     end
 end

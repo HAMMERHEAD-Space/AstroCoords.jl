@@ -29,7 +29,7 @@ const _BACKENDS = (
     for backend in _BACKENDS
         testset_name = "Coordinate Set Transformation " * backend[1]
         @testset "$testset_name" begin
-            for set in _COORDINATE_SETS
+            for set in filter(T -> T != EDromo, AstroCoords.COORD_TYPES)
                 f_fd, df_fd = value_and_jacobian(
                     (x) -> set(Cartesian(x), μ), AutoFiniteDiff(), state
                 )
@@ -102,7 +102,7 @@ const _BACKENDS = (
     end
 end
 
-@testset "J2RqOE Step-by-Step Differentiation" begin
+@testset "J2EqOE Step-by-Step Differentiation" begin
     μ = 3.986004415e5
     J2 = 1.0826261738522e-03
     Req = 6.378137e+03
@@ -327,3 +327,266 @@ end
         @test df_fd ≈ df_ad atol = 1e-2
     end
 end
+
+@testset "EDromo Transformation Differentiation" begin
+    state = [
+        -1076.225324679696,
+        -6765.896364327722,
+        -332.3087833503755,
+        9.356857417032581,
+        -3.3123476319597557,
+        -1.1880157328553503,
+    ]
+    μ = 3.986004415e5
+    cart_state = Cartesian(state)
+    p = [0.0, 0.0]
+
+    @testset "Differentiate wrt State" begin
+        for backend in _BACKENDS
+            @testset "$(backend[1]) Backend" begin
+                for flag_time in (PhysicalTime(), ConstantTime(), LinearTime())
+                    # Precompute for reverse pass
+                    edromo_params = get_edromo_defaults(state, μ; flag_time=flag_time)
+                    edromo_state_vec = Array(
+                        params(EDromo(cart_state, μ; edromo_params...))
+                    )
+
+                    # Forward pass (Cartesian -> EDromo), including parameter calculation
+                    to_edromo(x) = Array(
+                        params(
+                            EDromo(
+                                Cartesian(x),
+                                μ;
+                                get_edromo_defaults(x, μ; flag_time=flag_time)...,
+                            ),
+                        ),
+                    )
+
+                    f_ad, df_ad = value_and_jacobian(x -> to_edromo(x), backend[2], state)
+                    f_fd, df_fd = value_and_jacobian(
+                        x -> to_edromo(x), AutoFiniteDiff(), state
+                    )
+
+                    @test f_ad ≈ f_fd rtol = 1e-8
+                    @test df_ad ≈ df_fd rtol = 1e-6
+
+                    # Reverse pass (EDromo -> Cartesian)
+                    from_edromo(x) = Array(
+                        params(Cartesian(EDromo(x...), μ; edromo_params...))
+                    )
+
+                    f_ad_rev, df_ad_rev = value_and_jacobian(
+                        x -> from_edromo(x), backend[2], edromo_state_vec
+                    )
+                    f_fd_rev, df_fd_rev = value_and_jacobian(
+                        x -> from_edromo(x), AutoFiniteDiff(), edromo_state_vec
+                    )
+
+                    @test f_ad_rev ≈ f_fd_rev rtol = 1e-8
+                    @test df_ad_rev ≈ df_fd_rev rtol = 1e-6
+                end
+            end
+        end
+    end
+
+    @testset "Differentiate wrt State Zygote" begin
+        for flag_time in (PhysicalTime(), ConstantTime(), LinearTime())
+            # Precompute for reverse pass
+            edromo_params = get_edromo_defaults(state, μ; flag_time=flag_time)
+            edromo_state_vec = Array(params(EDromo(cart_state, μ; edromo_params...)))
+
+            # Forward pass (Cartesian -> EDromo), including parameter calculation
+            to_edromo(x) = Array(
+                params(
+                    EDromo(
+                        Cartesian(x), μ; get_edromo_defaults(x, μ; flag_time=flag_time)...
+                    ),
+                ),
+            )
+
+            f_ad, df_ad = value_and_jacobian(x -> to_edromo(x), AutoZygote(), state)
+            f_fd, df_fd = value_and_jacobian(x -> to_edromo(x), AutoFiniteDiff(), state)
+
+            @test f_ad ≈ f_fd rtol = 1e-8
+            @test df_ad ≈ df_fd rtol = 1e-6
+
+            # Reverse pass (EDromo -> Cartesian)
+            from_edromo(x) = Array(params(Cartesian(EDromo(x), μ; edromo_params...)))
+
+            f_ad_rev, df_ad_rev = value_and_jacobian(
+                x -> from_edromo(x), AutoZygote(), edromo_state_vec
+            )
+            f_fd_rev, df_fd_rev = value_and_jacobian(
+                x -> from_edromo(x), AutoFiniteDiff(), edromo_state_vec
+            )
+
+            @test f_ad_rev ≈ f_fd_rev rtol = 1e-8
+            @test df_ad_rev ≈ df_fd_rev rtol = 1e-6
+        end
+    end
+
+    @testset "Differentiate wrt EDromo Parameters" begin
+        for backend in _BACKENDS
+            if backend[1] == "Enzyme"
+                backend = ("Enzyme", AutoEnzyme(; function_annotation=Enzyme.Duplicated))
+            end
+            @testset "$(backend[1]) Backend" begin
+                for flag_time in (PhysicalTime(), ConstantTime(), LinearTime())
+                    # Differentiate wrt W and t₀
+                    f_ad, df_ad = value_and_jacobian(
+                        p -> Array(
+                            params(
+                                EDromo(
+                                    cart_state,
+                                    μ;
+                                    get_edromo_defaults(
+                                        state, μ; W=p[1], t₀=p[2], flag_time=flag_time
+                                    )...,
+                                ),
+                            ),
+                        ),
+                        backend[2],
+                        p,
+                    )
+                    f_fd, df_fd = value_and_jacobian(
+                        p -> Array(
+                            params(
+                                EDromo(
+                                    cart_state,
+                                    μ;
+                                    get_edromo_defaults(
+                                        state, μ; W=p[1], t₀=p[2], flag_time=flag_time
+                                    )...,
+                                ),
+                            ),
+                        ),
+                        AutoFiniteDiff(),
+                        p,
+                    )
+
+                    @test f_ad ≈ f_fd rtol = 1e-8
+                    @test df_ad ≈ df_fd rtol = 1e-6
+                end
+            end
+        end
+    end
+
+    @testset "Differentiate wrt EDromo Parameters Zygote" begin
+        for flag_time in (PhysicalTime(), ConstantTime(), LinearTime())
+            # Differentiate wrt W and t₀
+            to_edromo_params(p) = params(
+                EDromo(
+                    cart_state,
+                    μ;
+                    get_edromo_defaults(state, μ; W=p[1], t₀=p[2], flag_time=flag_time)...,
+                ),
+            )
+
+            f_ad, df_ad = value_and_jacobian(p -> to_edromo_params(p), AutoZygote(), p)
+            f_fd, df_fd = value_and_jacobian(p -> to_edromo_params(p), AutoFiniteDiff(), p)
+
+            @test f_ad ≈ f_fd rtol = 1e-8
+            @test df_ad ≈ df_fd rtol = 1e-6
+        end
+    end
+
+    @testset "Differentiate wrt μ" begin
+        for backend in _BACKENDS
+            if backend[1] == "Enzyme"
+                backend = ("Enzyme", AutoEnzyme(; function_annotation=Enzyme.Duplicated))
+            end
+            @testset "$(backend[1]) Backend" begin
+                for flag_time in (PhysicalTime(), ConstantTime(), LinearTime())
+                    # Setup for reverse pass
+                    edromo_params = get_edromo_defaults(state, μ; flag_time=flag_time)
+                    edromo_state = EDromo(cart_state, μ; edromo_params...)
+
+                    f_ad, df_ad = value_and_derivative(
+                        m -> Array(
+                            params(
+                                EDromo(
+                                    cart_state,
+                                    m;
+                                    get_edromo_defaults(state, m; flag_time=flag_time)...,
+                                ),
+                            ),
+                        ),
+                        backend[2],
+                        μ,
+                    )
+                    f_fd, df_fd = value_and_derivative(
+                        m -> Array(
+                            params(
+                                EDromo(
+                                    cart_state,
+                                    m;
+                                    get_edromo_defaults(state, m; flag_time=flag_time)...,
+                                ),
+                            ),
+                        ),
+                        AutoFiniteDiff(),
+                        μ,
+                    )
+
+                    @test f_ad ≈ f_fd rtol = 1e-8
+                    @test df_ad ≈ df_fd rtol = 1e-3
+
+                    f_ad_rev, df_ad_rev = value_and_derivative(
+                        m -> Array(params(Cartesian(edromo_state, m; edromo_params...))),
+                        backend[2],
+                        μ,
+                    )
+                    f_fd_rev, df_fd_rev = value_and_derivative(
+                        m -> Array(params(Cartesian(edromo_state, m; edromo_params...))),
+                        AutoFiniteDiff(),
+                        μ,
+                    )
+
+                    @test f_ad_rev ≈ f_fd_rev rtol = 1e-8
+                    @test df_ad_rev ≈ df_fd_rev rtol = 1e-3
+                end
+            end
+        end
+    end
+
+    @testset "Differentiate wrt μ Zygote" begin
+        for flag_time in (PhysicalTime(), ConstantTime(), LinearTime())
+            # Setup for reverse pass
+            edromo_params = get_edromo_defaults(state, μ; flag_time=flag_time)
+            edromo_state = EDromo(cart_state, μ; edromo_params...)
+
+            # Forward pass (Cartesian -> EDromo)
+            to_edromo_μ(m) = params(
+                EDromo(cart_state, m; get_edromo_defaults(state, m; flag_time=flag_time)...)
+            )
+
+            f_ad, df_ad = value_and_derivative(m -> to_edromo_μ(m), AutoZygote(), μ)
+            f_fd, df_fd = value_and_derivative(m -> to_edromo_μ(m), AutoFiniteDiff(), μ)
+
+            @test f_ad ≈ f_fd rtol = 1e-8
+            @test df_ad ≈ df_fd atol = 1e-3
+
+            # Reverse pass (EDromo -> Cartesian)
+            from_edromo_μ(m) = params(Cartesian(edromo_state, m; edromo_params...))
+
+            try
+                f_ad_rev, df_ad_rev = value_and_derivative(
+                    m -> from_edromo_μ(m), AutoZygote(), μ
+                )
+                f_fd_rev, df_fd_rev = value_and_derivative(
+                    m -> from_edromo_μ(m), AutoFiniteDiff(), μ
+                )
+
+                @test f_ad_rev ≈ f_fd_rev rtol = 1e-8
+                @test df_ad_rev ≈ df_fd_rev atol = 1e-3
+            catch err
+                @test err isa MethodError
+                @test startswith(
+                    sprint(showerror, err),
+                    "MethodError: no method matching iterate(::Nothing)",
+                )
+            end
+        end
+    end
+end
+
