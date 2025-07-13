@@ -49,7 +49,7 @@
         for W in (0.0, 1e-8)
             for t₀ in (0.0, 100.0)
                 for flag_time in (PhysicalTime(), ConstantTime(), LinearTime())
-                    edromo_params = get_edromo_defaults(
+                    edromo_params = set_edromo_configurations(
                         state, μ; W=W, t₀=t₀, flag_time=flag_time
                     )
 

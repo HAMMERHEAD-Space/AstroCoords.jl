@@ -346,7 +346,7 @@ end
             @testset "$(backend[1]) Backend" begin
                 for flag_time in (PhysicalTime(), ConstantTime(), LinearTime())
                     # Precompute for reverse pass
-                    edromo_params = get_edromo_defaults(state, μ; flag_time=flag_time)
+                    edromo_params = set_edromo_configurations(state, μ; flag_time=flag_time)
                     edromo_state_vec = Array(
                         params(EDromo(cart_state, μ; edromo_params...))
                     )
@@ -357,7 +357,7 @@ end
                             EDromo(
                                 Cartesian(x),
                                 μ;
-                                get_edromo_defaults(x, μ; flag_time=flag_time)...,
+                                set_edromo_configurations(x, μ; flag_time=flag_time)...,
                             ),
                         ),
                     )
@@ -392,14 +392,16 @@ end
     @testset "Differentiate wrt State Zygote" begin
         for flag_time in (PhysicalTime(), ConstantTime(), LinearTime())
             # Precompute for reverse pass
-            edromo_params = get_edromo_defaults(state, μ; flag_time=flag_time)
+            edromo_params = set_edromo_configurations(state, μ; flag_time=flag_time)
             edromo_state_vec = Array(params(EDromo(cart_state, μ; edromo_params...)))
 
             # Forward pass (Cartesian -> EDromo), including parameter calculation
             to_edromo(x) = Array(
                 params(
                     EDromo(
-                        Cartesian(x), μ; get_edromo_defaults(x, μ; flag_time=flag_time)...
+                        Cartesian(x),
+                        μ;
+                        set_edromo_configurations(x, μ; flag_time=flag_time)...,
                     ),
                 ),
             )
@@ -439,7 +441,7 @@ end
                                 EDromo(
                                     cart_state,
                                     μ;
-                                    get_edromo_defaults(
+                                    set_edromo_configurations(
                                         state, μ; W=p[1], t₀=p[2], flag_time=flag_time
                                     )...,
                                 ),
@@ -454,7 +456,7 @@ end
                                 EDromo(
                                     cart_state,
                                     μ;
-                                    get_edromo_defaults(
+                                    set_edromo_configurations(
                                         state, μ; W=p[1], t₀=p[2], flag_time=flag_time
                                     )...,
                                 ),
@@ -478,7 +480,9 @@ end
                 EDromo(
                     cart_state,
                     μ;
-                    get_edromo_defaults(state, μ; W=p[1], t₀=p[2], flag_time=flag_time)...,
+                    set_edromo_configurations(
+                        state, μ; W=p[1], t₀=p[2], flag_time=flag_time
+                    )...,
                 ),
             )
 
@@ -498,7 +502,7 @@ end
             @testset "$(backend[1]) Backend" begin
                 for flag_time in (PhysicalTime(), ConstantTime(), LinearTime())
                     # Setup for reverse pass
-                    edromo_params = get_edromo_defaults(state, μ; flag_time=flag_time)
+                    edromo_params = set_edromo_configurations(state, μ; flag_time=flag_time)
                     edromo_state = EDromo(cart_state, μ; edromo_params...)
 
                     f_ad, df_ad = value_and_derivative(
@@ -507,7 +511,9 @@ end
                                 EDromo(
                                     cart_state,
                                     m;
-                                    get_edromo_defaults(state, m; flag_time=flag_time)...,
+                                    set_edromo_configurations(
+                                        state, m; flag_time=flag_time
+                                    )...,
                                 ),
                             ),
                         ),
@@ -520,7 +526,9 @@ end
                                 EDromo(
                                     cart_state,
                                     m;
-                                    get_edromo_defaults(state, m; flag_time=flag_time)...,
+                                    set_edromo_configurations(
+                                        state, m; flag_time=flag_time
+                                    )...,
                                 ),
                             ),
                         ),
@@ -552,12 +560,16 @@ end
     @testset "Differentiate wrt μ Zygote" begin
         for flag_time in (PhysicalTime(), ConstantTime(), LinearTime())
             # Setup for reverse pass
-            edromo_params = get_edromo_defaults(state, μ; flag_time=flag_time)
+            edromo_params = set_edromo_configurations(state, μ; flag_time=flag_time)
             edromo_state = EDromo(cart_state, μ; edromo_params...)
 
             # Forward pass (Cartesian -> EDromo)
             to_edromo_μ(m) = params(
-                EDromo(cart_state, m; get_edromo_defaults(state, m; flag_time=flag_time)...)
+                EDromo(
+                    cart_state,
+                    m;
+                    set_edromo_configurations(state, m; flag_time=flag_time)...,
+                ),
             )
 
             f_ad, df_ad = value_and_derivative(m -> to_edromo_μ(m), AutoZygote(), μ)

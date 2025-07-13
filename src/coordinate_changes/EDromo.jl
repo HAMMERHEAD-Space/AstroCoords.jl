@@ -3,8 +3,31 @@ struct PhysicalTime <: AbstractTimeType end
 struct ConstantTime <: AbstractTimeType end
 struct LinearTime <: AbstractTimeType end
 
-export get_edromo_defaults, PhysicalTime, ConstantTime, LinearTime
+export set_edromo_configurations, PhysicalTime, ConstantTime, LinearTime
 
+"""
+    cart2EDromo(u, μ; DU, TU, ϕ₀, t₀, W, flag_time)
+
+Converts a Cartesian state vector to an EDromo state vector.
+
+This is the backend implementation for the transformation from `Cartesian` to `EDromo`.
+It requires a set of non-dimensionalizing parameters and configuration flags.
+
+# Arguments
+- `u::AbstractVector`: Cartesian state vector `[x, y, z, ẋ, ẏ, ż]` in `[L]` and `[L/T]`.
+- `μ::Number`: Gravitational parameter in `[L³/T²]`.
+
+# Keyword Arguments
+- `DU::Number`: Reference distance unit for non-dimensionalization.
+- `TU::Number`: Reference time unit for non-dimensionalization.
+- `ϕ₀::Number`: Initial value of the fictitious time `ϕ`.
+- `t₀::Number`: Initial physical time `t`.
+- `W::Number`: Perturbing potential energy.
+- `flag_time::AbstractTimeType`: Time element formulation (`PhysicalTime`, `ConstantTime`, or `LinearTime`).
+
+# Returns
+- `SVector{8, RT}`: The 8-element EDromo state vector.
+"""
 function cart2EDromo(
     u::AbstractVector{T},
     μ::V;
@@ -110,6 +133,30 @@ function cart2EDromo(
     return SVector{8,RT}(ζ₁, ζ₂, ζ₃, ζ₄, ζ₅, ζ₆, ζ₇, ζ₈)
 end
 
+"""
+    EDromo2cart(u, μ; DU, TU, ϕ₀, t₀, W, flag_time)
+
+Converts an EDromo state vector to a Cartesian state vector.
+
+This is the backend implementation for the transformation from `EDromo` to `Cartesian`.
+It requires the same set of non-dimensionalizing parameters and configuration flags
+used in the forward transformation.
+
+# Arguments
+- `u::AbstractVector`: EDromo state vector `[ζ₁, ζ₂, ζ₃, ζ₄, ζ₅, ζ₆, ζ₇, ζ₈]`.
+- `μ::Number`: Gravitational parameter of the central body.
+
+# Keyword Arguments
+- `DU::Number`: Reference distance unit for non-dimensionalization.
+- `TU::Number`: Reference time unit for non-dimensionalization.
+- `ϕ₀::Number`: Initial value of the fictitious time `ϕ`.
+- `t₀::Number`: Initial physical time `t`.
+- `W::Number`: Perturbing potential energy.
+- `flag_time::AbstractTimeType`: Time element formulation (`PhysicalTime`, `ConstantTime`, or `LinearTime`).
+
+# Returns
+- `SVector{6, RT}`: The 6-element Cartesian state vector `[x, y, z, ẋ, ẏ, ż]`.
+"""
 function EDromo2cart(
     u::AbstractVector{T},
     μ::V;
@@ -179,13 +226,59 @@ function EDromo2cart(
     return SVector{6,RT}(r[1], r[2], r[3], v[1], v[2], v[3])
 end
 
-function get_edromo_defaults(u::AbstractVector, μ; W=0.0, t₀=0.0, flag_time=PhysicalTime())
+"""
+    set_edromo_configurations(u, μ; W=0.0, t₀=0.0, flag_time=PhysicalTime())
+
+Computes and returns a `NamedTuple` of configurations required for EDromo transformations.
+
+The configurations are derived from the initial Cartesian state vector and the
+gravitational parameter.
+
+- `DU` is set to the initial position magnitude.
+- `TU` is derived from `DU` and `μ`.
+- `ϕ₀` is computed based on the formulation in Baù, et al. (2015).
+
+# Arguments
+- `u::AbstractVector`: Cartesian state vector `[x, y, z, ẋ, ẏ, ż]`.
+- `μ::Number`: Gravitational parameter.
+
+# Keyword Arguments
+- `W::Number=0.0`: Perturbing potential energy.
+- `t₀::Number=0.0`: Initial physical time.
+- `flag_time::AbstractTimeType=PhysicalTime()`: Time element formulation.
+
+# Returns
+- `NamedTuple`: A tuple containing `DU`, `TU`, `W`, `ϕ₀`, `t₀`, `flag_time`.
+"""
+function set_edromo_configurations(
+    u::AbstractVector, μ; W=0.0, t₀=0.0, flag_time=PhysicalTime()
+)
     DU = norm(SVector{3}(u[1], u[2], u[3]))
     TU = sqrt(DU^3 / μ)
     ϕ₀ = computeϕ₀(u, μ, DU, TU, W)
     return (; DU, TU, W, ϕ₀, t₀, flag_time)
 end
 
+"""
+    computeϕ₀(u, μ, DU, TU, W₀)
+
+Computes the initial value of the fictitious time `ϕ₀` for the EDromo formulation.
+
+This calculation is based on the suggestion in [1] from the Fortran source, which
+corresponds to Baù, G., Bombardelli, C., Peláez, J., and Lorenzini, E., "Nonsingular
+orbital elements for special perturbations in the two-body problem". MNRAS 454(3),
+pp. 2890-2908. 2015.
+
+# Arguments
+- `u::AbstractVector`: Cartesian state vector.
+- `μ::Number`: Gravitational parameter.
+- `DU::Number`: Reference distance unit.
+- `TU::Number`: Reference time unit.
+- `W₀::Number`: Perturbing potential energy.
+
+# Returns
+- `Number`: The computed value of `ϕ₀`.
+"""
 function computeϕ₀(
     u::AbstractVector{T}, μ::V, DU::DT, TU::TT, W₀::WT
 ) where {T<:Number,V<:Number,DT<:Number,TT<:Number,WT<:Number}

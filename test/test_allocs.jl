@@ -26,7 +26,7 @@ end
         -1.1880157328553503,
     ])
     μ = 3.986004415e5
-    edromo_params = get_edromo_defaults(state, μ)
+    edromo_params = set_edromo_configurations(state, μ)
     edromo_state = EDromo(state, μ; edromo_params...)
 
     to_edromo(x, μ) = EDromo(x, μ; edromo_params...)
@@ -37,12 +37,12 @@ end
     av_edromo(x, μ) = angularMomentumVector(x, μ; edromo_params...)
     aq_edromo(x, μ) = angularMomentumQuantity(x, μ; edromo_params...)
 
-    @test length(check_allocs(get_edromo_defaults, (typeof(state), typeof(μ)))) == 0
-    @test length(check_allocs(to_edromo, (typeof(state), typeof(μ)))) == 0
-    @test length(check_allocs(from_edromo, (typeof(edromo_state), typeof(μ)))) == 0
-    @test length(check_allocs(mm_edromo, (typeof(edromo_state), typeof(μ)))) == 0
-    @test length(check_allocs(op_edromo, (typeof(edromo_state), typeof(μ)))) == 0
-    @test length(check_allocs(on_edromo, (typeof(edromo_state), typeof(μ)))) == 0
-    @test length(check_allocs(av_edromo, (typeof(edromo_state), typeof(μ)))) == 0
-    @test length(check_allocs(aq_edromo, (typeof(edromo_state), typeof(μ)))) == 0
+    @test length(check_allocs(to_edromo, (Cartesian{Float64}, Float64))) == 0
+    @test length(check_allocs(from_edromo, (EDromo{Float64}, Float64))) == 0
+    @test length(check_allocs(mm_edromo, (EDromo{Float64}, Float64))) == 0
+    @test length(check_allocs(op_edromo, (EDromo{Float64}, Float64))) == 0
+    @test length(check_allocs(on_edromo, (EDromo{Float64}, Float64))) == 0
+    @test length(check_allocs(av_edromo, (EDromo{Float64}, Float64))) == 0
+    @test length(check_allocs(aq_edromo, (EDromo{Float64}, Float64))) == 0
+    @test length(check_allocs(set_edromo_configurations, (typeof(state), typeof(μ)))) == 0
 end

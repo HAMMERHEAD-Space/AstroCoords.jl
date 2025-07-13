@@ -38,8 +38,8 @@ using LinearAlgebra
                             cart_vec = params(Cartesian(from_state, μ))
 
                             # Get the full set of parameters for this test case
-                            defaults = get_edromo_defaults(
-                                cart_vec, μ; W=W, t₀=t₀, flag_time=flag
+                            defaults = set_edromo_configurations(
+                                from_state, μ; W=W, t₀=t₀, flag_time=flag
                             )
 
                             # Perform the round trip
