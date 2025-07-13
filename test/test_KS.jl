@@ -1,9 +1,4 @@
-using AstroCoords
-using Test
-using StaticArrays
-using LinearAlgebra
-
-@testset "EDromo Parameterized" begin
+@testset "Kustaanheimo-Stiefel Parameterized" begin
     # A robust sample state that is not-circular and not-equatorial
     base_state_vec = [
         -1076.225324679696,
@@ -16,12 +11,12 @@ using LinearAlgebra
     μ = 3.986004415e5
     base_cart_state = Cartesian(base_state_vec)
 
-    # All coordinate types except EDromo itself
+    # All coordinate types except KustaanheimoStiefel itself
     coord_types_to_test = filter(T -> T ∉ (EDromo, KustaanheimoStiefel), AstroCoords.COORD_TYPES)
 
     # Parameter sets to test
-    time_flags = [PhysicalTime(), ConstantTime(), LinearTime()]
-    W_values = [0.0, 1e-8]
+    time_flags = [KSPhysicalTime(), KSLinearTime()]
+    Vpot_values = [0.0, 1e-8]
     t0_values = [0.0, 100.0]
 
     for FromCoord in coord_types_to_test
@@ -30,21 +25,18 @@ using LinearAlgebra
             from_state = FromCoord(base_cart_state, μ)
 
             for flag in time_flags
-                for W in W_values
+                for Vpot in Vpot_values
                     for t₀ in t0_values
-                        @testset "Params: time_flag=$(typeof(flag)), W=$W, t₀=$t₀" begin
-
-                            # For conversions from Cartesian, we need the raw vector
-                            cart_vec = params(Cartesian(from_state, μ))
+                        @testset "Params: time_flag=$(typeof(flag)), Vpot=$Vpot, t₀=$t₀" begin
 
                             # Get the full set of parameters for this test case
-                            defaults = set_edromo_configurations(
-                                from_state, μ; W=W, t₀=t₀, flag_time=flag
+                            configs = set_ks_configurations(
+                                base_state_vec, μ; Vpot=Vpot, t₀=t₀, flag_time=flag
                             )
 
                             # Perform the round trip
-                            edromo_state = EDromo(from_state, μ; defaults...)
-                            roundtrip_state = FromCoord(edromo_state, μ; defaults...)
+                            ks_state = KustaanheimoStiefel(from_state, μ; configs...)
+                            roundtrip_state = FromCoord(ks_state, μ; configs...)
 
                             # Test for numerical equality
                             @test params(roundtrip_state) ≈ params(from_state) atol=1e-8
@@ -54,4 +46,4 @@ using LinearAlgebra
             end
         end
     end
-end
+end 

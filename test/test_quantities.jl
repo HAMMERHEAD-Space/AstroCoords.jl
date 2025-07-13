@@ -65,4 +65,25 @@
             end
         end
     end
+
+    @testset "Test Kustaanheimo-Stiefel Quantities" begin
+        for Vpot in (0.0, 1e-8)
+            for t₀ in (0.0, 100.0)
+                for flag_time in (KSPhysicalTime(), KSLinearTime())
+                    ks_params = set_ks_configurations(
+                        state, μ; Vpot=Vpot, t₀=t₀, flag_time=flag_time
+                    )
+
+                    ks_state = KustaanheimoStiefel(cart_state, μ; ks_params...)
+                    NRG2 = orbitalNRG(ks_state, μ; ks_params...)
+                    h_vec2 = angularMomentumVector(ks_state, μ; ks_params...)
+                    h2 = angularMomentumQuantity(ks_state, μ; ks_params...)
+
+                    @test NRG ≈ NRG2 rtol = 1e-12
+                    @test h_vec ≈ h_vec2 rtol = 1e-12
+                    @test h ≈ h2 rtol = 1e-12
+                end
+            end
+        end
+    end
 end

@@ -29,7 +29,7 @@ const _BACKENDS = (
     for backend in _BACKENDS
         testset_name = "Coordinate Set Transformation " * backend[1]
         @testset "$testset_name" begin
-            for set in filter(T -> T != EDromo, AstroCoords.COORD_TYPES)
+            for set in filter(T -> T ∉ (EDromo, KustaanheimoStiefel), AstroCoords.COORD_TYPES)
                 f_fd, df_fd = value_and_jacobian(
                     (x) -> set(Cartesian(x), μ), AutoFiniteDiff(), state
                 )
@@ -62,7 +62,7 @@ const _BACKENDS = (
     end
 
     @testset "Coordinate Set Transformation Zygote" begin
-        for set in filter(T -> T != EDromo, AstroCoords.COORD_TYPES)
+        for set in filter(T -> T ∉ (EDromo, KustaanheimoStiefel), AstroCoords.COORD_TYPES)
             f_fd, df_fd = value_and_jacobian(
                 (x) -> set(Cartesian(x), μ), AutoFiniteDiff(), state
             )
@@ -587,6 +587,280 @@ end
                 )
                 f_fd_rev, df_fd_rev = value_and_derivative(
                     m -> from_edromo_μ(m), AutoFiniteDiff(), μ
+                )
+
+                @test f_ad_rev ≈ f_fd_rev rtol = 1e-8
+                @test df_ad_rev ≈ df_fd_rev atol = 1e-3
+            catch err
+                @test err isa MethodError
+                @test startswith(
+                    sprint(showerror, err),
+                    "MethodError: no method matching iterate(::Nothing)",
+                )
+            end
+        end
+    end
+end
+
+@testset "Kustaanheimo-Stiefel Transformation Differentiation" begin
+    state = [
+        -1076.225324679696,
+        -6765.896364327722,
+        -332.3087833503755,
+        9.356857417032581,
+        -3.3123476319597557,
+        -1.1880157328553503,
+    ]
+    μ = 3.986004415e5
+    cart_state = Cartesian(state)
+    p = [0.0, 0.0]
+
+    @testset "Differentiate wrt State" begin
+        for backend in _BACKENDS
+            @testset "$(backend[1]) Backend" begin
+                for flag_time in (KSPhysicalTime(), KSLinearTime())
+                    # Precompute for reverse pass
+                    ks_params = set_ks_configurations(state, μ; flag_time=flag_time)
+                    ks_state_vec = Array(
+                        params(KustaanheimoStiefel(cart_state, μ; ks_params...))
+                    )
+
+                    # Forward pass (Cartesian -> KustaanheimoStiefel), including parameter calculation
+                    to_ks(x) = Array(
+                        params(
+                            KustaanheimoStiefel(
+                                Cartesian(x),
+                                μ;
+                                set_ks_configurations(x, μ; flag_time=flag_time)...,
+                            ),
+                        ),
+                    )
+
+                    f_ad, df_ad = value_and_jacobian(x -> to_ks(x), backend[2], state)
+                    f_fd, df_fd = value_and_jacobian(
+                        x -> to_ks(x), AutoFiniteDiff(), state
+                    )
+
+                    @test f_ad ≈ f_fd rtol = 1e-8
+                    @test df_ad ≈ df_fd rtol = 1e-6
+
+                    # Reverse pass (KustaanheimoStiefel -> Cartesian)
+                    from_ks(x) = Array(
+                        params(Cartesian(KustaanheimoStiefel(x...), μ; ks_params...))
+                    )
+
+                    f_ad_rev, df_ad_rev = value_and_jacobian(
+                        x -> from_ks(x), backend[2], ks_state_vec
+                    )
+                    f_fd_rev, df_fd_rev = value_and_jacobian(
+                        x -> from_ks(x), AutoFiniteDiff(), ks_state_vec
+                    )
+
+                    @test f_ad_rev ≈ f_fd_rev rtol = 1e-8
+                    @test df_ad_rev ≈ df_fd_rev rtol = 1e-6
+                end
+            end
+        end
+    end
+
+    @testset "Differentiate wrt State Zygote" begin
+        for flag_time in (KSPhysicalTime(), KSLinearTime())
+            # Precompute for reverse pass
+            ks_params = set_ks_configurations(state, μ; flag_time=flag_time)
+            ks_state_vec = Array(params(KustaanheimoStiefel(cart_state, μ; ks_params...)))
+
+            # Forward pass (Cartesian -> KustaanheimoStiefel), including parameter calculation
+            to_ks(x) = Array(
+                params(
+                    KustaanheimoStiefel(
+                        Cartesian(x),
+                        μ;
+                        set_ks_configurations(x, μ; flag_time=flag_time)...,
+                    ),
+                ),
+            )
+
+            f_ad, df_ad = value_and_jacobian(x -> to_ks(x), AutoZygote(), state)
+            f_fd, df_fd = value_and_jacobian(x -> to_ks(x), AutoFiniteDiff(), state)
+
+            @test f_ad ≈ f_fd rtol = 1e-8
+            @test df_ad ≈ df_fd rtol = 1e-6
+
+            # Reverse pass (KustaanheimoStiefel -> Cartesian)
+            from_ks(x) = Array(params(Cartesian(KustaanheimoStiefel(x), μ; ks_params...)))
+
+            f_ad_rev, df_ad_rev = value_and_jacobian(
+                x -> from_ks(x), AutoZygote(), ks_state_vec
+            )
+            f_fd_rev, df_fd_rev = value_and_jacobian(
+                x -> from_edromo(x), AutoFiniteDiff(), edromo_state_vec
+            )
+
+            @test f_ad_rev ≈ f_fd_rev rtol = 1e-8
+            @test df_ad_rev ≈ df_fd_rev rtol = 1e-6
+        end
+    end
+
+    @testset "Differentiate wrt Kustaanheimo-Stiefel Parameters" begin
+        for backend in _BACKENDS
+            if backend[1] == "Enzyme"
+                backend = ("Enzyme", AutoEnzyme(; function_annotation=Enzyme.Duplicated))
+            end
+            @testset "$(backend[1]) Backend" begin
+                for flag_time in (KSPhysicalTime(), KSLinearTime())
+                    # Differentiate wrt W and t₀
+                    f_ad, df_ad = value_and_jacobian(
+                        p -> Array(
+                            params(
+                                KustaanheimoStiefel(
+                                    cart_state,
+                                    μ;
+                                    set_ks_configurations(
+                                        state, μ; W=p[1], t₀=p[2], flag_time=flag_time
+                                    )...,
+                                ),
+                            ),
+                        ),
+                        backend[2],
+                        p,
+                    )
+                    f_fd, df_fd = value_and_jacobian(
+                        p -> Array(
+                            params(
+                                KustaanheimoStiefel(
+                                    cart_state,
+                                    μ;
+                                    set_ks_configurations(
+                                        state, μ; W=p[1], t₀=p[2], flag_time=flag_time
+                                    )...,
+                                ),
+                            ),
+                        ),
+                        AutoFiniteDiff(),
+                        p,
+                    )
+
+                    @test f_ad ≈ f_fd rtol = 1e-8
+                    @test df_ad ≈ df_fd rtol = 1e-6
+                end
+            end
+        end
+    end
+
+    @testset "Differentiate wrt Kustaanheimo-Stiefel Parameters Zygote" begin
+        for flag_time in (KSPhysicalTime(), KSLinearTime())
+            # Differentiate wrt W and t₀
+            to_ks_params(p) = params(
+                KustaanheimoStiefel(
+                    cart_state,
+                    μ;
+                    set_ks_configurations(
+                        state, μ; W=p[1], t₀=p[2], flag_time=flag_time
+                    )...,
+                ),
+            )
+
+            f_ad, df_ad = value_and_jacobian(p -> to_ks_params(p), AutoZygote(), p)
+            f_fd, df_fd = value_and_jacobian(p -> to_ks_params(p), AutoFiniteDiff(), p)
+
+            @test f_ad ≈ f_fd rtol = 1e-8
+            @test df_ad ≈ df_fd rtol = 1e-6
+        end
+    end
+
+    @testset "Differentiate wrt μ" begin
+        for backend in _BACKENDS
+            if backend[1] == "Enzyme"
+                backend = ("Enzyme", AutoEnzyme(; function_annotation=Enzyme.Duplicated))
+            end
+            @testset "$(backend[1]) Backend" begin
+                for flag_time in (KSPhysicalTime(), KSLinearTime())
+                    # Setup for reverse pass
+                    ks_params = set_ks_configurations(state, μ; flag_time=flag_time)
+                    ks_state = KustaanheimoStiefel(cart_state, μ; ks_params...)
+
+                    f_ad, df_ad = value_and_derivative(
+                        m -> Array(
+                            params(
+                                KustaanheimoStiefel(
+                                    cart_state,
+                                    m;
+                                    set_ks_configurations(
+                                        state, m; flag_time=flag_time
+                                    )...,
+                                ),
+                            ),
+                        ),
+                        backend[2],
+                        μ,
+                    )
+                    f_fd, df_fd = value_and_derivative(
+                        m -> Array(
+                            params(
+                                KustaanheimoStiefel(
+                                    cart_state,
+                                    m;
+                                    set_ks_configurations(
+                                        state, m; flag_time=flag_time
+                                    )...,
+                                ),
+                            ),
+                        ),
+                        AutoFiniteDiff(),
+                        μ,
+                    )
+
+                    @test f_ad ≈ f_fd rtol = 1e-8
+                    @test df_ad ≈ df_fd rtol = 1e-3
+
+                    f_ad_rev, df_ad_rev = value_and_derivative(
+                        m -> Array(params(Cartesian(ks_state, m; ks_params...))),
+                        backend[2],
+                        μ,
+                    )
+                    f_fd_rev, df_fd_rev = value_and_derivative(
+                        m -> Array(params(Cartesian(ks_state, m; ks_params...))),
+                        AutoFiniteDiff(),
+                        μ,
+                    )
+
+                    @test f_ad_rev ≈ f_fd_rev rtol = 1e-8
+                    @test df_ad_rev ≈ df_fd_rev rtol = 1e-3
+                end
+            end
+        end
+    end
+
+    @testset "Differentiate wrt μ Zygote" begin
+        for flag_time in (KSPhysicalTime(), KSLinearTime())
+            # Setup for reverse pass
+            ks_params = set_ks_configurations(state, μ; flag_time=flag_time)
+            ks_state = KustaanheimoStiefel(cart_state, μ; ks_params...)
+
+            # Forward pass (Cartesian -> KustaanheimoStiefel)
+            to_ks_μ(m) = params(
+                KustaanheimoStiefel(
+                    cart_state,
+                    m;
+                    set_ks_configurations(state, m; flag_time=flag_time)...,
+                ),
+            )
+
+            f_ad, df_ad = value_and_derivative(m -> to_ks_μ(m), AutoZygote(), μ)
+            f_fd, df_fd = value_and_derivative(m -> to_ks_μ(m), AutoFiniteDiff(), μ)
+
+            @test f_ad ≈ f_fd rtol = 1e-8
+            @test df_ad ≈ df_fd atol = 1e-3
+
+            # Reverse pass (KustaanheimoStiefel -> Cartesian)
+            from_ks_μ(m) = params(Cartesian(ks_state, m; ks_params...))
+
+            try
+                f_ad_rev, df_ad_rev = value_and_derivative(
+                    m -> from_ks_μ(m), AutoZygote(), μ
+                )
+                f_fd_rev, df_fd_rev = value_and_derivative(
+                    m -> from_ks_μ(m), AutoFiniteDiff(), μ
                 )
 
                 @test f_ad_rev ≈ f_fd_rev rtol = 1e-8

@@ -105,6 +105,47 @@ const EDromoToCartesian = EDromoToCartesianTransform()
 Base.inv(::CartesianToEDromoTransform) = EDromoToCartesianTransform()
 Base.inv(::EDromoToCartesianTransform) = CartesianToEDromoTransform()
 
+# ~~~~~~~~~~~~~~~ Kustaanheimo-Stiefel Transformations ~~~~~~~~~~~~~~~ #
+export CartesianToKustaanheimoStiefel, KustaanheimoStiefelToCartesian
+
+struct CartesianToKustaanheimoStiefelTransform{DT,TT,VP,TT2,FT} <: AstroCoordTransformation
+    DU::DT
+    TU::TT
+    Vpot::VP
+    t₀::TT2
+    flag_time::FT
+end
+function CartesianToKustaanheimoStiefelTransform()
+    CartesianToKustaanheimoStiefelTransform(nothing, nothing, nothing, nothing, nothing)
+end
+
+struct KustaanheimoStiefelToCartesianTransform{DT,TT,VP,TT2,FT} <: AstroCoordTransformation
+    DU::DT
+    TU::TT
+    Vpot::VP
+    t₀::TT2
+    flag_time::FT
+end
+function KustaanheimoStiefelToCartesianTransform()
+    KustaanheimoStiefelToCartesianTransform(nothing, nothing, nothing, nothing, nothing)
+end
+
+function (t::CartesianToKustaanheimoStiefelTransform)(x::Cartesian, μ::Number; kwargs...)
+    ks_vec = cart2KS(params(x), μ; kwargs...)
+    return KustaanheimoStiefel(ks_vec...)
+end
+const CartesianToKustaanheimoStiefel = CartesianToKustaanheimoStiefelTransform()
+
+function (t::KustaanheimoStiefelToCartesianTransform)(x::KustaanheimoStiefel, μ::Number; kwargs...)
+    cart_vec = KS2cart(params(x), μ; kwargs...)
+    return Cartesian(cart_vec...)
+end
+const KustaanheimoStiefelToCartesian = KustaanheimoStiefelToCartesianTransform()
+
+Base.inv(::CartesianToKustaanheimoStiefelTransform) = KustaanheimoStiefelToCartesianTransform()
+Base.inv(::KustaanheimoStiefelToCartesianTransform) = CartesianToKustaanheimoStiefelTransform()
+
+
 # ~~~~~~~~~~~~~~~ All Composed Transformations ~~~~~~~~~~~~~~~ #
 const COORD_TYPES = (
     Cartesian,
@@ -119,6 +160,7 @@ const COORD_TYPES = (
     Delaunay,
     J2EqOE,
     EDromo,
+    KustaanheimoStiefel,
 )
 const COORD_NAMES = Dict(
     Cartesian => :Cartesian,
@@ -133,6 +175,7 @@ const COORD_NAMES = Dict(
     Delaunay => :Delaunay,
     J2EqOE => :J2EqOE,
     EDromo => :EDromo,
+    KustaanheimoStiefel => :KustaanheimoStiefel,
 )
 
 # Build a graph of transformations to find paths
@@ -156,6 +199,7 @@ add_transform_edge(Cartesian, Spherical)
 add_transform_edge(Cartesian, Delaunay)
 add_transform_edge(Cartesian, J2EqOE)
 add_transform_edge(Cartesian, EDromo)
+add_transform_edge(Cartesian, KustaanheimoStiefel)
 add_transform_edge(Keplerian, USM7)
 add_transform_edge(Keplerian, ModEq)
 add_transform_edge(USM7, USM6)

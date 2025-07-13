@@ -27,11 +27,13 @@ const _COORDINATE_SETS = [
     USMEM,
     J2EqOE,
     EDromo,
+    KustaanheimoStiefel,
 ]
 
 @testset "AstroCoords.jl" begin
     include("test_J2EqOE.jl")
     include("test_EDromo.jl")
+    include("test_KS.jl")
     include("test_coordinate_changes.jl")
     include("test_anomalies.jl")
     include("test_quantities.jl")

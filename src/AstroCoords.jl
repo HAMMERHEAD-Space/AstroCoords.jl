@@ -9,6 +9,7 @@ include("./attitude_changes.jl")
 include("./coordinate_changes/coordinate_changes.jl")
 include("./coordinate_changes/J2EqOE.jl")
 include("./coordinate_changes/EDromo.jl")
+include("./coordinate_changes/Kustaanheimo-Stiefel.jl")
 include("./core_types.jl")
 
 include("./coordinate_sets/cartesian.jl")
@@ -19,8 +20,25 @@ include("./coordinate_sets/modEq.jl")
 include("./coordinate_sets/spherical.jl")
 include("./coordinate_sets/usm.jl")
 include("./coordinate_sets/edromo.jl")
+include("./coordinate_sets/kustaanheimo-stiefel.jl")
 
 include("./transformations.jl")
+
+const COORDINATE_SET_ALIASES = Dict(
+    "Cartesian" => Cartesian,
+    "Cylindrical" => Cylindrical,
+    "Delaunay" => Delaunay,
+    "EDromo" => EDromo,
+    "J2EqOE" => J2EqOE,
+    "Keplerian" => Keplerian,
+    "KustaanheimoStiefel" => KustaanheimoStiefel,
+    "Milankovich" => Milankovich,
+    "ModifiedEquinoctial" => ModEq,
+    "Spherical" => Spherical,
+    "USM6" => USM6,
+    "USM7" => USM7,
+    "USMEM" => USMEM,
+)
 
 include("./quantities.jl")
 

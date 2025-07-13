@@ -3,7 +3,7 @@ struct PhysicalTime <: AbstractTimeType end
 struct ConstantTime <: AbstractTimeType end
 struct LinearTime <: AbstractTimeType end
 
-export set_edromo_configurations, PhysicalTime, ConstantTime, LinearTime
+export get_EDromo_time, set_edromo_configurations, PhysicalTime, ConstantTime, LinearTime
 
 """
     cart2EDromo(u, μ; DU, TU, ϕ₀, t₀, W, flag_time)
@@ -201,14 +201,6 @@ function EDromo2cart(
     ##################################################
     U = W / (DU / TU)^2
 
-    if flag_time isa PhysicalTime
-        t = ζ₈
-    elseif flag_time isa ConstantTime
-        t = ζ₈ - ζ₃^(1.5) * (ζ₁*sϕ - ζ₂*cϕ - ϕ₀)
-    elseif flag_time isa LinearTime
-        t = ζ₈ - ζ₃^(1.5) * (ζ₁*sϕ - ζ₂*cϕ)
-    end
-
     ##################################################
     #* 4. Compute Velocity in the Intertial Frame
     ##################################################
@@ -224,6 +216,30 @@ function EDromo2cart(
     v = v_nd * (DU / TU)
 
     return SVector{6,RT}(r[1], r[2], r[3], v[1], v[2], v[3])
+end
+
+"""
+    EDromo_get_time(u, flag_time)
+
+Computes the physical time from the EDromo state vector.
+
+# Arguments
+- `u::AbstractVector`: EDromo state vector `[ζ₁, ζ₂, ζ₃, ζ₄, ζ₅, ζ₆, ζ₇, ζ₈]`.
+- `flag_time::AbstractTimeType`: Time element formulation (`PhysicalTime`, `ConstantTime`, or `LinearTime`).
+
+# Returns
+- `Number`: The computed physical time.
+"""
+function get_EDromo_time(u::AbstractVector{T}, flag_time::AbstractTimeType) where {T<:Number}
+    if flag_time isa PhysicalTime
+        t = u[8]
+    elseif flag_time isa ConstantTime
+        t = u[8] - u[3]^(1.5) * (u[1]*sϕ - u[2]*cϕ - ϕ₀)
+    elseif flag_time isa LinearTime
+        t = u[8] - u[3]^(1.5) * (u[1]*sϕ - u[2]*cϕ)
+    end
+
+    return t
 end
 
 """
