@@ -6,6 +6,8 @@ version = "0.2.10"
 [deps]
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
+
+[weakdeps]
 Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 
 [extensions]
@@ -19,14 +21,14 @@ Diffractor = "0.2"
 Enzyme = "0.13"
 FiniteDiff = "2.26"
 ForwardDiff = "0.10, 0.11"
-JET = "0.10"
+JET = "0.9"
 LinearAlgebra = "1"
 Mooncake = "0.4"
 PolyesterForwardDiff = "0.1"
 StaticArrays = "1.9"
 Test = "1"
 Zygote = "0.6, 0.7"
-julia = "1.10"
+julia = "1.11"
 
 [extras]
 AllocCheck = "9b6a8646-10ed-4001-bbdc-1d2f46dfbb1a"
