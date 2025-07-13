@@ -14,7 +14,8 @@ makedocs(;
         "Coordinates" => Any[
             "coordinates/cartesian.md",
             "coordinates/delaunay.md",
-            "coordinates/edromo.md",
+            "coordinates/Edromo.md",
+            "coordinates/J2EqOE.md",
             "coordinates/keplerian.md",
             "coordinates/milankovich.md",
             "coordinates/modEq.md",
