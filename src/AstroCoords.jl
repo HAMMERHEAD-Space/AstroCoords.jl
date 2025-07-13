@@ -10,6 +10,7 @@ include("./coordinate_changes/coordinate_changes.jl")
 include("./coordinate_changes/J2EqOE.jl")
 include("./coordinate_changes/EDromo.jl")
 include("./coordinate_changes/Kustaanheimo-Stiefel.jl")
+include("./coordinate_changes/Stiefel-Scheifele.jl")
 include("./core_types.jl")
 
 include("./coordinate_sets/cartesian.jl")
@@ -21,6 +22,7 @@ include("./coordinate_sets/spherical.jl")
 include("./coordinate_sets/usm.jl")
 include("./coordinate_sets/edromo.jl")
 include("./coordinate_sets/kustaanheimo-stiefel.jl")
+include("./coordinate_sets/stiefel-scheifele.jl")
 
 include("./transformations.jl")
 
@@ -32,6 +34,7 @@ const COORDINATE_SET_ALIASES = Dict(
     "J2EqOE" => J2EqOE,
     "Keplerian" => Keplerian,
     "KustaanheimoStiefel" => KustaanheimoStiefel,
+    "StiefelScheifele" => StiefelScheifele,
     "Milankovich" => Milankovich,
     "ModifiedEquinoctial" => ModEq,
     "Spherical" => Spherical,

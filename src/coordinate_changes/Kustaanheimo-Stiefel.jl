@@ -1,11 +1,7 @@
-abstract type KSTimeType end
-struct KSPhysicalTime <: KSTimeType end
-struct KSLinearTime <: KSTimeType end
-
-export get_KS_time, set_ks_configurations, KSPhysicalTime, KSLinearTime
+export get_KS_time, set_ks_configurations
 
 """
-    cart2KS(u, μ; Vpot, DU, TU, t₀, flag_time=KSPhysicalTime())
+    cart2KS(u, μ; Vpot, DU, TU, t₀, flag_time=PhysicalTime())
 
 Converts a Cartesian state vector to a Kustaanheimo-Stiefel (KS) state vector.
 
@@ -18,7 +14,7 @@ Converts a Cartesian state vector to a Kustaanheimo-Stiefel (KS) state vector.
 - `DU::Number`: Distance unit.
 - `TU::Number`: Time unit.
 - `t₀::Number`: Initial physical time.
-- `flag_time::KSTimeType`: Time element formulation (`KSPhysicalTime` or `KSLinearTime`).
+- `flag_time::AbstractTimeType`: Time element formulation (`PhysicalTime` or `LinearTime`).
 
 # Returns
 - `SVector{10, RT}`: The 10-element KS state vector.
@@ -30,7 +26,7 @@ function cart2KS(
     DU::DT,
     TU::TT,
     t₀::TT2,
-    flag_time::KSTimeType=KSPhysicalTime(),
+    flag_time::AbstractTimeType=PhysicalTime(),
 ) where {T<:Number,V<:Number,VP<:Number,DT<:Number,TT<:Number,TT2<:Number}
     RT = promote_type(T, V, VP, DT, TT, TT2)
 
@@ -70,9 +66,9 @@ function cart2KS(
     h = μ / r - 0.5 * dot(v_vec, v_vec) - Vpot
 
     # Time element
-    if flag_time isa KSPhysicalTime
+    if flag_time isa PhysicalTime
         τ = t
-    elseif flag_time isa KSLinearTime
+    elseif flag_time isa LinearTime
         τ = t + dot(SVector{4}(u₁, u₂, u₃, u₄), SVector{4}(u₅, u₆, u₇, u₈)) / h
     end
 
@@ -93,7 +89,7 @@ Converts a Kustaanheimo-Stiefel (KS) state vector to a Cartesian state vector.
 - `DU::Number`: Distance unit.
 - `TU::Number`: Time unit.
 - `t₀::Number`: Initial physical time.
-- `flag_time::KSTimeType`: Time element formulation (`KSPhysicalTime` or `KSLinearTime`).
+- `flag_time::AbstractTimeType`: Time element formulation (`PhysicalTime` or `LinearTime`).
 
 # Returns
 - `SVector{6, RT}`: The 6-element Cartesian state `[x, y, z, ẋ, ẏ, ż]`.
@@ -105,7 +101,7 @@ function KS2cart(
     DU::DT,
     TU::TT,
     t₀::TT2,
-    flag_time::KSTimeType=KSPhysicalTime(),
+    flag_time::AbstractTimeType=PhysicalTime(),
 ) where {T<:Number,V<:Number,VP<:Number,DT<:Number,TT<:Number,TT2<:Number}
     RT = promote_type(T, V, VP, DT, TT, TT2)
 
@@ -138,15 +134,15 @@ Computes the physical time from the KS state vector.
 
 # Arguments
 - `u::AbstractVector`: KS state vector `[u₁, u₂, u₃, u₄, u₅, u₆, u₇, u₈, h, τ]`.
-- `flag_time::KSTimeType`: Time element formulation (`KSPhysicalTime` or `KSLinearTime`).
+- `flag_time::AbstractTimeType`: Time element formulation (`PhysicalTime` or `LinearTime`).
 
 # Returns
 - `Number`: The computed physical time.
 """
-function get_KS_time(u::AbstractVector{T}, flag_time::KSTimeType) where {T<:Number}
-    if flag_time isa KSPhysicalTime
+function get_KS_time(u::AbstractVector{T}, flag_time::AbstractTimeType) where {T<:Number}
+    if flag_time isa PhysicalTime
         t = u[10]
-    elseif flag_time isa KSLinearTime
+    elseif flag_time isa LinearTime
         t =
             u[10] -
             dot(SVector{4}(u[1], u[2], u[3], u[4]), SVector{4}(u[5], u[6], u[7], u[8])) /
@@ -156,7 +152,7 @@ function get_KS_time(u::AbstractVector{T}, flag_time::KSTimeType) where {T<:Numb
 end
 
 """
-    set_ks_configurations(u, μ; Vpot=0.0, t₀=0.0, flag_time=KSPhysicalTime())
+    set_ks_configurations(u, μ; Vpot=0.0, t₀=0.0, flag_time=PhysicalTime())
 
 Computes and returns a `NamedTuple` of configurations required for KS transformations.
 
@@ -174,13 +170,13 @@ gravitational parameter.
 # Keyword Arguments
 - `Vpot::Number=0.0`: Perturbing potential.
 - `t₀::Number=0.0`: Initial physical time.
-- `flag_time::KSTimeType=KSPhysicalTime()`: Time element formulation.
+- `flag_time::AbstractTimeType=PhysicalTime()`: Time element formulation.
 
 # Returns
 - `NamedTuple`: A tuple containing `DU`, `TU`, `Vpot`, `t₀`, `flag_time`.
 """
 function set_ks_configurations(
-    u::AbstractVector, μ; Vpot=0.0, t₀=0.0, flag_time=KSPhysicalTime()
+    u::AbstractVector, μ::Number; Vpot::Number=0.0, t₀::Number=0.0, flag_time::AbstractTimeType=PhysicalTime()
 )
     DU = norm(SVector{3}(u[1], u[2], u[3]))
     TU = sqrt(DU^3 / μ)
