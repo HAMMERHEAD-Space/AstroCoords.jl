@@ -136,15 +136,20 @@ function (t::CartesianToKustaanheimoStiefelTransform)(x::Cartesian, μ::Number; 
 end
 const CartesianToKustaanheimoStiefel = CartesianToKustaanheimoStiefelTransform()
 
-function (t::KustaanheimoStiefelToCartesianTransform)(x::KustaanheimoStiefel, μ::Number; kwargs...)
+function (t::KustaanheimoStiefelToCartesianTransform)(
+    x::KustaanheimoStiefel, μ::Number; kwargs...
+)
     cart_vec = KS2cart(params(x), μ; kwargs...)
     return Cartesian(cart_vec...)
 end
 const KustaanheimoStiefelToCartesian = KustaanheimoStiefelToCartesianTransform()
 
-Base.inv(::CartesianToKustaanheimoStiefelTransform) = KustaanheimoStiefelToCartesianTransform()
-Base.inv(::KustaanheimoStiefelToCartesianTransform) = CartesianToKustaanheimoStiefelTransform()
-
+function Base.inv(::CartesianToKustaanheimoStiefelTransform)
+    KustaanheimoStiefelToCartesianTransform()
+end
+function Base.inv(::KustaanheimoStiefelToCartesianTransform)
+    CartesianToKustaanheimoStiefelTransform()
+end
 
 # ~~~~~~~~~~~~~~~ All Composed Transformations ~~~~~~~~~~~~~~~ #
 const COORD_TYPES = (

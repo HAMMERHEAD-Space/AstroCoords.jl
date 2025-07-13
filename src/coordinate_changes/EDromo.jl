@@ -230,7 +230,9 @@ Computes the physical time from the EDromo state vector.
 # Returns
 - `Number`: The computed physical time.
 """
-function get_EDromo_time(u::AbstractVector{T}, flag_time::AbstractTimeType) where {T<:Number}
+function get_EDromo_time(
+    u::AbstractVector{T}, flag_time::AbstractTimeType
+) where {T<:Number}
     if flag_time isa PhysicalTime
         t = u[8]
     elseif flag_time isa ConstantTime

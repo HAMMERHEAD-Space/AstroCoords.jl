@@ -34,7 +34,9 @@ struct KustaanheimoStiefel{T} <: AstroCoord{10,T}
     u₄_prime::T
     h::T
     τ::T
-    @inline function KustaanheimoStiefel{T}(u₁, u₂, u₃, u₄, u₁_prime, u₂_prime, u₃_prime, u₄_prime, h, τ) where {T}
+    @inline function KustaanheimoStiefel{T}(
+        u₁, u₂, u₃, u₄, u₁_prime, u₂_prime, u₃_prime, u₄_prime, h, τ
+    ) where {T}
         return new{T}(u₁, u₂, u₃, u₄, u₁_prime, u₂_prime, u₃_prime, u₄_prime, h, τ)
     end
     @inline KustaanheimoStiefel{T}(p::KustaanheimoStiefel{T}) where {T} = new{T}(
@@ -47,9 +49,31 @@ function KustaanheimoStiefel(X::AbstractVector{T}) where {T}
     KustaanheimoStiefel{T}(X[1], X[2], X[3], X[4], X[5], X[6], X[7], X[8], X[9], X[10])
 end
 
-function KustaanheimoStiefel(u₁::T1, u₂::T2, u₃::T3, u₄::T4, u₁_prime::T5, u₂_prime::T6, u₃_prime::T7, u₄_prime::T8, h::T9, τ::T10) where {T1,T2,T3,T4,T5,T6,T7,T8,T9,T10}
+function KustaanheimoStiefel(
+    u₁::T1,
+    u₂::T2,
+    u₃::T3,
+    u₄::T4,
+    u₁_prime::T5,
+    u₂_prime::T6,
+    u₃_prime::T7,
+    u₄_prime::T8,
+    h::T9,
+    τ::T10,
+) where {T1,T2,T3,T4,T5,T6,T7,T8,T9,T10}
     T = promote_type(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10)
-    return KustaanheimoStiefel{T}(T(u₁), T(u₂), T(u₃), T(u₄), T(u₁_prime), T(u₂_prime), T(u₃_prime), T(u₄_prime), T(h), T(τ))
+    return KustaanheimoStiefel{T}(
+        T(u₁),
+        T(u₂),
+        T(u₃),
+        T(u₄),
+        T(u₁_prime),
+        T(u₂_prime),
+        T(u₃_prime),
+        T(u₄_prime),
+        T(h),
+        T(τ),
+    )
 end
 function (::Type{KS})(g::StaticVector) where {KS<:KustaanheimoStiefel}
     KS(g[1], g[2], g[3], g[4], g[5], g[6], g[7], g[8], g[9], g[10])
@@ -57,7 +81,9 @@ end
 
 # ~~~~~~~~~~~~~~~ Conversions ~~~~~~~~~~~~~~~ #
 function params(g::KustaanheimoStiefel{T}) where {T<:Number}
-    SVector{10,T}(g.u₁, g.u₂, g.u₃, g.u₄, g.u₁_prime, g.u₂_prime, g.u₃_prime, g.u₄_prime, g.h, g.τ)
+    SVector{10,T}(
+        g.u₁, g.u₂, g.u₃, g.u₄, g.u₁_prime, g.u₂_prime, g.u₃_prime, g.u₄_prime, g.h, g.τ
+    )
 end
 
 # ~~~~~~~~~~~~~~~ Initializers ~~~~~~~~~~~~~~~ #

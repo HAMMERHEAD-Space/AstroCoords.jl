@@ -6,7 +6,7 @@ end
     # Test over all coordinate sets
     for set1 in filter(T -> T ∉ (EDromo, KustaanheimoStiefel), AstroCoords.COORD_TYPES)
         for set2 in filter(T -> T ∉ (EDromo, KustaanheimoStiefel), AstroCoords.COORD_TYPES)
-            @test length(check_allocs(set2, (set1, Float64))) == 0
+            @test length(check_allocs(set1, (set2{Float64}, Float64))) == 0
         end
     end
 end

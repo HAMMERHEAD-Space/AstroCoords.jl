@@ -12,7 +12,9 @@
     base_cart_state = Cartesian(base_state_vec)
 
     # All coordinate types except EDromo itself
-    coord_types_to_test = filter(T -> T ∉ (EDromo, KustaanheimoStiefel), AstroCoords.COORD_TYPES)
+    coord_types_to_test = filter(
+        T -> T ∉ (EDromo, KustaanheimoStiefel), AstroCoords.COORD_TYPES
+    )
 
     # Parameter sets to test
     time_flags = [PhysicalTime(), ConstantTime(), LinearTime()]
