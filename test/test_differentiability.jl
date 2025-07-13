@@ -62,7 +62,7 @@ const _BACKENDS = (
     end
 
     @testset "Coordinate Set Transformation Zygote" begin
-        for set in _COORDINATE_SETS
+        for set in filter(T -> T != EDromo, AstroCoords.COORD_TYPES)
             f_fd, df_fd = value_and_jacobian(
                 (x) -> set(Cartesian(x), μ), AutoFiniteDiff(), state
             )
