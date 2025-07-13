@@ -186,4 +186,3 @@ function set_ks_configurations(
     TU = sqrt(DU^3 / μ)
     return (; DU, TU, Vpot, t₀, flag_time)
 end
-
