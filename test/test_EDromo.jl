@@ -1,8 +1,3 @@
-using AstroCoords
-using Test
-using StaticArrays
-using LinearAlgebra
-
 @testset "EDromo Parameterized" begin
     # A robust sample state that is not-circular and not-equatorial
     base_state_vec = [
@@ -33,13 +28,9 @@ using LinearAlgebra
                 for W in W_values
                     for t₀ in t0_values
                         @testset "Params: time_flag=$(typeof(flag)), W=$W, t₀=$t₀" begin
-
-                            # For conversions from Cartesian, we need the raw vector
-                            cart_vec = params(Cartesian(from_state, μ))
-
                             # Get the full set of parameters for this test case
                             defaults = set_edromo_configurations(
-                                from_state, μ; W=W, t₀=t₀, flag_time=flag
+                                base_state_vec, μ; W=W, t₀=t₀, flag_time=flag
                             )
 
                             # Perform the round trip
