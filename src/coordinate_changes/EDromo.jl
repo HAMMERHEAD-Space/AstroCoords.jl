@@ -93,7 +93,7 @@ function cart2EDromo(
     ŷ = sν * î + cν * ĵ
 
     # Safe Initialization of the Quaternion
-    # Aguments of the roots have to be always positive, so we can safely use abs()
+    # Arguments of the roots have to be always positive, so we can safely use abs()
     aux = abs(1.0 + x̂[1] + ŷ[2] + k̂[3])
     ζ₇ = 0.5 * √(aux)
 
@@ -172,7 +172,7 @@ function EDromo2cart(
     ζ₁, ζ₂, ζ₃, ζ₄, ζ₅, ζ₆, ζ₇, ζ₈ = u
 
     ##################################################
-    #* 1. Auxilary Quantities
+    #* 1. Auxiliary Quantities
     ##################################################
     sϕ, cϕ = sincos(ϕ₀)
 
@@ -186,7 +186,7 @@ function EDromo2cart(
     sν = (sϕ - ζ₂ - (Z*ζ₁) / (emme + 1.0)) / ρ
 
     ##################################################
-    #* 2. Compute Position in the Intertial Frame
+    #* 2. Compute Position in the Inertial Frame
     ##################################################
 
     # Intermediate Frame Unit Vectors
@@ -194,7 +194,7 @@ function EDromo2cart(
 
     ŷ = 2.0 * SVector{3}(ζ₄*ζ₅ - ζ₆*ζ₇, 0.5 - ζ₄^2 - ζ₆^2, ζ₅*ζ₆ + ζ₄*ζ₇)
 
-    r_nd = r_mag * (x̂ * cν + ŷ * sν)
+    r_non_dim = r_mag * (x̂ * cν + ŷ * sν)
 
     ##################################################
     #* 3. Perturbing Potential
@@ -218,10 +218,10 @@ function EDromo2cart(
     v_rad = Z / (√(ζ₃)*ρ)
     v_tan = √((1.0 - ζ₁^2 - ζ₂^2) / (ζ₃*ρ^2) - 2.0 * U)
 
-    v_nd = v_rad * î + v_tan * ĵ
+    v_non_dim = v_rad * î + v_tan * ĵ
 
-    r = r_nd * DU
-    v = v_nd * (DU / TU)
+    r = r_non_dim * DU
+    v = v_non_dim * (DU / TU)
 
     return SVector{6,RT}(r[1], r[2], r[3], v[1], v[2], v[3])
 end
