@@ -45,11 +45,13 @@ end
 function StiefelScheifele(X::AbstractVector{T}) where {T}
     StiefelScheifele{T}(X[1], X[2], X[3], X[4], X[5], X[6], X[7], X[8], X[9], X[10])
 end
-function StiefelScheifele(α1::A1, α2::A2, α3::A3, α4::A4, β1::B1, β2::B2, β3::B3, β4::B4, ω::W, t::TT) where {A1,A2,A3,A4,B1,B2,B3,B4,W,TT}
+function StiefelScheifele(
+    α1::A1, α2::A2, α3::A3, α4::A4, β1::B1, β2::B2, β3::B3, β4::B4, ω::W, t::TT
+) where {A1,A2,A3,A4,B1,B2,B3,B4,W,TT}
     T = promote_type(A1, A2, A3, A4, B1, B2, B3, B4, W, TT)
     return StiefelScheifele{T}(α1, α2, α3, α4, β1, β2, β3, β4, ω, t)
 end
-function (::Type{SS})(g::StaticVector) where {SS<:StiefelScheifele} 
+function (::Type{SS})(g::StaticVector) where {SS<:StiefelScheifele}
     SS(g[1], g[2], g[3], g[4], g[5], g[6], g[7], g[8], g[9], g[10])
 end
 
@@ -65,7 +67,7 @@ end
 
 # ~~~~~~~~~~~~~~~ StaticArrays Interface ~~~~~~~~~~~~~~~ #
 function Base.getindex(p::StiefelScheifele, i::Int)
-    if i == 1 
+    if i == 1
         return p.α1
     elseif i == 2
         return p.α2

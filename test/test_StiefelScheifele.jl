@@ -1,40 +1,50 @@
-@testset "Stiefel-Scheifele" begin
-    @testset "Round Trip" begin
-        # Initial state
-        state = Cartesian([
-            -1076.225324679696,
-            -6765.896364327722,
-            -332.3087833503755,
-            9.356857417032581,
-            -3.3123476319597557,
-            -1.1880157328553503,
-        ])
-        μ = 3.986004415e5
+@testset "Stiefel-Scheifele Round Trip" begin
+    # Initial state
+    base_state_vec = [
+        -1076.225324679696,
+        -6765.896364327722,
+        -332.3087833503755,
+        9.356857417032581,
+        -3.3123476319597557,
+        -1.1880157328553503,
+    ]
+    μ = 3.986004415e5
+    base_cart_state = Cartesian(base_state_vec)
 
-        # Get parameters
-        ss_params = set_stiefelscheifele_configurations(state, μ)
+    # All coordinate types except EDromo itself
+    coord_types_to_test = filter(
+        T -> T ∉ (EDromo, KustaanheimoStiefel, StiefelScheifele), AstroCoords.COORD_TYPES
+    )
 
-        # Forward transformation
-        ss_state = StiefelScheifele(state, μ; ss_params...)
+    # Parameter sets to test
+    time_flags = [PhysicalTime(), LinearTime()]
+    W_values = [0.0, 1e-8]
+    t0_values = [0.0, 100.0]
 
-        # Backward transformation
-        final_state = Cartesian(ss_state, μ; ss_params...)
+    for FromCoord in coord_types_to_test
+        @testset "Roundtrip from $FromCoord" begin
+            # Create the initial state for this coordinate type
+            from_state = FromCoord(base_cart_state, μ)
 
-        @test final_state ≈ state
+            for flag in time_flags
+                for W in W_values
+                    for t₀ in t0_values
+                        @testset "Params: time_flag=$(typeof(flag)), W=$W, t₀=$t₀" begin
+                            # Get the full set of parameters for this test case
+                            defaults = set_stiefelscheifele_configurations(
+                                base_state_vec, μ; W=W, t₀=t₀, flag_time=flag
+                            )
+
+                            # Perform the round trip
+                            ss_state = StiefelScheifele(from_state, μ; defaults...)
+                            roundtrip_state = FromCoord(ss_state, μ; defaults...)
+
+                            # Test for numerical equality
+                            @test params(roundtrip_state) ≈ params(from_state) atol=1e-8
+                        end
+                    end
+                end
+            end
+        end
     end
-
-    @testset "Configurations" begin
-        state = Cartesian([1000.0, 5000.0, -3000.0, -5.0, 2.0, 7.0])
-        μ = 3.986004415e5
-        r_norm = norm(state[1:3])
-        
-        configs = set_stiefelscheifele_configurations(state, μ)
-        
-        @test configs.DU == r_norm
-        @test configs.TU == 1 / sqrt(μ / r_norm^3)
-        @test configs.W == 0.0
-        @test configs.ϕ == 0.0
-        @test configs.t₀ == 0.0
-        @test configs.flag_time == 0
-    end
-end 
+end

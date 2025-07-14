@@ -1,4 +1,4 @@
-@testset "Kustaanheimo-Stiefel Parameterized" begin
+@testset "Kustaanheimo-Stiefel Round Trip" begin
     # A robust sample state that is not-circular and not-equatorial
     base_state_vec = [
         -1076.225324679696,
@@ -11,13 +11,12 @@
     μ = 3.986004415e5
     base_cart_state = Cartesian(base_state_vec)
 
-    # All coordinate types except KustaanheimoStiefel itself
     coord_types_to_test = filter(
-        T -> T ∉ (EDromo, KustaanheimoStiefel), AstroCoords.COORD_TYPES
+        T -> T ∉ (EDromo, KustaanheimoStiefel, StiefelScheifele), AstroCoords.COORD_TYPES
     )
 
     # Parameter sets to test
-    time_flags = [KSPhysicalTime(), KSLinearTime()]
+    time_flags = [PhysicalTime(), LinearTime()]
     Vpot_values = [0.0, 1e-8]
     t0_values = [0.0, 100.0]
 

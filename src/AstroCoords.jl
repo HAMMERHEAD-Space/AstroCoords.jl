@@ -3,15 +3,16 @@ module AstroCoords
 using LinearAlgebra
 using StaticArrays
 
+include("./core_types.jl")
 include("utils.jl")
 include("./anomalies.jl")
 include("./attitude_changes.jl")
+
 include("./coordinate_changes/coordinate_changes.jl")
 include("./coordinate_changes/J2EqOE.jl")
 include("./coordinate_changes/EDromo.jl")
 include("./coordinate_changes/Kustaanheimo-Stiefel.jl")
 include("./coordinate_changes/Stiefel-Scheifele.jl")
-include("./core_types.jl")
 
 include("./coordinate_sets/cartesian.jl")
 include("./coordinate_sets/delaunay.jl")

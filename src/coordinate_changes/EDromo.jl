@@ -264,7 +264,11 @@ gravitational parameter.
 - `NamedTuple`: A tuple containing `DU`, `TU`, `W`, `ϕ₀`, `t₀`, `flag_time`.
 """
 function set_edromo_configurations(
-    u::AbstractVector, μ::Number; W::Number=0.0, t₀::Number=0.0, flag_time::AbstractTimeType=PhysicalTime()
+    u::AbstractVector,
+    μ::Number;
+    W::Number=0.0,
+    t₀::Number=0.0,
+    flag_time::AbstractTimeType=PhysicalTime(),
 )
     DU = norm(SVector{3}(u[1], u[2], u[3]))
     TU = sqrt(DU^3 / μ)

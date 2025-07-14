@@ -154,8 +154,29 @@ end
 # ~~~~~~~~~~~~~~~ Stiefel-Scheifele Transformations ~~~~~~~~~~~~~~~ #
 export CartesianToStiefelScheifele, StiefelScheifeleToCartesian
 
-struct CartesianToStiefelScheifeleTransform <: AstroCoordTransformation end
-struct StiefelScheifeleToCartesianTransform <: AstroCoordTransformation end
+struct CartesianToStiefelScheifeleTransform{DT,TT,VP,PT,TT2,FT} <: AstroCoordTransformation
+    DU::DT
+    TU::TT
+    W::VP
+    ϕ₀::PT
+    t₀::TT2
+    flag_time::FT
+end
+function CartesianToStiefelScheifeleTransform()
+    CartesianToStiefelScheifeleTransform(nothing, nothing, nothing, nothing, nothing, nothing)
+end
+
+struct StiefelScheifeleToCartesianTransform{DT,TT,VP,PT,TT2,FT} <: AstroCoordTransformation
+    DU::DT
+    TU::TT
+    W::VP
+    ϕ₀::PT
+    t₀::TT2
+    flag_time::FT
+end
+function StiefelScheifeleToCartesianTransform()
+    StiefelScheifeleToCartesianTransform(nothing, nothing, nothing, nothing, nothing, nothing)
+end
 
 function (t::CartesianToStiefelScheifeleTransform)(x::Cartesian, μ::Number; kwargs...)
     ss_vec = cart2StiefelScheifele(params(x), μ; kwargs...)
@@ -163,7 +184,9 @@ function (t::CartesianToStiefelScheifeleTransform)(x::Cartesian, μ::Number; kwa
 end
 const CartesianToStiefelScheifele = CartesianToStiefelScheifeleTransform()
 
-function (t::StiefelScheifeleToCartesianTransform)(x::StiefelScheifele, μ::Number; kwargs...)
+function (t::StiefelScheifeleToCartesianTransform)(
+    x::StiefelScheifele, μ::Number; kwargs...
+)
     cart_vec = StiefelScheifele2cart(params(x), μ; kwargs...)
     return Cartesian(cart_vec...)
 end
