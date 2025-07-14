@@ -63,7 +63,7 @@ const _BACKENDS = (
     end
 
     @testset "Coordinate Set Transformation Zygote" begin
-        for set in filter(T -> T ∉ (EDromo, KustaanheimoStiefel), AstroCoords.COORD_TYPES)
+        for set in filter(T -> T ∉ (EDromo, KustaanheimoStiefel, StiefelScheifele), AstroCoords.COORD_TYPES)
             f_fd, df_fd = value_and_jacobian(
                 (x) -> set(Cartesian(x), μ), AutoFiniteDiff(), state
             )
@@ -993,7 +993,7 @@ end
                                     set_stiefelscheifele_configurations(
                                         state,
                                         μ;
-                                        Vpot=p[1],
+                                        W=p[1],
                                         t₀=p[2],
                                         flag_time=flag_time,
                                     )...,
@@ -1012,7 +1012,7 @@ end
                                     set_stiefelscheifele_configurations(
                                         state,
                                         μ;
-                                        Vpot=p[1],
+                                        W=p[1],
                                         t₀=p[2],
                                         flag_time=flag_time,
                                     )...,
@@ -1038,7 +1038,7 @@ end
                     cart_state,
                     μ;
                     set_stiefelscheifele_configurations(
-                        state, μ; Vpot=p[1], t₀=p[2], flag_time=flag_time
+                        state, μ; W=p[1], t₀=p[2], flag_time=flag_time
                     )...,
                 ),
             )
