@@ -151,6 +151,54 @@ function Base.inv(::KustaanheimoStiefelToCartesianTransform)
     CartesianToKustaanheimoStiefelTransform()
 end
 
+# ~~~~~~~~~~~~~~~ Stiefel-Scheifele Transformations ~~~~~~~~~~~~~~~ #
+export CartesianToStiefelScheifele, StiefelScheifeleToCartesian
+
+struct CartesianToStiefelScheifeleTransform{DT,TT,VP,PT,TT2,FT} <: AstroCoordTransformation
+    DU::DT
+    TU::TT
+    W::VP
+    ϕ₀::PT
+    t₀::TT2
+    flag_time::FT
+end
+function CartesianToStiefelScheifeleTransform()
+    CartesianToStiefelScheifeleTransform(
+        nothing, nothing, nothing, nothing, nothing, nothing
+    )
+end
+
+struct StiefelScheifeleToCartesianTransform{DT,TT,VP,PT,TT2,FT} <: AstroCoordTransformation
+    DU::DT
+    TU::TT
+    W::VP
+    ϕ₀::PT
+    t₀::TT2
+    flag_time::FT
+end
+function StiefelScheifeleToCartesianTransform()
+    StiefelScheifeleToCartesianTransform(
+        nothing, nothing, nothing, nothing, nothing, nothing
+    )
+end
+
+function (t::CartesianToStiefelScheifeleTransform)(x::Cartesian, μ::Number; kwargs...)
+    ss_vec = cart2StiefelScheifele(params(x), μ; kwargs...)
+    return StiefelScheifele(ss_vec...)
+end
+const CartesianToStiefelScheifele = CartesianToStiefelScheifeleTransform()
+
+function (t::StiefelScheifeleToCartesianTransform)(
+    x::StiefelScheifele, μ::Number; kwargs...
+)
+    cart_vec = StiefelScheifele2cart(params(x), μ; kwargs...)
+    return Cartesian(cart_vec...)
+end
+const StiefelScheifeleToCartesian = StiefelScheifeleToCartesianTransform()
+
+Base.inv(::CartesianToStiefelScheifeleTransform) = StiefelScheifeleToCartesianTransform()
+Base.inv(::StiefelScheifeleToCartesianTransform) = CartesianToStiefelScheifeleTransform()
+
 # ~~~~~~~~~~~~~~~ All Composed Transformations ~~~~~~~~~~~~~~~ #
 const COORD_TYPES = (
     Cartesian,
@@ -166,6 +214,7 @@ const COORD_TYPES = (
     J2EqOE,
     EDromo,
     KustaanheimoStiefel,
+    StiefelScheifele,
 )
 const COORD_NAMES = Dict(
     Cartesian => :Cartesian,
@@ -181,6 +230,7 @@ const COORD_NAMES = Dict(
     J2EqOE => :J2EqOE,
     EDromo => :EDromo,
     KustaanheimoStiefel => :KustaanheimoStiefel,
+    StiefelScheifele => :StiefelScheifele,
 )
 
 # Build a graph of transformations to find paths
@@ -205,6 +255,7 @@ add_transform_edge(Cartesian, Delaunay)
 add_transform_edge(Cartesian, J2EqOE)
 add_transform_edge(Cartesian, EDromo)
 add_transform_edge(Cartesian, KustaanheimoStiefel)
+add_transform_edge(Cartesian, StiefelScheifele)
 add_transform_edge(Keplerian, USM7)
 add_transform_edge(Keplerian, ModEq)
 add_transform_edge(USM7, USM6)

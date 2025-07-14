@@ -29,8 +29,10 @@ const _BACKENDS = (
     for backend in _BACKENDS
         testset_name = "Coordinate Set Transformation " * backend[1]
         @testset "$testset_name" begin
-            for set in
-                filter(T -> T ∉ (EDromo, KustaanheimoStiefel), AstroCoords.COORD_TYPES)
+            for set in filter(
+                T -> T ∉ (EDromo, KustaanheimoStiefel, StiefelScheifele),
+                AstroCoords.COORD_TYPES,
+            )
                 f_fd, df_fd = value_and_jacobian(
                     (x) -> set(Cartesian(x), μ), AutoFiniteDiff(), state
                 )
@@ -63,7 +65,10 @@ const _BACKENDS = (
     end
 
     @testset "Coordinate Set Transformation Zygote" begin
-        for set in filter(T -> T ∉ (EDromo, KustaanheimoStiefel), AstroCoords.COORD_TYPES)
+        for set in filter(
+            T -> T ∉ (EDromo, KustaanheimoStiefel, StiefelScheifele),
+            AstroCoords.COORD_TYPES,
+        )
             f_fd, df_fd = value_and_jacobian(
                 (x) -> set(Cartesian(x), μ), AutoFiniteDiff(), state
             )
@@ -619,7 +624,7 @@ end
     @testset "Differentiate wrt State" begin
         for backend in _BACKENDS
             @testset "$(backend[1]) Backend" begin
-                for flag_time in (KSPhysicalTime(), KSLinearTime())
+                for flag_time in (PhysicalTime(), LinearTime())
                     # Precompute for reverse pass
                     ks_params = set_ks_configurations(state, μ; flag_time=flag_time)
                     ks_state_vec = Array(
@@ -663,7 +668,7 @@ end
     end
 
     @testset "Differentiate wrt State Zygote" begin
-        for flag_time in (KSPhysicalTime(), KSLinearTime())
+        for flag_time in (PhysicalTime(), LinearTime())
             # Precompute for reverse pass
             ks_params = set_ks_configurations(state, μ; flag_time=flag_time)
             ks_state_vec = Array(params(KustaanheimoStiefel(cart_state, μ; ks_params...)))
@@ -704,7 +709,7 @@ end
                 backend = ("Enzyme", AutoEnzyme(; function_annotation=Enzyme.Duplicated))
             end
             @testset "$(backend[1]) Backend" begin
-                for flag_time in (KSPhysicalTime(), KSLinearTime())
+                for flag_time in (PhysicalTime(), LinearTime())
                     # Differentiate wrt W and t₀
                     f_ad, df_ad = value_and_jacobian(
                         p -> Array(
@@ -753,7 +758,7 @@ end
     end
 
     @testset "Differentiate wrt Kustaanheimo-Stiefel Parameters Zygote" begin
-        for flag_time in (KSPhysicalTime(), KSLinearTime())
+        for flag_time in (PhysicalTime(), LinearTime())
             # Differentiate wrt W and t₀
             to_ks_params(p) = params(
                 KustaanheimoStiefel(
@@ -779,7 +784,7 @@ end
                 backend = ("Enzyme", AutoEnzyme(; function_annotation=Enzyme.Duplicated))
             end
             @testset "$(backend[1]) Backend" begin
-                for flag_time in (KSPhysicalTime(), KSLinearTime())
+                for flag_time in (PhysicalTime(), LinearTime())
                     # Setup for reverse pass
                     ks_params = set_ks_configurations(state, μ; flag_time=flag_time)
                     ks_state = KustaanheimoStiefel(cart_state, μ; ks_params...)
@@ -833,7 +838,7 @@ end
     end
 
     @testset "Differentiate wrt μ Zygote" begin
-        for flag_time in (KSPhysicalTime(), KSLinearTime())
+        for flag_time in (PhysicalTime(), LinearTime())
             # Setup for reverse pass
             ks_params = set_ks_configurations(state, μ; flag_time=flag_time)
             ks_state = KustaanheimoStiefel(cart_state, μ; ks_params...)
@@ -860,6 +865,284 @@ end
                 )
                 f_fd_rev, df_fd_rev = value_and_derivative(
                     m -> from_ks_μ(m), AutoFiniteDiff(), μ
+                )
+
+                @test f_ad_rev ≈ f_fd_rev rtol = 1e-8
+                @test df_ad_rev ≈ df_fd_rev atol = 1e-3
+            catch err
+                @test err isa MethodError
+                @test startswith(
+                    sprint(showerror, err),
+                    "MethodError: no method matching iterate(::Nothing)",
+                )
+            end
+        end
+    end
+end
+
+@testset "Stiefel-Scheifele Transformation Differentiation" begin
+    state = [
+        -1076.225324679696,
+        -6765.896364327722,
+        -332.3087833503755,
+        9.356857417032581,
+        -3.3123476319597557,
+        -1.1880157328553503,
+    ]
+    μ = 3.986004415e5
+    cart_state = Cartesian(state)
+    p = [0.0, 0.0]
+
+    @testset "Differentiate wrt State" begin
+        for backend in _BACKENDS
+            @testset "$(backend[1]) Backend" begin
+                for flag_time in (PhysicalTime(), LinearTime())
+                    # Precompute for reverse pass
+                    ss_params = set_stiefelscheifele_configurations(
+                        state, μ; flag_time=flag_time
+                    )
+                    ss_state_vec = Array(
+                        params(StiefelScheifele(cart_state, μ; ss_params...))
+                    )
+
+                    # Forward pass (Cartesian -> StiefelScheifele), including parameter calculation
+                    to_ss(x) = Array(
+                        params(
+                            StiefelScheifele(
+                                Cartesian(x),
+                                μ;
+                                set_stiefelscheifele_configurations(
+                                    x, μ; flag_time=flag_time
+                                )...,
+                            ),
+                        ),
+                    )
+
+                    f_ad, df_ad = value_and_jacobian(x -> to_ss(x), backend[2], state)
+                    f_fd, df_fd = value_and_jacobian(x -> to_ss(x), AutoFiniteDiff(), state)
+
+                    @test f_ad ≈ f_fd rtol = 1e-8
+                    @test df_ad ≈ df_fd atol = 1e-1
+
+                    # Reverse pass (StiefelScheifele -> Cartesian)
+                    from_ss(x) = Array(
+                        params(Cartesian(StiefelScheifele(x...), μ; ss_params...))
+                    )
+
+                    f_ad_rev, df_ad_rev = value_and_jacobian(
+                        x -> from_ss(x), backend[2], ss_state_vec
+                    )
+                    f_fd_rev, df_fd_rev = value_and_jacobian(
+                        x -> from_ss(x), AutoFiniteDiff(), ss_state_vec
+                    )
+
+                    @test f_ad_rev ≈ f_fd_rev rtol = 1e-8
+                    @test df_ad_rev ≈ df_fd_rev atol = 1e-1
+                end
+            end
+        end
+    end
+
+    @testset "Differentiate wrt State Zygote" begin
+        for flag_time in (PhysicalTime(), LinearTime())
+            # Precompute for reverse pass
+            ss_params = set_stiefelscheifele_configurations(state, μ; flag_time=flag_time)
+            ss_state_vec = Array(params(StiefelScheifele(cart_state, μ; ss_params...)))
+
+            # Forward pass (Cartesian -> StiefelScheifele), including parameter calculation
+            to_ss(x) = Array(
+                params(
+                    StiefelScheifele(
+                        Cartesian(x),
+                        μ;
+                        set_stiefelscheifele_configurations(x, μ; flag_time=flag_time)...,
+                    ),
+                ),
+            )
+
+            f_ad, df_ad = value_and_jacobian(x -> to_ss(x), AutoZygote(), state)
+            f_fd, df_fd = value_and_jacobian(x -> to_ss(x), AutoFiniteDiff(), state)
+
+            @test f_ad ≈ f_fd rtol = 1e-8
+            @test df_ad ≈ df_fd atol = 1e-1
+
+            # Reverse pass (StiefelScheifele -> Cartesian)
+            from_ss(x) = Array(params(Cartesian(StiefelScheifele(x), μ; ss_params...)))
+
+            f_ad_rev, df_ad_rev = value_and_jacobian(
+                x -> from_ss(x), AutoZygote(), ss_state_vec
+            )
+            f_fd_rev, df_fd_rev = value_and_jacobian(
+                x -> from_ss(x), AutoFiniteDiff(), ss_state_vec
+            )
+
+            @test f_ad_rev ≈ f_fd_rev rtol = 1e-8
+            @test df_ad_rev ≈ df_fd_rev atol = 1e-1
+        end
+    end
+
+    @testset "Differentiate wrt Stiefel-Scheifele Parameters" begin
+        for backend in _BACKENDS
+            if backend[1] == "Enzyme"
+                backend = ("Enzyme", AutoEnzyme(; function_annotation=Enzyme.Duplicated))
+            end
+            @testset "$(backend[1]) Backend" begin
+                for flag_time in (PhysicalTime(), LinearTime())
+                    # Differentiate wrt W and t₀
+                    f_ad, df_ad = value_and_jacobian(
+                        p -> Array(
+                            params(
+                                StiefelScheifele(
+                                    cart_state,
+                                    μ;
+                                    set_stiefelscheifele_configurations(
+                                        state, μ; W=p[1], t₀=p[2], flag_time=flag_time
+                                    )...,
+                                ),
+                            ),
+                        ),
+                        backend[2],
+                        p,
+                    )
+                    f_fd, df_fd = value_and_jacobian(
+                        p -> Array(
+                            params(
+                                StiefelScheifele(
+                                    cart_state,
+                                    μ;
+                                    set_stiefelscheifele_configurations(
+                                        state, μ; W=p[1], t₀=p[2], flag_time=flag_time
+                                    )...,
+                                ),
+                            ),
+                        ),
+                        AutoFiniteDiff(),
+                        p,
+                    )
+
+                    @test f_ad ≈ f_fd rtol = 1e-8
+                    @test df_ad ≈ df_fd atol = 1e-3
+                end
+            end
+        end
+    end
+
+    @testset "Differentiate wrt Stiefel-Scheifele Parameters Zygote" begin
+        for flag_time in (PhysicalTime(), LinearTime())
+            # Differentiate wrt W and t₀
+            to_ss_params(p) = params(
+                StiefelScheifele(
+                    cart_state,
+                    μ;
+                    set_stiefelscheifele_configurations(
+                        state, μ; W=p[1], t₀=p[2], flag_time=flag_time
+                    )...,
+                ),
+            )
+
+            f_ad, df_ad = value_and_jacobian(p -> to_ss_params(p), AutoZygote(), p)
+            f_fd, df_fd = value_and_jacobian(p -> to_ss_params(p), AutoFiniteDiff(), p)
+
+            @test f_ad ≈ f_fd rtol = 1e-8
+            @test df_ad ≈ df_fd atol = 1e-3
+        end
+    end
+
+    @testset "Differentiate wrt μ" begin
+        for backend in _BACKENDS
+            if backend[1] == "Enzyme"
+                backend = ("Enzyme", AutoEnzyme(; function_annotation=Enzyme.Duplicated))
+            end
+            @testset "$(backend[1]) Backend" begin
+                for flag_time in (PhysicalTime(), LinearTime())
+                    # Setup for reverse pass
+                    ss_params = set_stiefelscheifele_configurations(
+                        state, μ; flag_time=flag_time
+                    )
+                    ss_state = StiefelScheifele(cart_state, μ; ss_params...)
+
+                    f_ad, df_ad = value_and_derivative(
+                        m -> Array(
+                            params(
+                                StiefelScheifele(
+                                    cart_state,
+                                    m;
+                                    set_stiefelscheifele_configurations(
+                                        state, m; flag_time=flag_time
+                                    )...,
+                                ),
+                            ),
+                        ),
+                        backend[2],
+                        μ,
+                    )
+                    f_fd, df_fd = value_and_derivative(
+                        m -> Array(
+                            params(
+                                StiefelScheifele(
+                                    cart_state,
+                                    m;
+                                    set_stiefelscheifele_configurations(
+                                        state, m; flag_time=flag_time
+                                    )...,
+                                ),
+                            ),
+                        ),
+                        AutoFiniteDiff(),
+                        μ,
+                    )
+
+                    @test f_ad ≈ f_fd rtol = 1e-8
+                    @test df_ad ≈ df_fd atol = 1e-3
+
+                    f_ad_rev, df_ad_rev = value_and_derivative(
+                        m -> Array(params(Cartesian(ss_state, m; ss_params...))),
+                        backend[2],
+                        μ,
+                    )
+                    f_fd_rev, df_fd_rev = value_and_derivative(
+                        m -> Array(params(Cartesian(ss_state, m; ss_params...))),
+                        AutoFiniteDiff(),
+                        μ,
+                    )
+
+                    @test f_ad_rev ≈ f_fd_rev rtol = 1e-8
+                    @test df_ad_rev ≈ df_fd_rev atol = 1e-3
+                end
+            end
+        end
+    end
+
+    @testset "Differentiate wrt μ Zygote" begin
+        for flag_time in (PhysicalTime(), LinearTime())
+            # Setup for reverse pass
+            ss_params = set_stiefelscheifele_configurations(state, μ; flag_time=flag_time)
+            ss_state = StiefelScheifele(cart_state, μ; ss_params...)
+
+            # Forward pass (Cartesian -> StiefelScheifele)
+            to_ss_μ(m) = params(
+                StiefelScheifele(
+                    cart_state,
+                    m;
+                    set_stiefelscheifele_configurations(state, m; flag_time=flag_time)...,
+                ),
+            )
+
+            f_ad, df_ad = value_and_derivative(m -> to_ss_μ(m), AutoZygote(), μ)
+            f_fd, df_fd = value_and_derivative(m -> to_ss_μ(m), AutoFiniteDiff(), μ)
+
+            @test f_ad ≈ f_fd rtol = 1e-8
+            @test df_ad ≈ df_fd atol = 1e-3
+
+            # Reverse pass (StiefelScheifele -> Cartesian)
+            from_ss_μ(m) = params(Cartesian(ss_state, m; ss_params...))
+
+            try
+                f_ad_rev, df_ad_rev = value_and_derivative(
+                    m -> from_ss_μ(m), AutoZygote(), μ
+                )
+                f_fd_rev, df_fd_rev = value_and_derivative(
+                    m -> from_ss_μ(m), AutoFiniteDiff(), μ
                 )
 
                 @test f_ad_rev ≈ f_fd_rev rtol = 1e-8

@@ -1,4 +1,4 @@
-@testset "EDromo Parameterized" begin
+@testset "EDromo Round Trip" begin
     # A robust sample state that is not-circular and not-equatorial
     base_state_vec = [
         -1076.225324679696,
@@ -13,7 +13,7 @@
 
     # All coordinate types except EDromo itself
     coord_types_to_test = filter(
-        T -> T ∉ (EDromo, KustaanheimoStiefel), AstroCoords.COORD_TYPES
+        T -> T ∉ (EDromo, KustaanheimoStiefel, StiefelScheifele), AstroCoords.COORD_TYPES
     )
 
     # Parameter sets to test

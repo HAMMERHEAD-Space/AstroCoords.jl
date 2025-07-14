@@ -63,16 +63,7 @@ function KustaanheimoStiefel(
 ) where {T1,T2,T3,T4,T5,T6,T7,T8,T9,T10}
     T = promote_type(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10)
     return KustaanheimoStiefel{T}(
-        T(u₁),
-        T(u₂),
-        T(u₃),
-        T(u₄),
-        T(u₁_prime),
-        T(u₂_prime),
-        T(u₃_prime),
-        T(u₄_prime),
-        T(h),
-        T(τ),
+        u₁, u₂, u₃, u₄, u₁_prime, u₂_prime, u₃_prime, u₄_prime, h, τ
     )
 end
 function (::Type{KS})(g::StaticVector) where {KS<:KustaanheimoStiefel}

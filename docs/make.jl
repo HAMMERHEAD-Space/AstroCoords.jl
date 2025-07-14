@@ -18,6 +18,7 @@ makedocs(;
             "coordinates/J2EqOE.md",
             "coordinates/keplerian.md",
             "coordinates/kustaanheimo-stiefel.md",
+            "coordinates/stiefel-scheifele.md",
             "coordinates/milankovich.md",
             "coordinates/modEq.md",
             "coordinates/spherical.md",

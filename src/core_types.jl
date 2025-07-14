@@ -81,3 +81,10 @@ end
 
 Base.inv(trans::ComposedTransformation) = inv(trans.t2) ∘ inv(trans.t1)
 Base.inv(trans::IdentityTransformation) = trans
+
+export PhysicalTime, ConstantTime, LinearTime
+
+abstract type AbstractTimeType end
+struct PhysicalTime <: AbstractTimeType end
+struct ConstantTime <: AbstractTimeType end
+struct LinearTime <: AbstractTimeType end
