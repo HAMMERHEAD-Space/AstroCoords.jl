@@ -20,6 +20,7 @@ const _COORDINATE_SETS = [
     USMEM,
     J2EqOE,
     EDromo,
+    KustaanheimoStiefel,
 ]
 
 const _state = [

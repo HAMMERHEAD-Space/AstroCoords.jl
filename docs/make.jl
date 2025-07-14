@@ -17,6 +17,7 @@ makedocs(;
             "coordinates/EDromo.md",
             "coordinates/J2EqOE.md",
             "coordinates/keplerian.md",
+            "coordinates/kustaanheimo-stiefel.md",
             "coordinates/milankovich.md",
             "coordinates/modEq.md",
             "coordinates/spherical.md",
