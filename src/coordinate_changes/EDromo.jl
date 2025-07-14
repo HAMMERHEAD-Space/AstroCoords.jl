@@ -197,7 +197,7 @@ function EDromo2cart(
     U = W / (DU / TU)^2
 
     ##################################################
-    #* 4. Compute Velocity in the Intertial Frame
+    #* 4. Compute Velocity in the Inertial Frame
     ##################################################
     î = x̂*cν + ŷ*sν
     ĵ = -x̂*sν + ŷ*cν
