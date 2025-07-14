@@ -29,8 +29,10 @@ const _BACKENDS = (
     for backend in _BACKENDS
         testset_name = "Coordinate Set Transformation " * backend[1]
         @testset "$testset_name" begin
-            for set in
-                filter(T -> T ∉ (EDromo, KustaanheimoStiefel, StiefelScheifele), AstroCoords.COORD_TYPES)
+            for set in filter(
+                T -> T ∉ (EDromo, KustaanheimoStiefel, StiefelScheifele),
+                AstroCoords.COORD_TYPES,
+            )
                 f_fd, df_fd = value_and_jacobian(
                     (x) -> set(Cartesian(x), μ), AutoFiniteDiff(), state
                 )
@@ -63,7 +65,10 @@ const _BACKENDS = (
     end
 
     @testset "Coordinate Set Transformation Zygote" begin
-        for set in filter(T -> T ∉ (EDromo, KustaanheimoStiefel, StiefelScheifele), AstroCoords.COORD_TYPES)
+        for set in filter(
+            T -> T ∉ (EDromo, KustaanheimoStiefel, StiefelScheifele),
+            AstroCoords.COORD_TYPES,
+        )
             f_fd, df_fd = value_and_jacobian(
                 (x) -> set(Cartesian(x), μ), AutoFiniteDiff(), state
             )
@@ -991,11 +996,7 @@ end
                                     cart_state,
                                     μ;
                                     set_stiefelscheifele_configurations(
-                                        state,
-                                        μ;
-                                        W=p[1],
-                                        t₀=p[2],
-                                        flag_time=flag_time,
+                                        state, μ; W=p[1], t₀=p[2], flag_time=flag_time
                                     )...,
                                 ),
                             ),
@@ -1010,11 +1011,7 @@ end
                                     cart_state,
                                     μ;
                                     set_stiefelscheifele_configurations(
-                                        state,
-                                        μ;
-                                        W=p[1],
-                                        t₀=p[2],
-                                        flag_time=flag_time,
+                                        state, μ; W=p[1], t₀=p[2], flag_time=flag_time
                                     )...,
                                 ),
                             ),

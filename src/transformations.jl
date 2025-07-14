@@ -163,7 +163,9 @@ struct CartesianToStiefelScheifeleTransform{DT,TT,VP,PT,TT2,FT} <: AstroCoordTra
     flag_time::FT
 end
 function CartesianToStiefelScheifeleTransform()
-    CartesianToStiefelScheifeleTransform(nothing, nothing, nothing, nothing, nothing, nothing)
+    CartesianToStiefelScheifeleTransform(
+        nothing, nothing, nothing, nothing, nothing, nothing
+    )
 end
 
 struct StiefelScheifeleToCartesianTransform{DT,TT,VP,PT,TT2,FT} <: AstroCoordTransformation
@@ -175,7 +177,9 @@ struct StiefelScheifeleToCartesianTransform{DT,TT,VP,PT,TT2,FT} <: AstroCoordTra
     flag_time::FT
 end
 function StiefelScheifeleToCartesianTransform()
-    StiefelScheifeleToCartesianTransform(nothing, nothing, nothing, nothing, nothing, nothing)
+    StiefelScheifeleToCartesianTransform(
+        nothing, nothing, nothing, nothing, nothing, nothing
+    )
 end
 
 function (t::CartesianToStiefelScheifeleTransform)(x::Cartesian, μ::Number; kwargs...)

@@ -28,7 +28,7 @@ Currently this package implements:
 - [ ] Generalized Modified Equinoctial Orbital Elements
 - [x] EDROMO
 - [x] Kustaanheimo-Stiefel
-- [ ] Stiefel-Scheifel
+- [x] Stiefel-Scheifel
 
 This package may eventually support Attitude Coordinates as well.
 

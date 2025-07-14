@@ -4,15 +4,22 @@ end
 
 @testset "Transformation Allocations" begin
     # Test over all coordinate sets
-    for set1 in filter(T -> T ∉ (EDromo, KustaanheimoStiefel, StiefelScheifele), AstroCoords.COORD_TYPES)
-        for set2 in filter(T -> T ∉ (EDromo, KustaanheimoStiefel, StiefelScheifele), AstroCoords.COORD_TYPES)
+    for set1 in filter(
+        T -> T ∉ (EDromo, KustaanheimoStiefel, StiefelScheifele), AstroCoords.COORD_TYPES
+    )
+        for set2 in filter(
+            T -> T ∉ (EDromo, KustaanheimoStiefel, StiefelScheifele),
+            AstroCoords.COORD_TYPES,
+        )
             @test length(check_allocs(set1, (set2{Float64}, Float64))) == 0
         end
     end
 end
 
 @testset "Quantity Allocations" begin
-    for set in filter(T -> T ∉ (EDromo, KustaanheimoStiefel, StiefelScheifele), AstroCoords.COORD_TYPES)
+    for set in filter(
+        T -> T ∉ (EDromo, KustaanheimoStiefel, StiefelScheifele), AstroCoords.COORD_TYPES
+    )
         @test length(check_allocs(meanMotion, (set{Float64}, Float64))) == 0
         @test length(check_allocs(orbitalPeriod, (set{Float64}, Float64))) == 0
         @test length(check_allocs(orbitalNRG, (set{Float64}, Float64))) == 0
