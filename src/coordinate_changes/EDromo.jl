@@ -228,13 +228,13 @@ Computes the physical time from the EDromo state vector.
 """
 function get_EDromo_time(
     u::AbstractVector{T};
-    DU::DT,
+    DU::DT=0.0,
     TU::TT,
     ϕ::PT,
     t₀::TT2,
-    W::WT,
+    W::WT=0.0,
     flag_time::AbstractTimeType,
-) where {T<:Number,PT<:Number}
+) where {T<:Number,PT<:Number,DT<:Number,TT<:Number,TT2<:Number,WT<:Number}
     RT = promote_type(T, PT)
 
     sϕ, cϕ = sincos(ϕ)
