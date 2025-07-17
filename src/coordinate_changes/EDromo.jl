@@ -273,7 +273,7 @@ function set_edromo_configurations(
     DU = norm(SVector{3}(u[1], u[2], u[3]))
     TU = sqrt(DU^3 / μ)
     ϕ₀ = computeϕ₀(u, μ, DU, TU, W₀)
-    return (; DU, TU, W, ϕ₀, t₀, flag_time)
+    return (; DU, TU, W₀, ϕ₀, t₀, flag_time)
 end
 
 """
