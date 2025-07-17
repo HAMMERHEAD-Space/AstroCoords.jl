@@ -227,7 +227,13 @@ Computes the physical time from the EDromo state vector.
 - `Number`: The computed physical time.
 """
 function get_EDromo_time(
-    u::AbstractVector{T}, ϕ::PT, flag_time::AbstractTimeType
+    u::AbstractVector{T};
+    DU::DT,
+    TU::TT,
+    ϕ::PT,
+    t₀::TT2,
+    W::WT,
+    flag_time::AbstractTimeType,
 ) where {T<:Number,PT<:Number}
     RT = promote_type(T, PT)
 
@@ -241,7 +247,7 @@ function get_EDromo_time(
         t = u[8] - u[3]^(1.5) * (u[1]*sϕ - u[2]*cϕ)
     end
 
-    return RT(t)
+    return RT(t * TU + t₀)
 end
 
 """
