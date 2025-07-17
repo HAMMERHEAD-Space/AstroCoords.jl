@@ -292,8 +292,8 @@ function set_edromo_configurations(;
     return (; DU, TU, W, ϕ, t₀, flag_time)
 end
 
-function set_edromo_configurations(;
-    config::NamedTuple,
+function set_edromo_configurations(
+    config::NamedTuple;
     curr_ϕ::Number,
 )
 
