@@ -30,7 +30,7 @@ function cart2EDromo(
     TU::TT,
     ϕ₀::PT,
     t₀::TT2,
-    W::WT,
+    W₀::WT,
     flag_time::AbstractTimeType,
 ) where {T<:Number,V<:Number,DT<:Number,TT<:Number,PT<:Number,TT2<:Number,WT<:Number}
     RT = promote_type(T, V, DT, TT, PT, TT2, WT)
@@ -44,7 +44,7 @@ function cart2EDromo(
     r = SVector{3,RT}(x / DU, y / DU, z / DU)
     v = SVector{3,RT}(ẋ / (DU / TU), ẏ / (DU / TU), ż / (DU / TU))
 
-    W₀ = W / (DU / TU)^2
+    W = W₀ / (DU / TU)^2
 
     ##################################################
     #* 2. In-plane Elements
@@ -56,14 +56,14 @@ function cart2EDromo(
     sϕ, cϕ = sincos(ϕ₀)
 
     # Total Energy
-    E = v_mag^2 / 2 - 1.0 / r_mag + W₀
+    E = v_mag^2 / 2 - 1.0 / r_mag + W
 
     # Angular Momentum
     h₀ = cross(r, v)
     h₀_mag = norm(h₀)
 
     # Generalized Angular Momentum
-    c₀ = √(h₀_mag^2 + 2*r_mag^2*W₀)
+    c₀ = √(h₀_mag^2 + 2*r_mag^2*W)
 
     # Dot Product of r and v
     r_dot_v = dot(r, v)
@@ -159,7 +159,7 @@ function EDromo2cart(
     TU::TT,
     ϕ₀::PT,
     t₀::TT2,
-    W::WT,
+    W₀::WT,
     flag_time::AbstractTimeType,
 ) where {T<:Number,V<:Number,DT<:Number,TT<:Number,PT<:Number,TT2<:Number,WT<:Number}
     RT = promote_type(T, V, DT, TT, PT, TT2, WT)
@@ -194,7 +194,7 @@ function EDromo2cart(
     ##################################################
     #* 3. Perturbing Potential
     ##################################################
-    U = W / (DU / TU)^2
+    U = W₀ / (DU / TU)^2
 
     ##################################################
     #* 4. Compute Velocity in the Inertial Frame
@@ -266,7 +266,7 @@ gravitational parameter.
 function set_edromo_configurations(
     u::AbstractVector,
     μ::Number;
-    W::Number=0.0,
+    W₀::Number=0.0,
     t₀::Number=0.0,
     flag_time::AbstractTimeType=PhysicalTime(),
 )
@@ -307,9 +307,9 @@ function computeϕ₀(
     v = SVector{3,RT}(ẋ / (DU / TU), ẏ / (DU / TU), ż / (DU / TU))
 
     Μ = μ / (DU^3 / TU^2)
-    U = W₀ / (DU^2 / TU^2)
+    W = W₀ / (DU^2 / TU^2)
 
-    E = 0.5 * dot(v, v) - Μ / norm(r) - U
+    E = 0.5 * dot(v, v) - Μ / norm(r) + W
 
     return atan(dot(r, v)*√(-2.0*E), 1.0 + 2.0*E*norm(r))
 end
