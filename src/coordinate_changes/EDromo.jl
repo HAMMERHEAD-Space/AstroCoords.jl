@@ -1,7 +1,7 @@
 export get_EDromo_time, set_edromo_configurations, PhysicalTime, ConstantTime, LinearTime
 
 """
-    cart2EDromo(u, μ; DU, TU, ϕ₀, t₀, W, flag_time)
+    cart2EDromo(u, μ; DU, TU, ϕ₀, t₀, W₀, flag_time)
 
 Converts a Cartesian state vector to an EDromo state vector.
 
@@ -17,7 +17,7 @@ It requires a set of non-dimensionalizing parameters and configuration flags.
 - `TU::Number`: Reference time unit for non-dimensionalization.
 - `ϕ₀::Number`: Initial value of the fictitious time `ϕ`.
 - `t₀::Number`: Initial physical time `t`.
-- `W::Number`: Perturbing potential energy.
+- `W₀::Number`: Perturbing potential energy.
 - `flag_time::AbstractTimeType`: Time element formulation (`PhysicalTime`, `ConstantTime`, or `LinearTime`).
 
 # Returns
@@ -44,7 +44,8 @@ function cart2EDromo(
     r = SVector{3,RT}(x / DU, y / DU, z / DU)
     v = SVector{3,RT}(ẋ / (DU / TU), ẏ / (DU / TU), ż / (DU / TU))
 
-    W = W₀ / (DU / TU)^2
+    W = W₀ / (DU^2 / TU^2)
+    Μ = μ / (DU^3 / TU^2)
 
     ##################################################
     #* 2. In-plane Elements
@@ -56,7 +57,7 @@ function cart2EDromo(
     sϕ, cϕ = sincos(ϕ₀)
 
     # Total Energy
-    E = v_mag^2 / 2 - 1.0 / r_mag + W
+    E = v_mag^2 / 2 - Μ / r_mag + W
 
     # Angular Momentum
     h₀ = cross(r, v)
@@ -129,7 +130,7 @@ function cart2EDromo(
 end
 
 """
-    EDromo2cart(u, μ; DU, TU, ϕ₀, t₀, W, flag_time)
+    EDromo2cart(u, μ; DU, TU, ϕ₀, t₀, W₀, flag_time)
 
 Converts an EDromo state vector to a Cartesian state vector.
 
@@ -146,7 +147,7 @@ used in the forward transformation.
 - `TU::Number`: Reference time unit for non-dimensionalization.
 - `ϕ₀::Number`: Initial value of the fictitious time `ϕ`.
 - `t₀::Number`: Initial physical time `t`.
-- `W::Number`: Perturbing potential energy.
+- `W₀::Number`: Perturbing potential energy.
 - `flag_time::AbstractTimeType`: Time element formulation (`PhysicalTime`, `ConstantTime`, or `LinearTime`).
 
 # Returns
@@ -240,7 +241,7 @@ function get_EDromo_time(
 end
 
 """
-    set_edromo_configurations(u, μ; W=0.0, t₀=0.0, flag_time=PhysicalTime())
+    set_edromo_configurations(u, μ; W₀=0.0, t₀=0.0, flag_time=PhysicalTime())
 
 Computes and returns a `NamedTuple` of configurations required for EDromo transformations.
 
@@ -256,12 +257,12 @@ gravitational parameter.
 - `μ::Number`: Gravitational parameter.
 
 # Keyword Arguments
-- `W::Number=0.0`: Perturbing potential energy.
+- `W₀::Number=0.0`: Perturbing potential energy.
 - `t₀::Number=0.0`: Initial physical time.
 - `flag_time::AbstractTimeType=PhysicalTime()`: Time element formulation.
 
 # Returns
-- `NamedTuple`: A tuple containing `DU`, `TU`, `W`, `ϕ₀`, `t₀`, `flag_time`.
+- `NamedTuple`: A tuple containing `DU`, `TU`, `W₀`, `ϕ₀`, `t₀`, `flag_time`.
 """
 function set_edromo_configurations(
     u::AbstractVector,

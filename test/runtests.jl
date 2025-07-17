@@ -1,5 +1,4 @@
 using AstroCoords
-using Aqua
 using Test
 
 using DifferentiationInterface
@@ -11,6 +10,7 @@ using Mooncake
 using PolyesterForwardDiff
 using Zygote
 
+using Aqua
 using JET
 using AllocCheck
 

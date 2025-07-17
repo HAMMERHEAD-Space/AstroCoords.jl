@@ -18,7 +18,7 @@
 
     # Parameter sets to test
     time_flags = [PhysicalTime(), ConstantTime(), LinearTime()]
-    W_values = [0.0, 1e-8]
+    W_values = [0.0, -1e-8, 1e-8]
     t0_values = [0.0, 100.0]
 
     for FromCoord in coord_types_to_test
@@ -32,7 +32,7 @@
                         @testset "Params: time_flag=$(typeof(flag)), W=$W, t₀=$t₀" begin
                             # Get the full set of parameters for this test case
                             defaults = set_edromo_configurations(
-                                base_state_vec, μ; W=W, t₀=t₀, flag_time=flag
+                                base_state_vec, μ; W₀=W, t₀=t₀, flag_time=flag
                             )
 
                             # Perform the round trip
