@@ -69,8 +69,8 @@ export CartesianToEDromo, EDromoToCartesian
 struct CartesianToEDromoTransform{DT,TT,WT,PT,TT2,FT} <: AstroCoordTransformation
     DU::DT
     TU::TT
-    W₀::WT
-    ϕ₀::PT
+    W::WT
+    ϕ::PT
     t₀::TT2
     flag_time::FT
 end
@@ -81,8 +81,8 @@ end
 struct EDromoToCartesianTransform{DT,TT,WT,PT,TT2,FT} <: AstroCoordTransformation
     DU::DT
     TU::TT
-    W₀::WT
-    ϕ₀::PT
+    W::WT
+    ϕ::PT
     t₀::TT2
     flag_time::FT
 end

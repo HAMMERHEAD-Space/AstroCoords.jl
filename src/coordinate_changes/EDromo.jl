@@ -1,7 +1,7 @@
 export get_EDromo_time, set_edromo_configurations, PhysicalTime, ConstantTime, LinearTime
 
 """
-    cart2EDromo(u, μ; DU, TU, ϕ₀, t₀, W₀, flag_time)
+    cart2EDromo(u, μ; DU, TU, ϕ, t₀, W, flag_time)
 
 Converts a Cartesian state vector to an EDromo state vector.
 
@@ -15,9 +15,9 @@ It requires a set of non-dimensionalizing parameters and configuration flags.
 # Keyword Arguments
 - `DU::Number`: Reference distance unit for non-dimensionalization.
 - `TU::Number`: Reference time unit for non-dimensionalization.
-- `ϕ₀::Number`: Initial value of the fictitious time `ϕ`.
+- `ϕ::Number`: Initial value of the fictitious time `ϕ`.
 - `t₀::Number`: Initial physical time `t`.
-- `W₀::Number`: Perturbing potential energy.
+- `W::Number`: Perturbing potential energy.
 - `flag_time::AbstractTimeType`: Time element formulation (`PhysicalTime`, `ConstantTime`, or `LinearTime`).
 
 # Returns
@@ -28,9 +28,9 @@ function cart2EDromo(
     μ::V;
     DU::DT,
     TU::TT,
-    ϕ₀::PT,
+    ϕ::PT,
     t₀::TT2,
-    W₀::WT,
+    W::WT,
     flag_time::AbstractTimeType,
 ) where {T<:Number,V<:Number,DT<:Number,TT<:Number,PT<:Number,TT2<:Number,WT<:Number}
     RT = promote_type(T, V, DT, TT, PT, TT2, WT)
@@ -44,7 +44,7 @@ function cart2EDromo(
     r = SVector{3,RT}(x / DU, y / DU, z / DU)
     v = SVector{3,RT}(ẋ / (DU / TU), ẏ / (DU / TU), ż / (DU / TU))
 
-    W = W₀ / (DU^2 / TU^2)
+    W = W / (DU^2 / TU^2)
     Μ = μ / (DU^3 / TU^2)
 
     ##################################################
@@ -54,7 +54,7 @@ function cart2EDromo(
     r_mag = norm(r)
     v_mag = norm(v)
 
-    sϕ, cϕ = sincos(ϕ₀)
+    sϕ, cϕ = sincos(ϕ)
 
     # Total Energy
     E = v_mag^2 / 2 - Μ / r_mag + W
@@ -76,7 +76,7 @@ function cart2EDromo(
     ##################################################
     #* 3. Quaternion Elements
     ##################################################
-    ν₀ = ϕ₀ + 2.0*atan(r_dot_v, c₀ + r_mag*√(-2.0*E))
+    ν₀ = ϕ + 2.0*atan(r_dot_v, c₀ + r_mag*√(-2.0*E))
     sν, cν = sincos(ν₀)
 
     # Orbital Frame in the IRF
@@ -121,7 +121,7 @@ function cart2EDromo(
     if flag_time isa PhysicalTime
         ζ₈ = t₀ / TU
     elseif flag_time isa ConstantTime
-        ζ₈ = t₀ / TU + ζ₃^(1.5) * (ζ₁*sϕ - ζ₂*cϕ - ϕ₀)
+        ζ₈ = t₀ / TU + ζ₃^(1.5) * (ζ₁*sϕ - ζ₂*cϕ - ϕ)
     elseif flag_time isa LinearTime
         ζ₈ = t₀ / TU + ζ₃^(1.5) * (ζ₁*sϕ - ζ₂*cϕ)
     end
@@ -130,7 +130,7 @@ function cart2EDromo(
 end
 
 """
-    EDromo2cart(u, μ; DU, TU, ϕ₀, t₀, W₀, flag_time)
+    EDromo2cart(u, μ; DU, TU, ϕ, t₀, W, flag_time)
 
 Converts an EDromo state vector to a Cartesian state vector.
 
@@ -145,9 +145,9 @@ used in the forward transformation.
 # Keyword Arguments
 - `DU::Number`: Reference distance unit for non-dimensionalization.
 - `TU::Number`: Reference time unit for non-dimensionalization.
-- `ϕ₀::Number`: Initial value of the fictitious time `ϕ`.
+- `ϕ::Number`: Initial value of the fictitious time `ϕ`.
 - `t₀::Number`: Initial physical time `t`.
-- `W₀::Number`: Perturbing potential energy.
+- `W::Number`: Perturbing potential energy.
 - `flag_time::AbstractTimeType`: Time element formulation (`PhysicalTime`, `ConstantTime`, or `LinearTime`).
 
 # Returns
@@ -158,9 +158,9 @@ function EDromo2cart(
     μ::V;
     DU::DT,
     TU::TT,
-    ϕ₀::PT,
+    ϕ::PT,
     t₀::TT2,
-    W₀::WT,
+    W::WT,
     flag_time::AbstractTimeType,
 ) where {T<:Number,V<:Number,DT<:Number,TT<:Number,PT<:Number,TT2<:Number,WT<:Number}
     RT = promote_type(T, V, DT, TT, PT, TT2, WT)
@@ -170,7 +170,7 @@ function EDromo2cart(
     ##################################################
     #* 1. Auxiliary Quantities
     ##################################################
-    sϕ, cϕ = sincos(ϕ₀)
+    sϕ, cϕ = sincos(ϕ)
 
     ρ = 1.0 - ζ₁*cϕ - ζ₂*sϕ
     r_mag = ζ₃ * ρ
@@ -195,7 +195,7 @@ function EDromo2cart(
     ##################################################
     #* 3. Perturbing Potential
     ##################################################
-    U = W₀ / (DU / TU)^2
+    U = W / (DU^2 / TU^2)
 
     ##################################################
     #* 4. Compute Velocity in the Inertial Frame
@@ -227,21 +227,25 @@ Computes the physical time from the EDromo state vector.
 - `Number`: The computed physical time.
 """
 function get_EDromo_time(
-    u::AbstractVector{T}, flag_time::AbstractTimeType
-) where {T<:Number}
+    u::AbstractVector{T}, ϕ::PT, flag_time::AbstractTimeType
+) where {T<:Number,PT<:Number}
+    RT = promote_type(T, PT)
+
+    sϕ, cϕ = sincos(ϕ)
+
     if flag_time isa PhysicalTime
         t = u[8]
     elseif flag_time isa ConstantTime
-        t = u[8] - u[3]^(1.5) * (u[1]*sϕ - u[2]*cϕ - ϕ₀)
+        t = u[8] - u[3]^(1.5) * (u[1]*sϕ - u[2]*cϕ - ϕ)
     elseif flag_time isa LinearTime
         t = u[8] - u[3]^(1.5) * (u[1]*sϕ - u[2]*cϕ)
     end
 
-    return t
+    return RT(t)
 end
 
 """
-    set_edromo_configurations(u, μ; W₀=0.0, t₀=0.0, flag_time=PhysicalTime())
+    set_edromo_configurations(u, μ; W=0.0, t₀=0.0, ϕ=0.0, flag_time=PhysicalTime())
 
 Computes and returns a `NamedTuple` of configurations required for EDromo transformations.
 
@@ -250,31 +254,31 @@ gravitational parameter.
 
 - `DU` is set to the initial position magnitude.
 - `TU` is derived from `DU` and `μ`.
-- `ϕ₀` is computed based on the formulation in Baù, et al. (2015).
+- `ϕ` is computed based on the formulation in Baù, et al. (2015).
 
 # Arguments
 - `u::AbstractVector`: Cartesian state vector `[x, y, z, ẋ, ẏ, ż]`.
 - `μ::Number`: Gravitational parameter.
 
 # Keyword Arguments
-- `W₀::Number=0.0`: Perturbing potential energy.
+- `W::Number=0.0`: Perturbing potential energy.
 - `t₀::Number=0.0`: Initial physical time.
 - `flag_time::AbstractTimeType=PhysicalTime()`: Time element formulation.
 
 # Returns
-- `NamedTuple`: A tuple containing `DU`, `TU`, `W₀`, `ϕ₀`, `t₀`, `flag_time`.
+- `NamedTuple`: A tuple containing `DU`, `TU`, `W`, `ϕ`, `t₀`, `flag_time`.
 """
 function set_edromo_configurations(
     u::AbstractVector,
     μ::Number;
-    W₀::Number=0.0,
+    W::Number=0.0,
     t₀::Number=0.0,
+    ϕ::Number=0.0,
     flag_time::AbstractTimeType=PhysicalTime(),
 )
     DU = norm(SVector{3}(u[1], u[2], u[3]))
     TU = sqrt(DU^3 / μ)
-    ϕ₀ = computeϕ₀(u, μ, DU, TU, W₀)
-    return (; DU, TU, W₀, ϕ₀, t₀, flag_time)
+    return (; DU, TU, W, ϕ, t₀, flag_time)
 end
 
 """
