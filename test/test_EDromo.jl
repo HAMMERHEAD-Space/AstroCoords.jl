@@ -33,8 +33,8 @@
                         for ϕ in ϕ_values
                             @testset "Params: time_flag=$(typeof(flag)), W=$W, t₀=$t₀, ϕ=$ϕ" begin
                                 # Get the full set of parameters for this test case
-                                defaults = set_edromo_configurations(
-                                    base_state_vec, μ; W=W, t₀=t₀, ϕ=ϕ, flag_time=flag
+                                defaults = set_initial_edromo_configurations(
+                                    base_state_vec, μ; W=W, t₀=t₀, flag_time=flag
                                 )
 
                                 # Perform the round trip

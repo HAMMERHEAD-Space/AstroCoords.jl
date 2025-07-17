@@ -1,5 +1,5 @@
-export get_EDromo_time, set_edromo_configurations, PhysicalTime, ConstantTime, LinearTime
-
+export get_EDromo_time
+export set_initial_edromo_configurations, set_edromo_configurations
 """
     cart2EDromo(u, μ; DU, TU, ϕ, t₀, W, flag_time)
 
@@ -268,17 +268,43 @@ gravitational parameter.
 # Returns
 - `NamedTuple`: A tuple containing `DU`, `TU`, `W`, `ϕ`, `t₀`, `flag_time`.
 """
-function set_edromo_configurations(
+function set_initial_edromo_configurations(
     u::AbstractVector,
     μ::Number;
     W::Number=0.0,
     t₀::Number=0.0,
-    ϕ::Number=0.0,
     flag_time::AbstractTimeType=PhysicalTime(),
 )
     DU = norm(SVector{3}(u[1], u[2], u[3]))
     TU = sqrt(DU^3 / μ)
+    ϕ = computeϕ₀(u, μ, DU, TU, W)
     return (; DU, TU, W, ϕ, t₀, flag_time)
+end
+
+function set_edromo_configurations(;
+    DU::Number = 0.0,
+    TU::Number = 0.0,
+    W::Number = 0.0,
+    ϕ::Number = 0.0,
+    t₀::Number = 0.0,
+    flag_time::AbstractTimeType = PhysicalTime(),
+)
+    return (; DU, TU, W, ϕ, t₀, flag_time)
+end
+
+function set_edromo_configurations(;
+    config::NamedTuple,
+    curr_ϕ::Number,
+)
+
+    return (;
+        DU = config.DU,
+        TU = config.TU,
+        W = config.W,
+        ϕ = curr_ϕ,
+        t₀ = config.t₀,
+        flag_time = config.flag_time,
+    )
 end
 
 """

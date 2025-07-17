@@ -50,8 +50,8 @@
             for t₀ in (0.0, 100.0)
                 for ϕ in (0.0, 100.0)
                     for flag_time in (PhysicalTime(), ConstantTime(), LinearTime())
-                        edromo_params = set_edromo_configurations(
-                            state, μ; W=W, t₀=t₀, ϕ=ϕ, flag_time=flag_time
+                        edromo_params = set_initial_edromo_configurations(
+                            state, μ; W=W, t₀=t₀, flag_time=flag_time
                         )
 
                         edromo_state = EDromo(cart_state, μ; edromo_params...)
