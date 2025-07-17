@@ -310,7 +310,7 @@ function computeϕ₀(
     Μ = μ / (DU^3 / TU^2)
     W = W₀ / (DU^2 / TU^2)
 
-    E = 0.5 * dot(v, v) - Μ / norm(r) + W
+    E = 0.5 * dot(v, v) - Μ / norm(r) - W
 
     return atan(dot(r, v)*√(-2.0*E), 1.0 + 2.0*E*norm(r))
 end
