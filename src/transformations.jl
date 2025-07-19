@@ -92,13 +92,13 @@ end
 
 function (t::CartesianToEDromoTransform)(x::Cartesian, μ::Number; kwargs...)
     edromo_vec = cart2EDromo(params(x), μ; kwargs...)
-    return EDromo(edromo_vec...)
+    return EDromo(edromo_vec)
 end
 const CartesianToEDromo = CartesianToEDromoTransform()
 
 function (t::EDromoToCartesianTransform)(x::EDromo, μ::Number; kwargs...)
     cart_vec = EDromo2cart(params(x), μ; kwargs...)
-    return Cartesian(cart_vec...)
+    return Cartesian(cart_vec)
 end
 const EDromoToCartesian = EDromoToCartesianTransform()
 
@@ -132,7 +132,7 @@ end
 
 function (t::CartesianToKustaanheimoStiefelTransform)(x::Cartesian, μ::Number; kwargs...)
     ks_vec = cart2KS(params(x), μ; kwargs...)
-    return KustaanheimoStiefel(ks_vec...)
+    return KustaanheimoStiefel(ks_vec)
 end
 const CartesianToKustaanheimoStiefel = CartesianToKustaanheimoStiefelTransform()
 
@@ -140,7 +140,7 @@ function (t::KustaanheimoStiefelToCartesianTransform)(
     x::KustaanheimoStiefel, μ::Number; kwargs...
 )
     cart_vec = KS2cart(params(x), μ; kwargs...)
-    return Cartesian(cart_vec...)
+    return Cartesian(cart_vec)
 end
 const KustaanheimoStiefelToCartesian = KustaanheimoStiefelToCartesianTransform()
 
@@ -184,7 +184,7 @@ end
 
 function (t::CartesianToStiefelScheifeleTransform)(x::Cartesian, μ::Number; kwargs...)
     ss_vec = cart2StiefelScheifele(params(x), μ; kwargs...)
-    return StiefelScheifele(ss_vec...)
+    return StiefelScheifele(ss_vec)
 end
 const CartesianToStiefelScheifele = CartesianToStiefelScheifeleTransform()
 
@@ -192,7 +192,7 @@ function (t::StiefelScheifeleToCartesianTransform)(
     x::StiefelScheifele, μ::Number; kwargs...
 )
     cart_vec = StiefelScheifele2cart(params(x), μ; kwargs...)
-    return Cartesian(cart_vec...)
+    return Cartesian(cart_vec)
 end
 const StiefelScheifeleToCartesian = StiefelScheifeleToCartesianTransform()
 
