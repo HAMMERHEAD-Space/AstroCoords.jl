@@ -92,13 +92,13 @@ end
 
 function (t::CartesianToEDromoTransform)(x::Cartesian, μ::Number; kwargs...)
     edromo_vec = cart2EDromo(params(x), μ; kwargs...)
-    return EDromo(edromo_vec[1], edromo_vec[2], edromo_vec[3], edromo_vec[4], edromo_vec[5], edromo_vec[6], edromo_vec[7], edromo_vec[8])
+    return EDromo(edromo_vec)
 end
 const CartesianToEDromo = CartesianToEDromoTransform()
 
 function (t::EDromoToCartesianTransform)(x::EDromo, μ::Number; kwargs...)
     cart_vec = EDromo2cart(params(x), μ; kwargs...)
-    return Cartesian(cart_vec[1], cart_vec[2], cart_vec[3], cart_vec[4], cart_vec[5], cart_vec[6])
+    return Cartesian(Vector(cart_vec))
 end
 const EDromoToCartesian = EDromoToCartesianTransform()
 
@@ -132,7 +132,7 @@ end
 
 function (t::CartesianToKustaanheimoStiefelTransform)(x::Cartesian, μ::Number; kwargs...)
     ks_vec = cart2KS(params(x), μ; kwargs...)
-    return KustaanheimoStiefel(ks_vec[1], ks_vec[2], ks_vec[3], ks_vec[4], ks_vec[5], ks_vec[6], ks_vec[7], ks_vec[8], ks_vec[9], ks_vec[10])
+    return KustaanheimoStiefel(Vector(ks_vec))
 end
 const CartesianToKustaanheimoStiefel = CartesianToKustaanheimoStiefelTransform()
 
@@ -140,7 +140,7 @@ function (t::KustaanheimoStiefelToCartesianTransform)(
     x::KustaanheimoStiefel, μ::Number; kwargs...
 )
     cart_vec = KS2cart(params(x), μ; kwargs...)
-    return Cartesian(cart_vec[1], cart_vec[2], cart_vec[3], cart_vec[4], cart_vec[5], cart_vec[6])
+    return Cartesian(Vector(cart_vec))
 end
 const KustaanheimoStiefelToCartesian = KustaanheimoStiefelToCartesianTransform()
 
@@ -184,7 +184,7 @@ end
 
 function (t::CartesianToStiefelScheifeleTransform)(x::Cartesian, μ::Number; kwargs...)
     ss_vec = cart2StiefelScheifele(params(x), μ; kwargs...)
-    return StiefelScheifele(ss_vec[1], ss_vec[2], ss_vec[3], ss_vec[4], ss_vec[5], ss_vec[6], ss_vec[7], ss_vec[8], ss_vec[9], ss_vec[10])
+    return StiefelScheifele(Vector(ss_vec))
 end
 const CartesianToStiefelScheifele = CartesianToStiefelScheifeleTransform()
 
@@ -192,7 +192,7 @@ function (t::StiefelScheifeleToCartesianTransform)(
     x::StiefelScheifele, μ::Number; kwargs...
 )
     cart_vec = StiefelScheifele2cart(params(x), μ; kwargs...)
-    return Cartesian(cart_vec[1], cart_vec[2], cart_vec[3], cart_vec[4], cart_vec[5], cart_vec[6])
+    return Cartesian(Vector(cart_vec))
 end
 const StiefelScheifeleToCartesian = StiefelScheifeleToCartesianTransform()
 
