@@ -40,7 +40,7 @@ const _cart_state = Cartesian(_state)
 const _reg_config = RegularizedCoordinateConfig(_state, _μ; flag_time=PhysicalTime())
 
 # Compute phi for EDromo and Stiefel-Scheifele transformations
-const _phi = compute_initial_phi(_state, _μ, _reg_config.DU, _reg_config.TU, _reg_config.W)
+const _phi = compute_initial_phi(_state, _μ, _reg_config)
 
 for set in _COORDINATE_SETS
     SUITE["transformation"][string(set)] = @benchmarkable $(set)($_cart_state, $_μ)

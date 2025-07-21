@@ -69,7 +69,7 @@ function compute_characteristic_scales(state::AbstractVector, μ::Number)
 end
 
 """
-    compute_initial_phi(state, μ, DU, TU, W)
+    compute_initial_phi(state, μ, config)
 
 Computes the initial value of the fictitious time `ϕ` for regularized coordinates (EDromo, Stiefel-Scheifele).
 
@@ -80,16 +80,15 @@ MNRAS 454(3), pp. 2890-2908. 2015.
 # Arguments
 - `state::AbstractVector`: Cartesian state vector `[x, y, z, ẋ, ẏ, ż]`
 - `μ::Number`: Gravitational parameter
-- `DU::Number`: Reference distance unit
-- `TU::Number`: Reference time unit  
-- `W::Number`: Perturbing potential energy
+- `config::RegularizedCoordinateConfig`: Configuration struct containing DU, TU, and W
 
 # Returns
 - `Number`: The computed value of `ϕ₀`
 """
 function compute_initial_phi(
-    state::AbstractVector{T}, μ::V, DU::DT, TU::TT, W::WT
-) where {T<:Number,V<:Number,DT<:Number,TT<:Number,WT<:Number}
+    state::AbstractVector{T}, μ::V, config::RegularizedCoordinateConfig
+) where {T<:Number,V<:Number}
+    DU, TU, W = config.DU, config.TU, config.W
     RT = promote_type(T, V, DT, TT, WT)
 
     x, y, z, ẋ, ẏ, ż = state

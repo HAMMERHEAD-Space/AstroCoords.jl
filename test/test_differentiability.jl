@@ -356,9 +356,7 @@ end
                         state, μ; flag_time=flag_time
                     )
                     # Use a specific phi value for testing
-                    ϕ = compute_initial_phi(
-                        state, μ, edromo_params.DU, edromo_params.TU, edromo_params.W
-                    )
+                    ϕ = compute_initial_phi(state, μ, edromo_params)
                     edromo_state_vec = Array(
                         params(EDromo(cart_state, μ, ϕ, edromo_params))
                     )
@@ -366,7 +364,7 @@ end
                     # Forward pass (Cartesian -> EDromo), including parameter calculation
                     to_edromo(x) = begin
                         config = RegularizedCoordinateConfig(x, μ; flag_time=flag_time)
-                        ϕ_x = compute_initial_phi(x, μ, config.DU, config.TU, config.W)
+                        ϕ_x = compute_initial_phi(x, μ, config)
                         Array(params(EDromo(Cartesian(x), μ, ϕ_x, config)))
                     end
 
@@ -401,15 +399,13 @@ end
         for flag_time in (PhysicalTime(), ConstantTime(), LinearTime())
             # Precompute for reverse pass
             edromo_params = RegularizedCoordinateConfig(state, μ; flag_time=flag_time)
-            ϕ = compute_initial_phi(
-                state, μ, edromo_params.DU, edromo_params.TU, edromo_params.W
-            )
+            ϕ = compute_initial_phi(state, μ, edromo_params)
             edromo_state_vec = Array(params(EDromo(cart_state, μ, ϕ, edromo_params)))
 
             # Forward pass (Cartesian -> EDromo), including parameter calculation
             to_edromo(x) = begin
                 config = RegularizedCoordinateConfig(x, μ; flag_time=flag_time)
-                ϕ_x = compute_initial_phi(x, μ, config.DU, config.TU, config.W)
+                ϕ_x = compute_initial_phi(x, μ, config)
                 Array(params(EDromo(Cartesian(x), μ, ϕ_x, config)))
             end
 
@@ -446,9 +442,7 @@ end
                         state, μ; flag_time=flag_time
                     )
                     # Use a specific phi value for testing
-                    ϕ = compute_initial_phi(
-                        state, μ, edromo_params.DU, edromo_params.TU, edromo_params.W
-                    )
+                    ϕ = compute_initial_phi(state, μ, edromo_params)
                     edromo_state_vec = Array(
                         params(EDromo(cart_state, μ, ϕ, edromo_params))
                     )
@@ -488,9 +482,7 @@ end
             # Precompute for reverse pass
             edromo_params = RegularizedCoordinateConfig(state, μ; flag_time=flag_time)
             # Use a specific phi value for testing
-            ϕ = compute_initial_phi(
-                state, μ, edromo_params.DU, edromo_params.TU, edromo_params.W
-            )
+            ϕ = compute_initial_phi(state, μ, edromo_params)
             edromo_state_vec = Array(params(EDromo(cart_state, μ, ϕ, edromo_params)))
 
             # Forward pass (Cartesian -> EDromo), including parameter calculation
@@ -530,7 +522,7 @@ end
                             config = RegularizedCoordinateConfig(
                                 state, μ; W=p[1], t₀=p[2], flag_time=flag_time
                             )
-                            ϕ = compute_initial_phi(state, μ, config.DU, config.TU, p[1])
+                            ϕ = compute_initial_phi(state, μ, config)
                             Array(params(EDromo(cart_state, μ, ϕ, config)))
                         end,
                         backend[2],
@@ -541,7 +533,7 @@ end
                             config = RegularizedCoordinateConfig(
                                 state, μ; W=p[1], t₀=p[2], flag_time=flag_time
                             )
-                            ϕ = compute_initial_phi(state, μ, config.DU, config.TU, p[1])
+                            ϕ = compute_initial_phi(state, μ, config)
                             Array(params(EDromo(cart_state, μ, ϕ, config)))
                         end,
                         AutoFiniteDiff(),
@@ -562,7 +554,7 @@ end
                 config = RegularizedCoordinateConfig(
                     state, μ; W=p[1], t₀=p[2], flag_time=flag_time
                 )
-                ϕ = compute_initial_phi(state, μ, config.DU, config.TU, p[1])
+                ϕ = compute_initial_phi(state, μ, config)
                 params(EDromo(cart_state, μ, ϕ, config))
             end
 
@@ -585,17 +577,13 @@ end
                     edromo_params = RegularizedCoordinateConfig(
                         state, μ; flag_time=flag_time
                     )
-                    ϕ = compute_initial_phi(
-                        state, μ, edromo_params.DU, edromo_params.TU, edromo_params.W
-                    )
+                    ϕ = compute_initial_phi(state, μ, edromo_params)
                     edromo_state = EDromo(cart_state, μ, ϕ, edromo_params)
 
                     f_ad, df_ad = value_and_derivative(
                         m -> begin
                             config = RegularizedCoordinateConfig(state, m; flag_time=flag_time)
-                            ϕ_m = compute_initial_phi(
-                                state, m, config.DU, config.TU, config.W
-                            )
+                            ϕ_m = compute_initial_phi(state, m, config)
                             Array(params(EDromo(cart_state, m, ϕ_m, config)))
                         end,
                         backend[2],
@@ -604,9 +592,7 @@ end
                     f_fd, df_fd = value_and_derivative(
                         m -> begin
                             config = RegularizedCoordinateConfig(state, m; flag_time=flag_time)
-                            ϕ_m = compute_initial_phi(
-                                state, m, config.DU, config.TU, config.W
-                            )
+                            ϕ_m = compute_initial_phi(state, m, config)
                             Array(params(EDromo(cart_state, m, ϕ_m, config)))
                         end,
                         AutoFiniteDiff(),
@@ -638,15 +624,13 @@ end
         for flag_time in (PhysicalTime(), ConstantTime(), LinearTime())
             # Setup for reverse pass
             edromo_params = RegularizedCoordinateConfig(state, μ; flag_time=flag_time)
-            ϕ = compute_initial_phi(
-                state, μ, edromo_params.DU, edromo_params.TU, edromo_params.W
-            )
+            ϕ = compute_initial_phi(state, μ, edromo_params)
             edromo_state = EDromo(cart_state, μ, ϕ, edromo_params)
 
             # Forward pass (Cartesian -> EDromo)
             to_edromo_μ(m) = begin
                 config = RegularizedCoordinateConfig(state, m; flag_time=flag_time)
-                ϕ_m = compute_initial_phi(state, m, config.DU, config.TU, config.W)
+                ϕ_m = compute_initial_phi(state, m, config)
                 params(EDromo(cart_state, m, ϕ_m, config))
             end
 
@@ -969,9 +953,7 @@ end
                 for flag_time in (PhysicalTime(), LinearTime())
                     # Precompute for reverse pass
                     ss_params = RegularizedCoordinateConfig(state, μ; flag_time=flag_time)
-                    ϕ_ss = compute_initial_phi(
-                        state, μ, ss_params.DU, ss_params.TU, ss_params.W
-                    )
+                    ϕ_ss = compute_initial_phi(state, μ, ss_params)
                     ss_state_vec = Array(
                         params(StiefelScheifele(cart_state, μ, ϕ_ss, ss_params))
                     )
@@ -979,7 +961,7 @@ end
                     # Forward pass (Cartesian -> StiefelScheifele), including parameter calculation
                     to_ss(x) = begin
                         config = RegularizedCoordinateConfig(x, μ; flag_time=flag_time)
-                        ϕ_x = compute_initial_phi(x, μ, config.DU, config.TU, config.W)
+                        ϕ_x = compute_initial_phi(x, μ, config)
                         Array(params(StiefelScheifele(Cartesian(x), μ, ϕ_x, config)))
                     end
 
@@ -1012,13 +994,13 @@ end
         for flag_time in (PhysicalTime(), LinearTime())
             # Precompute for reverse pass
             ss_params = RegularizedCoordinateConfig(state, μ; flag_time=flag_time)
-            ϕ_ss = compute_initial_phi(state, μ, ss_params.DU, ss_params.TU, ss_params.W)
+            ϕ_ss = compute_initial_phi(state, μ, ss_params)
             ss_state_vec = Array(params(StiefelScheifele(cart_state, μ, ϕ_ss, ss_params)))
 
             # Forward pass (Cartesian -> StiefelScheifele), including parameter calculation
             to_ss(x) = begin
                 config = RegularizedCoordinateConfig(x, μ; flag_time=flag_time)
-                ϕ_x = compute_initial_phi(x, μ, config.DU, config.TU, config.W)
+                ϕ_x = compute_initial_phi(x, μ, config)
                 Array(params(StiefelScheifele(Cartesian(x), μ, ϕ_x, config)))
             end
 
@@ -1052,9 +1034,7 @@ end
                 for flag_time in (PhysicalTime(), LinearTime())
                     # Precompute for reverse pass
                     ss_params = RegularizedCoordinateConfig(state, μ; flag_time=flag_time)
-                    ϕ_ss = compute_initial_phi(
-                        state, μ, ss_params.DU, ss_params.TU, ss_params.W
-                    )
+                    ϕ_ss = compute_initial_phi(state, μ, ss_params)
                     ss_state_vec = Array(
                         params(StiefelScheifele(cart_state, μ, ϕ_ss, ss_params))
                     )
@@ -1093,7 +1073,7 @@ end
         for flag_time in (PhysicalTime(), LinearTime())
             # Precompute for reverse pass
             ss_params = RegularizedCoordinateConfig(state, μ; flag_time=flag_time)
-            ϕ_ss = compute_initial_phi(state, μ, ss_params.DU, ss_params.TU, ss_params.W)
+            ϕ_ss = compute_initial_phi(state, μ, ss_params)
             ss_state_vec = Array(params(StiefelScheifele(cart_state, μ, ϕ_ss, ss_params)))
 
             # Forward pass (Cartesian -> StiefelScheifele), including parameter calculation
@@ -1133,7 +1113,7 @@ end
                             config = RegularizedCoordinateConfig(
                                 state, μ; W=p[1], t₀=p[2], flag_time=flag_time
                             )
-                            ϕ = compute_initial_phi(state, μ, config.DU, config.TU, p[1])
+                            ϕ = compute_initial_phi(state, μ, config)
                             Array(params(StiefelScheifele(cart_state, μ, ϕ, config)))
                         end,
                         backend[2],
@@ -1144,7 +1124,7 @@ end
                             config = RegularizedCoordinateConfig(
                                 state, μ; W=p[1], t₀=p[2], flag_time=flag_time
                             )
-                            ϕ = compute_initial_phi(state, μ, config.DU, config.TU, p[1])
+                            ϕ = compute_initial_phi(state, μ, config)
                             Array(params(StiefelScheifele(cart_state, μ, ϕ, config)))
                         end,
                         AutoFiniteDiff(),
@@ -1165,7 +1145,7 @@ end
                 config = RegularizedCoordinateConfig(
                     state, μ; W=p[1], t₀=p[2], flag_time=flag_time
                 )
-                ϕ = compute_initial_phi(state, μ, config.DU, config.TU, p[1])
+                ϕ = compute_initial_phi(state, μ, config)
                 params(StiefelScheifele(cart_state, μ, ϕ, config))
             end
 
@@ -1186,17 +1166,13 @@ end
                 for flag_time in (PhysicalTime(), LinearTime())
                     # Setup for reverse pass
                     ss_params = RegularizedCoordinateConfig(state, μ; flag_time=flag_time)
-                    ϕ = compute_initial_phi(
-                        state, μ, ss_params.DU, ss_params.TU, ss_params.W
-                    )
+                    ϕ = compute_initial_phi(state, μ, ss_params)
                     ss_state = StiefelScheifele(cart_state, μ, ϕ, ss_params)
 
                     f_ad, df_ad = value_and_derivative(
                         m -> begin
                             config = RegularizedCoordinateConfig(state, m; flag_time=flag_time)
-                            ϕ_m = compute_initial_phi(
-                                state, m, config.DU, config.TU, config.W
-                            )
+                            ϕ_m = compute_initial_phi(state, m, config)
                             Array(params(StiefelScheifele(cart_state, m, ϕ_m, config)))
                         end,
                         backend[2],
@@ -1205,9 +1181,7 @@ end
                     f_fd, df_fd = value_and_derivative(
                         m -> begin
                             config = RegularizedCoordinateConfig(state, m; flag_time=flag_time)
-                            ϕ_m = compute_initial_phi(
-                                state, m, config.DU, config.TU, config.W
-                            )
+                            ϕ_m = compute_initial_phi(state, m, config)
                             Array(params(StiefelScheifele(cart_state, m, ϕ_m, config)))
                         end,
                         AutoFiniteDiff(),
@@ -1239,13 +1213,13 @@ end
         for flag_time in (PhysicalTime(), LinearTime())
             # Setup for reverse pass
             ss_params = RegularizedCoordinateConfig(state, μ; flag_time=flag_time)
-            ϕ = compute_initial_phi(state, μ, ss_params.DU, ss_params.TU, ss_params.W)
+            ϕ = compute_initial_phi(state, μ, ss_params)
             ss_state = StiefelScheifele(cart_state, μ, ϕ, ss_params)
 
             # Forward pass (Cartesian -> StiefelScheifele)
             to_ss_μ(m) = begin
                 config = RegularizedCoordinateConfig(state, m; flag_time=flag_time)
-                ϕ_m = compute_initial_phi(state, m, config.DU, config.TU, config.W)
+                ϕ_m = compute_initial_phi(state, m, config)
                 params(StiefelScheifele(cart_state, m, ϕ_m, config))
             end
 

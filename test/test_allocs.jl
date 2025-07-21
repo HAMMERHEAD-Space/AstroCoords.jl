@@ -40,9 +40,7 @@ end
     μ = 3.986004415e5
     edromo_params = RegularizedCoordinateConfig(params(state), μ)
     # Compute phi separately
-    ϕ = compute_initial_phi(
-        params(state), μ, edromo_params.DU, edromo_params.TU, edromo_params.W
-    )
+    ϕ = compute_initial_phi(params(state), μ, edromo_params)
     edromo_state = EDromo(state, μ, ϕ, edromo_params)
 
     to_edromo(x, μ) = EDromo(x, μ, ϕ, edromo_params)
@@ -112,7 +110,7 @@ end
     μ = 3.986004415e5
     ss_params = RegularizedCoordinateConfig(params(state), μ)
     # Compute phi separately
-    ϕ = compute_initial_phi(params(state), μ, ss_params.DU, ss_params.TU, ss_params.W)
+    ϕ = compute_initial_phi(params(state), μ, ss_params)
     ss_state = StiefelScheifele(state, μ, ϕ, ss_params)
 
     to_ss(x, μ) = StiefelScheifele(x, μ, ϕ, ss_params)

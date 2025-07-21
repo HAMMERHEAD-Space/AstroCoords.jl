@@ -98,7 +98,7 @@
                     )
 
                     # Compute phi for Stiefel-Scheifele
-                    ϕ = compute_initial_phi(state, μ, ss_params.DU, ss_params.TU, W)
+                    ϕ = compute_initial_phi(state, μ, ss_params)
 
                     ss_state = StiefelScheifele(cart_state, μ, ϕ, ss_params)
                     NRG2 = orbitalNRG(ss_state, μ, ϕ, ss_params)
