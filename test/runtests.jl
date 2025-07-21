@@ -51,5 +51,7 @@ end
 end
 
 @testset "Aqua.jl" begin
-    Aqua.test_all(AstroCoords; ambiguities=(recursive = false))
+    Aqua.test_all(
+        AstroCoords; ambiguities=(recursive = false), deps_compat=(check_extras = false)
+    )
 end

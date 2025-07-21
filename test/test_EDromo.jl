@@ -33,13 +33,13 @@
                         for ϕ in ϕ_values
                             @testset "Params: time_flag=$(typeof(flag)), W=$W, t₀=$t₀, ϕ=$ϕ" begin
                                 # Get the full set of parameters for this test case
-                                defaults = set_initial_edromo_configurations(
+                                defaults = RegularizedCoordinateConfig(
                                     base_state_vec, μ; W=W, t₀=t₀, flag_time=flag
                                 )
 
                                 # Perform the round trip
-                                edromo_state = EDromo(from_state, μ; defaults...)
-                                roundtrip_state = FromCoord(edromo_state, μ; defaults...)
+                                edromo_state = EDromo(from_state, μ, defaults)
+                                roundtrip_state = FromCoord(edromo_state, μ, defaults)
 
                                 # Test for numerical equality
                                 @test params(roundtrip_state) ≈ params(from_state) atol=1e-8

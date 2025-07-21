@@ -1,33 +1,23 @@
-export cart2StiefelScheifele, StiefelScheifele2cart, set_stiefelscheifele_configurations
+export get_stiefelscheifele_time
 
 """
-    StiefelScheifele2cart(ss_vec, μ; ϕ₀, t₀, DU, TU, W, flag_time)
+    StiefelScheifele2cart(ss_vec, μ, config::RegularizedCoordinateConfig)
 
 Converts a Stiefel-Scheifele state vector to a Cartesian state vector.
 
 # Arguments
 - `ss_vec::AbstractVector`: The Stiefel-Scheifele state vector.
 - `μ::Number`: The gravitational parameter of the central body.
-- `ϕ₀::Number`: The initial fictitious time.
-- `t₀::Number`: The initial physical time.
-- `DU::Number`: The distance unit.
-- `TU::Number`: The time unit.
-- `W::Number`: The perturbing potential energy.
-- `flag_time::AbstractTimeType`: The time element representation (defaults to `PhysicalTime()`).
+- `config::RegularizedCoordinateConfig`: Configuration parameters.
 
 # Returns
 - `Cartesian`: The Cartesian state vector.
 """
 function StiefelScheifele2cart(
-    ss_vec::AbstractVector,
-    μ::Number;
-    ϕ₀::Number,
-    t₀::Number,
-    DU::Number,
-    TU::Number,
-    W::Number,
-    flag_time::AbstractTimeType=PhysicalTime(),
+    ss_vec::AbstractVector, μ::Number, config::RegularizedCoordinateConfig
 )
+    ϕ, DU, TU = config.ϕ, config.DU, config.TU
+
     α = SVector{4}(ss_vec[1], ss_vec[2], ss_vec[3], ss_vec[4])
     β = SVector{4}(ss_vec[5], ss_vec[6], ss_vec[7], ss_vec[8])
     ω = ss_vec[9]
@@ -35,7 +25,7 @@ function StiefelScheifele2cart(
     ##################################################
     #* 1. Auxiliary Quantities
     ##################################################
-    sph2, cph2 = sincos(0.5 * ϕ₀)
+    sph2, cph2 = sincos(0.5 * ϕ)
 
     ##################################################
     #* 2. Position in the Inertial Frame
@@ -67,33 +57,25 @@ function StiefelScheifele2cart(
 end
 
 """
-    cart2StiefelScheifele(cart_vec, μ; DU, TU, W, ϕ, t₀, flag_time)
+    cart2StiefelScheifele(cart_vec, μ, config::RegularizedCoordinateConfig)
 
 Converts Cartesian coordinates to Stiefel-Scheifele coordinates.
 
 # Arguments
 - `cart_vec::AbstractVector`: The Cartesian state vector.
 - `μ::Number`: The gravitational parameter of the central body.
-- `DU::Number`: The distance unit.
-- `TU::Number`: The time unit.
-- `W::Number`: The perturbing potential energy.
-- `ϕ₀::Number`: The initial fictitious time.
-- `t₀::Number`: The initial physical time.
-- `flag_time::AbstractTimeType`: The time element representation (defaults to `PhysicalTime()`).
+- `config::RegularizedCoordinateConfig`: Configuration parameters.
 
 # Returns
 - `StiefelScheifele`: The Stiefel-Scheifele state vector.
 """
 function cart2StiefelScheifele(
-    cart_vec::AbstractVector,
-    μ::Number;
-    DU::Number,
-    TU::Number,
-    W::Number,
-    ϕ₀::Number,
-    t₀::Number,
-    flag_time::AbstractTimeType=PhysicalTime(),
+    cart_vec::AbstractVector, μ::Number, config::RegularizedCoordinateConfig
 )
+    DU, TU, W, ϕ, t₀, flag_time = config.DU,
+    config.TU, config.W, config.ϕ, config.t₀,
+    config.flag_time
+
     ##################################################
     #* 1. Non-Dimensionalize
     ##################################################
@@ -108,7 +90,7 @@ function cart2StiefelScheifele(
     #* 2. Auxiliary Quantities
     ##################################################
     Rmag = norm(x)
-    sph2, cph2 = sincos(ϕ₀ / 2)
+    sph2, cph2 = sincos(ϕ / 2)
 
     ##################################################
     #* 2. Compute Components
@@ -150,55 +132,20 @@ function cart2StiefelScheifele(
 end
 
 """
-    set_stiefelscheifele_configurations(state::Cartesian, μ; ϕ=0.0, W=0.0, t₀=0.0, flag_time=0)
+    get_stiefelscheifele_time(u::AbstractVector{T}, config::RegularizedCoordinateConfig) where {T<:Number}
 
-Computes the necessary parameters for Stiefel-Scheifele transformations based on an
-initial Cartesian state.
-
-# Arguments
-- `state::Cartesian`: The initial Cartesian state vector (position and velocity).
-- `μ`: The gravitational parameter of the central body.
-- `ϕ`: (Optional) The initial fictitious time (defaults to 0.0).
-- `W`: (Optional) The perturbing potential energy (defaults to 0.0).
-- `t₀`: (Optional) The initial physical time (defaults to 0.0).
-- `flag_time`: (Optional) Flag to determine time element representation (0 for physical time, 1 for linear time element; defaults to 0).
-
-# Returns
-- A `NamedTuple` containing `DU`, `TU`, `W`, `ϕ`, `t₀`, and `flag_time`.
-"""
-function set_stiefelscheifele_configurations(
-    state::AbstractVector,
-    μ::Number;
-    W::Number=0.0,
-    t₀::Number=0.0,
-    flag_time::AbstractTimeType=PhysicalTime(),
-)
-    DU = norm(SVector{3}(state[1], state[2], state[3]))
-    TU = sqrt(DU^3 / μ)
-    ϕ₀ = computeϕ₀(state, μ, DU, TU, W)
-    return (; DU, TU, W, ϕ₀, t₀, flag_time)
-end
-
-"""
-    get_stiefelscheifele_time(u::AbstractVector{T}, flag_time::AbstractTimeType) where {T<:Number}
-
-Computes the time element for Stiefel-Scheifele transformations based on an
-initial Cartesian state.
+Computes the time element for Stiefel-Scheifele transformations.
 
 # Arguments
 - `u::AbstractVector{T}`: The Stiefel-Scheifele state vector.
-
-# Keyword Arguments
-- `t₀::Number`: The initial physical time.
-- `TU::Number`: The time unit.
-- `flag_time::AbstractTimeType`: The time element representation (defaults to `PhysicalTime()`).
+- `config::RegularizedCoordinateConfig`: Configuration parameters.
 
 # Returns
 - The time element.
 """
-function get_stiefelscheifele_time(
-    u::AbstractVector; ϕ::Number, flag_time::AbstractTimeType=PhysicalTime()
-)
+function get_stiefelscheifele_time(u::AbstractVector, config::RegularizedCoordinateConfig)
+    ϕ, flag_time = config.ϕ, config.flag_time
+
     if flag_time isa PhysicalTime
         return u[10]
     elseif flag_time isa LinearTime
