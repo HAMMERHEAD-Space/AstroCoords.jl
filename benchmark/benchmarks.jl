@@ -19,9 +19,9 @@ const _COORDINATE_SETS = [
     USM6,
     USMEM,
     J2EqOE,
-    EDromo,
-    KustaanheimoStiefel,
 ]
+
+const _REGULAR_SETS = [EDromo, KustaanheimoStiefel, StiefelScheifele]
 
 const _state = [
     -1076.225324679696
@@ -36,11 +36,25 @@ const _μ = 3.986004415e5
 
 const _cart_state = Cartesian(_state)
 
+# Create RegularizedCoordinateConfig for regularized coordinate benchmarks
+const _reg_config = RegularizedCoordinateConfig(_state, _μ; flag_time=PhysicalTime())
+
 for set in _COORDINATE_SETS
     SUITE["transformation"][string(set)] = @benchmarkable $(set)($_cart_state, $_μ)
     new_coord = set(_cart_state, _μ)
     SUITE["transformation"][string(set) * "reverse"] = @benchmarkable Cartesian(
         $new_coord, $_μ
+    )
+end
+
+# Add benchmarks for regularized coordinate sets
+for set in _REGULAR_SETS
+    SUITE["transformation"][string(set)] = @benchmarkable $(set)(
+        $_cart_state, $_μ, $_reg_config
+    )
+    new_coord = set(_cart_state, _μ, _reg_config)
+    SUITE["transformation"][string(set) * "reverse"] = @benchmarkable Cartesian(
+        $new_coord, $_μ, $_reg_config
     )
 end
 

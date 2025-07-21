@@ -96,9 +96,9 @@ function compute_initial_phi(
     v = SVector{3,RT}(ẋ / (DU / TU), ẏ / (DU / TU), ż / (DU / TU))
 
     Μ = μ / (DU^3 / TU^2)
-    W_nd = W / (DU^2 / TU^2)
+    W_non_dim = W / (DU^2 / TU^2)
 
-    E = 0.5 * dot(v, v) - Μ / norm(r) - W_nd
+    E = 0.5 * dot(v, v) - Μ / norm(r) - W_non_dim
 
     return atan(dot(r, v)*√(-2.0*E), 1.0 + 2.0*E*norm(r))
 end

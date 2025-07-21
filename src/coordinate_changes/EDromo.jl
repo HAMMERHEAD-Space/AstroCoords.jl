@@ -33,7 +33,7 @@ function cart2EDromo(
     r = SVector{3,RT}(x / DU, y / DU, z / DU)
     v = SVector{3,RT}(ẋ / (DU / TU), ẏ / (DU / TU), ż / (DU / TU))
 
-    W_nd = W / (DU^2 / TU^2)
+    W_non_dim = W / (DU^2 / TU^2)
     Μ = μ / (DU^3 / TU^2)
 
     ##################################################
@@ -46,14 +46,14 @@ function cart2EDromo(
     sϕ, cϕ = sincos(ϕ)
 
     # Total Energy
-    E = v_mag^2 / 2 - Μ / r_mag + W_nd
+    E = v_mag^2 / 2 - Μ / r_mag + W_non_dim
 
     # Angular Momentum
     h₀ = cross(r, v)
     h₀_mag = norm(h₀)
 
     # Generalized Angular Momentum
-    c₀ = √(h₀_mag^2 + 2*r_mag^2*W_nd)
+    c₀ = √(h₀_mag^2 + 2*r_mag^2*W_non_dim)
 
     # Dot Product of r and v
     r_dot_v = dot(r, v)
