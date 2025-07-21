@@ -138,4 +138,3 @@ function RegularizedCoordinateConfig(
 
     return RegularizedCoordinateConfig(; DU=DU, TU=TU, W=W, ϕ=ϕ, t₀=t₀, flag_time=flag_time)
 end
-
