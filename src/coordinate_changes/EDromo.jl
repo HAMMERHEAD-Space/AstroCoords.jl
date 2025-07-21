@@ -20,9 +20,7 @@ It requires the fictitious time `ϕ` and a `RegularizedCoordinateConfig` with ne
 function cart2EDromo(
     u::AbstractVector{T}, μ::V, ϕ::P, config::RegularizedCoordinateConfig
 ) where {T<:Number,V<:Number,P<:Number}
-    DU, TU, W, t₀, flag_time = config.DU,
-    config.TU, config.W, config.t₀,
-    config.flag_time
+    DU, TU, W, t₀, flag_time = config.DU, config.TU, config.W, config.t₀, config.flag_time
     RT = promote_type(T, V, typeof(DU), typeof(TU), typeof(W), typeof(t₀), P)
 
     x, y, z, ẋ, ẏ, ż = u

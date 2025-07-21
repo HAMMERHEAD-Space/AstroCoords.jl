@@ -40,7 +40,9 @@ end
     μ = 3.986004415e5
     edromo_params = RegularizedCoordinateConfig(params(state), μ)
     # Compute phi separately
-    ϕ = compute_initial_phi(params(state), μ, edromo_params.DU, edromo_params.TU, edromo_params.W)
+    ϕ = compute_initial_phi(
+        params(state), μ, edromo_params.DU, edromo_params.TU, edromo_params.W
+    )
     edromo_state = EDromo(state, μ, ϕ, edromo_params)
 
     to_edromo(x, μ) = EDromo(x, μ, ϕ, edromo_params)

@@ -96,7 +96,7 @@
                     ss_params = RegularizedCoordinateConfig(
                         state, μ; W=W, t₀=t₀, flag_time=flag_time
                     )
-                    
+
                     # Compute phi for Stiefel-Scheifele
                     ϕ = compute_initial_phi(state, μ, ss_params.DU, ss_params.TU, W)
 

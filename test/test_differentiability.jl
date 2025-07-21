@@ -356,8 +356,12 @@ end
                         state, μ; flag_time=flag_time
                     )
                     # Use a specific phi value for testing
-                    ϕ = compute_initial_phi(state, μ, edromo_params.DU, edromo_params.TU, edromo_params.W)
-                    edromo_state_vec = Array(params(EDromo(cart_state, μ, ϕ, edromo_params)))
+                    ϕ = compute_initial_phi(
+                        state, μ, edromo_params.DU, edromo_params.TU, edromo_params.W
+                    )
+                    edromo_state_vec = Array(
+                        params(EDromo(cart_state, μ, ϕ, edromo_params))
+                    )
 
                     # Forward pass (Cartesian -> EDromo), including parameter calculation
                     to_edromo(x) = begin
@@ -367,13 +371,17 @@ end
                     end
 
                     f_ad, df_ad = value_and_jacobian(x -> to_edromo(x), backend[2], state)
-                    f_fd, df_fd = value_and_jacobian(x -> to_edromo(x), AutoFiniteDiff(), state)
+                    f_fd, df_fd = value_and_jacobian(
+                        x -> to_edromo(x), AutoFiniteDiff(), state
+                    )
 
                     @test f_ad ≈ f_fd rtol = 1e-8
                     @test df_ad ≈ df_fd rtol = 1e-6
 
                     # Reverse pass (EDromo -> Cartesian)
-                    from_edromo(x) = Array(params(Cartesian(EDromo(x), μ, ϕ, edromo_params)))
+                    from_edromo(x) = Array(
+                        params(Cartesian(EDromo(x), μ, ϕ, edromo_params))
+                    )
 
                     f_ad_rev, df_ad_rev = value_and_jacobian(
                         x -> from_edromo(x), backend[2], edromo_state_vec
@@ -393,7 +401,9 @@ end
         for flag_time in (PhysicalTime(), ConstantTime(), LinearTime())
             # Precompute for reverse pass
             edromo_params = RegularizedCoordinateConfig(state, μ; flag_time=flag_time)
-            ϕ = compute_initial_phi(state, μ, edromo_params.DU, edromo_params.TU, edromo_params.W)
+            ϕ = compute_initial_phi(
+                state, μ, edromo_params.DU, edromo_params.TU, edromo_params.W
+            )
             edromo_state_vec = Array(params(EDromo(cart_state, μ, ϕ, edromo_params)))
 
             # Forward pass (Cartesian -> EDromo), including parameter calculation
@@ -436,20 +446,28 @@ end
                         state, μ; flag_time=flag_time
                     )
                     # Use a specific phi value for testing
-                    ϕ = compute_initial_phi(state, μ, edromo_params.DU, edromo_params.TU, edromo_params.W)
-                    edromo_state_vec = Array(params(EDromo(cart_state, μ, ϕ, edromo_params)))
+                    ϕ = compute_initial_phi(
+                        state, μ, edromo_params.DU, edromo_params.TU, edromo_params.W
+                    )
+                    edromo_state_vec = Array(
+                        params(EDromo(cart_state, μ, ϕ, edromo_params))
+                    )
 
                     # Forward pass (Cartesian -> EDromo), including parameter calculation
                     to_edromo(x) = Array(params(EDromo(cart_state, μ, x, edromo_params)))
 
                     f_ad, df_ad = value_and_derivative(x -> to_edromo(x), backend[2], ϕ)
-                    f_fd, df_fd = value_and_derivative(x -> to_edromo(x), AutoFiniteDiff(), ϕ)
+                    f_fd, df_fd = value_and_derivative(
+                        x -> to_edromo(x), AutoFiniteDiff(), ϕ
+                    )
 
                     @test f_ad ≈ f_fd rtol = 1e-8
                     @test df_ad ≈ df_fd rtol = 1e-6
 
                     # Reverse pass (EDromo -> Cartesian)
-                    from_edromo(x) = Array(params(Cartesian(EDromo(edromo_state_vec), μ, x, edromo_params)))
+                    from_edromo(x) = Array(
+                        params(Cartesian(EDromo(edromo_state_vec), μ, x, edromo_params))
+                    )
 
                     f_ad_rev, df_ad_rev = value_and_derivative(
                         x -> from_edromo(x), backend[2], ϕ
@@ -468,11 +486,11 @@ end
     @testset "Differentiate wrt Phi Zygote" begin
         for flag_time in (PhysicalTime(), ConstantTime(), LinearTime())
             # Precompute for reverse pass
-            edromo_params = RegularizedCoordinateConfig(
-                state, μ; flag_time=flag_time
-            )
+            edromo_params = RegularizedCoordinateConfig(state, μ; flag_time=flag_time)
             # Use a specific phi value for testing
-            ϕ = compute_initial_phi(state, μ, edromo_params.DU, edromo_params.TU, edromo_params.W)
+            ϕ = compute_initial_phi(
+                state, μ, edromo_params.DU, edromo_params.TU, edromo_params.W
+            )
             edromo_state_vec = Array(params(EDromo(cart_state, μ, ϕ, edromo_params)))
 
             # Forward pass (Cartesian -> EDromo), including parameter calculation
@@ -485,11 +503,11 @@ end
             @test df_ad ≈ df_fd rtol = 1e-6
 
             # Reverse pass (EDromo -> Cartesian)
-            from_edromo(x) = Array(params(Cartesian(EDromo(edromo_state_vec), μ, x, edromo_params)))
-
-            f_ad_rev, df_ad_rev = value_and_derivative(
-                x -> from_edromo(x), AutoZygote(), ϕ
+            from_edromo(x) = Array(
+                params(Cartesian(EDromo(edromo_state_vec), μ, x, edromo_params))
             )
+
+            f_ad_rev, df_ad_rev = value_and_derivative(x -> from_edromo(x), AutoZygote(), ϕ)
             f_fd_rev, df_fd_rev = value_and_derivative(
                 x -> from_edromo(x), AutoFiniteDiff(), ϕ
             )
@@ -509,7 +527,9 @@ end
                     # Differentiate wrt W and t₀
                     f_ad, df_ad = value_and_jacobian(
                         p -> begin
-                            config = RegularizedCoordinateConfig(state, μ; W=p[1], t₀=p[2], flag_time=flag_time)
+                            config = RegularizedCoordinateConfig(
+                                state, μ; W=p[1], t₀=p[2], flag_time=flag_time
+                            )
                             ϕ = compute_initial_phi(state, μ, config.DU, config.TU, p[1])
                             Array(params(EDromo(cart_state, μ, ϕ, config)))
                         end,
@@ -518,7 +538,9 @@ end
                     )
                     f_fd, df_fd = value_and_jacobian(
                         p -> begin
-                            config = RegularizedCoordinateConfig(state, μ; W=p[1], t₀=p[2], flag_time=flag_time)
+                            config = RegularizedCoordinateConfig(
+                                state, μ; W=p[1], t₀=p[2], flag_time=flag_time
+                            )
                             ϕ = compute_initial_phi(state, μ, config.DU, config.TU, p[1])
                             Array(params(EDromo(cart_state, μ, ϕ, config)))
                         end,
@@ -537,7 +559,9 @@ end
         for flag_time in (PhysicalTime(), ConstantTime(), LinearTime())
             # Differentiate wrt W and t₀
             to_edromo_params(p) = begin
-                config = RegularizedCoordinateConfig(state, μ; W=p[1], t₀=p[2], flag_time=flag_time)
+                config = RegularizedCoordinateConfig(
+                    state, μ; W=p[1], t₀=p[2], flag_time=flag_time
+                )
                 ϕ = compute_initial_phi(state, μ, config.DU, config.TU, p[1])
                 params(EDromo(cart_state, μ, ϕ, config))
             end
@@ -561,13 +585,17 @@ end
                     edromo_params = RegularizedCoordinateConfig(
                         state, μ; flag_time=flag_time
                     )
-                    ϕ = compute_initial_phi(state, μ, edromo_params.DU, edromo_params.TU, edromo_params.W)
+                    ϕ = compute_initial_phi(
+                        state, μ, edromo_params.DU, edromo_params.TU, edromo_params.W
+                    )
                     edromo_state = EDromo(cart_state, μ, ϕ, edromo_params)
 
                     f_ad, df_ad = value_and_derivative(
                         m -> begin
                             config = RegularizedCoordinateConfig(state, m; flag_time=flag_time)
-                            ϕ_m = compute_initial_phi(state, m, config.DU, config.TU, config.W)
+                            ϕ_m = compute_initial_phi(
+                                state, m, config.DU, config.TU, config.W
+                            )
                             Array(params(EDromo(cart_state, m, ϕ_m, config)))
                         end,
                         backend[2],
@@ -576,7 +604,9 @@ end
                     f_fd, df_fd = value_and_derivative(
                         m -> begin
                             config = RegularizedCoordinateConfig(state, m; flag_time=flag_time)
-                            ϕ_m = compute_initial_phi(state, m, config.DU, config.TU, config.W)
+                            ϕ_m = compute_initial_phi(
+                                state, m, config.DU, config.TU, config.W
+                            )
                             Array(params(EDromo(cart_state, m, ϕ_m, config)))
                         end,
                         AutoFiniteDiff(),
@@ -608,7 +638,9 @@ end
         for flag_time in (PhysicalTime(), ConstantTime(), LinearTime())
             # Setup for reverse pass
             edromo_params = RegularizedCoordinateConfig(state, μ; flag_time=flag_time)
-            ϕ = compute_initial_phi(state, μ, edromo_params.DU, edromo_params.TU, edromo_params.W)
+            ϕ = compute_initial_phi(
+                state, μ, edromo_params.DU, edromo_params.TU, edromo_params.W
+            )
             edromo_state = EDromo(cart_state, μ, ϕ, edromo_params)
 
             # Forward pass (Cartesian -> EDromo)
@@ -937,8 +969,12 @@ end
                 for flag_time in (PhysicalTime(), LinearTime())
                     # Precompute for reverse pass
                     ss_params = RegularizedCoordinateConfig(state, μ; flag_time=flag_time)
-                    ϕ_ss = compute_initial_phi(state, μ, ss_params.DU, ss_params.TU, ss_params.W)
-                    ss_state_vec = Array(params(StiefelScheifele(cart_state, μ, ϕ_ss, ss_params)))
+                    ϕ_ss = compute_initial_phi(
+                        state, μ, ss_params.DU, ss_params.TU, ss_params.W
+                    )
+                    ss_state_vec = Array(
+                        params(StiefelScheifele(cart_state, μ, ϕ_ss, ss_params))
+                    )
 
                     # Forward pass (Cartesian -> StiefelScheifele), including parameter calculation
                     to_ss(x) = begin
@@ -1016,14 +1052,20 @@ end
                 for flag_time in (PhysicalTime(), LinearTime())
                     # Precompute for reverse pass
                     ss_params = RegularizedCoordinateConfig(state, μ; flag_time=flag_time)
-                    ϕ_ss = compute_initial_phi(state, μ, ss_params.DU, ss_params.TU, ss_params.W)
-                    ss_state_vec = Array(params(StiefelScheifele(cart_state, μ, ϕ_ss, ss_params)))
+                    ϕ_ss = compute_initial_phi(
+                        state, μ, ss_params.DU, ss_params.TU, ss_params.W
+                    )
+                    ss_state_vec = Array(
+                        params(StiefelScheifele(cart_state, μ, ϕ_ss, ss_params))
+                    )
 
                     # Forward pass (Cartesian -> StiefelScheifele), including parameter calculation
                     to_ss(x) = Array(params(StiefelScheifele(cart_state, μ, x, ss_params)))
 
                     f_ad, df_ad = value_and_derivative(x -> to_ss(x), backend[2], ϕ_ss)
-                    f_fd, df_fd = value_and_derivative(x -> to_ss(x), AutoFiniteDiff(), ϕ_ss)
+                    f_fd, df_fd = value_and_derivative(
+                        x -> to_ss(x), AutoFiniteDiff(), ϕ_ss
+                    )
 
                     @test f_ad ≈ f_fd rtol = 1e-8
                     @test df_ad ≈ df_fd atol = 1e-1
@@ -1064,11 +1106,11 @@ end
             @test df_ad ≈ df_fd atol = 1e-1
 
             # Reverse pass (StiefelScheifele -> Cartesian)
-            from_ss(x) = Array(params(Cartesian(StiefelScheifele(ss_state_vec), μ, x, ss_params)))
-
-            f_ad_rev, df_ad_rev = value_and_derivative(
-                x -> from_ss(x), AutoZygote(), ϕ_ss
+            from_ss(x) = Array(
+                params(Cartesian(StiefelScheifele(ss_state_vec), μ, x, ss_params))
             )
+
+            f_ad_rev, df_ad_rev = value_and_derivative(x -> from_ss(x), AutoZygote(), ϕ_ss)
             f_fd_rev, df_fd_rev = value_and_derivative(
                 x -> from_ss(x), AutoFiniteDiff(), ϕ_ss
             )
@@ -1088,7 +1130,9 @@ end
                     # Differentiate wrt W and t₀
                     f_ad, df_ad = value_and_jacobian(
                         p -> begin
-                            config = RegularizedCoordinateConfig(state, μ; W=p[1], t₀=p[2], flag_time=flag_time)
+                            config = RegularizedCoordinateConfig(
+                                state, μ; W=p[1], t₀=p[2], flag_time=flag_time
+                            )
                             ϕ = compute_initial_phi(state, μ, config.DU, config.TU, p[1])
                             Array(params(StiefelScheifele(cart_state, μ, ϕ, config)))
                         end,
@@ -1097,7 +1141,9 @@ end
                     )
                     f_fd, df_fd = value_and_jacobian(
                         p -> begin
-                            config = RegularizedCoordinateConfig(state, μ; W=p[1], t₀=p[2], flag_time=flag_time)
+                            config = RegularizedCoordinateConfig(
+                                state, μ; W=p[1], t₀=p[2], flag_time=flag_time
+                            )
                             ϕ = compute_initial_phi(state, μ, config.DU, config.TU, p[1])
                             Array(params(StiefelScheifele(cart_state, μ, ϕ, config)))
                         end,
@@ -1116,7 +1162,9 @@ end
         for flag_time in (PhysicalTime(), LinearTime())
             # Differentiate wrt W and t₀
             to_ss_params(p) = begin
-                config = RegularizedCoordinateConfig(state, μ; W=p[1], t₀=p[2], flag_time=flag_time)
+                config = RegularizedCoordinateConfig(
+                    state, μ; W=p[1], t₀=p[2], flag_time=flag_time
+                )
                 ϕ = compute_initial_phi(state, μ, config.DU, config.TU, p[1])
                 params(StiefelScheifele(cart_state, μ, ϕ, config))
             end
@@ -1138,13 +1186,17 @@ end
                 for flag_time in (PhysicalTime(), LinearTime())
                     # Setup for reverse pass
                     ss_params = RegularizedCoordinateConfig(state, μ; flag_time=flag_time)
-                    ϕ = compute_initial_phi(state, μ, ss_params.DU, ss_params.TU, ss_params.W)
+                    ϕ = compute_initial_phi(
+                        state, μ, ss_params.DU, ss_params.TU, ss_params.W
+                    )
                     ss_state = StiefelScheifele(cart_state, μ, ϕ, ss_params)
 
                     f_ad, df_ad = value_and_derivative(
                         m -> begin
                             config = RegularizedCoordinateConfig(state, m; flag_time=flag_time)
-                            ϕ_m = compute_initial_phi(state, m, config.DU, config.TU, config.W)
+                            ϕ_m = compute_initial_phi(
+                                state, m, config.DU, config.TU, config.W
+                            )
                             Array(params(StiefelScheifele(cart_state, m, ϕ_m, config)))
                         end,
                         backend[2],
@@ -1153,7 +1205,9 @@ end
                     f_fd, df_fd = value_and_derivative(
                         m -> begin
                             config = RegularizedCoordinateConfig(state, m; flag_time=flag_time)
-                            ϕ_m = compute_initial_phi(state, m, config.DU, config.TU, config.W)
+                            ϕ_m = compute_initial_phi(
+                                state, m, config.DU, config.TU, config.W
+                            )
                             Array(params(StiefelScheifele(cart_state, m, ϕ_m, config)))
                         end,
                         AutoFiniteDiff(),
@@ -1164,7 +1218,9 @@ end
                     @test df_ad ≈ df_fd atol = 1e-3
 
                     f_ad_rev, df_ad_rev = value_and_derivative(
-                        m -> Array(params(Cartesian(ss_state, m, ϕ, ss_params))), backend[2], μ
+                        m -> Array(params(Cartesian(ss_state, m, ϕ, ss_params))),
+                        backend[2],
+                        μ,
                     )
                     f_fd_rev, df_fd_rev = value_and_derivative(
                         m -> Array(params(Cartesian(ss_state, m, ϕ, ss_params))),

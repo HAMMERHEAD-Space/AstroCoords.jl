@@ -36,16 +36,15 @@ end
 
 # Convenience constructor that computes DU and TU from state and μ
 function RegularizedCoordinateConfig(
-    state::AbstractVector, 
-    μ::Number; 
-    W::Number=0.0, 
-    t₀::Number=0.0, 
-    flag_time::AbstractTimeType=PhysicalTime()
+    state::AbstractVector,
+    μ::Number;
+    W::Number=0.0,
+    t₀::Number=0.0,
+    flag_time::AbstractTimeType=PhysicalTime(),
 )
     DU, TU = compute_characteristic_scales(state, μ)
     return RegularizedCoordinateConfig(DU, TU, W, t₀, flag_time)
 end
-
 
 """
     compute_characteristic_scales(state, μ)

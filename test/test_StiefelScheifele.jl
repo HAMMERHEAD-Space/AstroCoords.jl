@@ -34,9 +34,11 @@
                             defaults = RegularizedCoordinateConfig(
                                 base_state_vec, μ; W=W, t₀=t₀, flag_time=flag
                             )
-                            
+
                             # Compute phi for this configuration
-                            ϕ = compute_initial_phi(base_state_vec, μ, defaults.DU, defaults.TU, W)
+                            ϕ = compute_initial_phi(
+                                base_state_vec, μ, defaults.DU, defaults.TU, W
+                            )
 
                             # Perform the round trip
                             ss_state = StiefelScheifele(from_state, μ, ϕ, defaults)

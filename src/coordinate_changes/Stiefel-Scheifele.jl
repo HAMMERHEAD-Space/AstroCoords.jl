@@ -74,9 +74,7 @@ Converts Cartesian coordinates to Stiefel-Scheifele coordinates.
 function cart2StiefelScheifele(
     cart_vec::AbstractVector, μ::Number, ϕ::Number, config::RegularizedCoordinateConfig
 )
-    DU, TU, W, t₀, flag_time = config.DU,
-    config.TU, config.W, config.t₀,
-    config.flag_time
+    DU, TU, W, t₀, flag_time = config.DU, config.TU, config.W, config.t₀, config.flag_time
 
     ##################################################
     #* 1. Non-Dimensionalize
@@ -146,7 +144,9 @@ Computes the time element for Stiefel-Scheifele transformations.
 # Returns
 - The time element.
 """
-function get_stiefelscheifele_time(u::AbstractVector, ϕ::Number, config::RegularizedCoordinateConfig)
+function get_stiefelscheifele_time(
+    u::AbstractVector, ϕ::Number, config::RegularizedCoordinateConfig
+)
     flag_time = config.flag_time
 
     if flag_time isa PhysicalTime
