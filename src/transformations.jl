@@ -91,18 +91,19 @@ end
 function (t::CartesianToEDromoTransform)(
     x::Cartesian,
     μ::Number,
-    config::RegularizedCoordinateConfig=RegularizedCoordinateConfig(params(x), μ),
+    ϕ::Number,
+    config::RegularizedCoordinateConfig,
 )
-    edromo_vec = cart2EDromo(params(x), μ, config)
+    edromo_vec = cart2EDromo(params(x), μ, ϕ, config)
     return EDromo(edromo_vec...)
 end
 
 const CartesianToEDromo = CartesianToEDromoTransform()
 
 function (t::EDromoToCartesianTransform)(
-    x::EDromo, μ::Number, config::RegularizedCoordinateConfig
+    x::EDromo, μ::Number, ϕ::Number, config::RegularizedCoordinateConfig
 )
-    cart_vec = EDromo2cart(params(x), μ, config)
+    cart_vec = EDromo2cart(params(x), μ, ϕ, config)
     return Cartesian(cart_vec...)
 end
 
@@ -181,19 +182,21 @@ end
 function (t::CartesianToStiefelScheifeleTransform)(
     x::Cartesian,
     μ::Number,
-    config::RegularizedCoordinateConfig=RegularizedCoordinateConfig(params(x), μ),
+    ϕ::Number,
+    config::RegularizedCoordinateConfig,
 )
-    ss_vec = cart2StiefelScheifele(params(x), μ, config)
+    ss_vec = cart2StiefelScheifele(params(x), μ, ϕ, config)
     return StiefelScheifele(ss_vec...)
 end
 const CartesianToStiefelScheifele = CartesianToStiefelScheifeleTransform()
 
 function (t::StiefelScheifeleToCartesianTransform)(
-    x::StiefelScheifele, μ::Number, config::RegularizedCoordinateConfig
+    x::StiefelScheifele, μ::Number, ϕ::Number, config::RegularizedCoordinateConfig
 )
-    cart_vec = StiefelScheifele2cart(params(x), μ, config)
+    cart_vec = StiefelScheifele2cart(params(x), μ, ϕ, config)
     return Cartesian(cart_vec...)
 end
+
 const StiefelScheifeleToCartesian = StiefelScheifeleToCartesianTransform()
 
 Base.inv(::CartesianToStiefelScheifeleTransform) = StiefelScheifeleToCartesianTransform()

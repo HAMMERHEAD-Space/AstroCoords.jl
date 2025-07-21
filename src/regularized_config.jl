@@ -2,25 +2,23 @@ export RegularizedCoordinateConfig
 export compute_characteristic_scales, compute_initial_phi
 
 """
-    RegularizedCoordinateConfig{DT,TT,WT,PT,TT2,FT}
+    RegularizedCoordinateConfig{DT,TT,WT,TT2,FT}
 
 Configuration struct for regularized coordinate transformations (EDromo, Kustaanheimo-Stiefel, Stiefel-Scheifele).
 
-This struct encapsulates all the parameters required for regularized coordinate transformations:
+This struct encapsulates the parameters required for regularized coordinate transformations:
 - `DU`: Reference distance unit for non-dimensionalization
 - `TU`: Reference time unit for non-dimensionalization  
 - `W`: Perturbing potential energy (unified for all coordinate systems)
-- `ϕ`: Initial value of the fictitious time (used by EDromo and SS, ignored by KS)
 - `t₀`: Initial physical time
 - `flag_time`: Time element formulation (`PhysicalTime`, `ConstantTime`, or `LinearTime`)
 """
 struct RegularizedCoordinateConfig{
-    DT<:Number,TT<:Number,WT<:Number,PT<:Number,TT2<:Number,FT<:AbstractTimeType
+    DT<:Number,TT<:Number,WT<:Number,TT2<:Number,FT<:AbstractTimeType
 }
     DU::DT
     TU::TT
     W::WT
-    ϕ::PT
     t₀::TT2
     flag_time::FT
 end
@@ -30,19 +28,24 @@ function RegularizedCoordinateConfig(;
     DU::Number=0.0,
     TU::Number=0.0,
     W::Number=0.0,
-    ϕ::Number=0.0,
     t₀::Number=0.0,
     flag_time::AbstractTimeType=PhysicalTime(),
 )
-    return RegularizedCoordinateConfig(DU, TU, W, ϕ, t₀, flag_time)
+    return RegularizedCoordinateConfig(DU, TU, W, t₀, flag_time)
 end
 
-# Method to update ϕ while keeping other parameters
-function RegularizedCoordinateConfig(config::RegularizedCoordinateConfig; curr_ϕ::Number)
-    return RegularizedCoordinateConfig(
-        config.DU, config.TU, config.W, curr_ϕ, config.t₀, config.flag_time
-    )
+# Convenience constructor that computes DU and TU from state and μ
+function RegularizedCoordinateConfig(
+    state::AbstractVector, 
+    μ::Number; 
+    W::Number=0.0, 
+    t₀::Number=0.0, 
+    flag_time::AbstractTimeType=PhysicalTime()
+)
+    DU, TU = compute_characteristic_scales(state, μ)
+    return RegularizedCoordinateConfig(DU, TU, W, t₀, flag_time)
 end
+
 
 """
     compute_characteristic_scales(state, μ)
@@ -101,40 +104,4 @@ function compute_initial_phi(
     E = 0.5 * dot(v, v) - Μ / norm(r) - W_non_dim
 
     return atan(dot(r, v)*√(-2.0*E), 1.0 + 2.0*E*norm(r))
-end
-
-"""
-    RegularizedCoordinateConfig(state, μ; W=0.0, ϕ=0.0, t₀=0.0, flag_time=PhysicalTime())
-
-Convenience constructor that computes characteristic scales from initial state and creates configuration.
-
-# Arguments
-- `state::AbstractVector`: Cartesian state vector `[x, y, z, ẋ, ẏ, ż]`
-- `μ::Number`: Gravitational parameter
-
-# Keyword Arguments  
-- `W::Number=0.0`: Perturbing potential energy
-- `ϕ::Number=0.0`: Initial fictitious time (use `compute_initial_phi` for EDromo/SS)
-- `t₀::Number=0.0`: Initial physical time
-- `flag_time::AbstractTimeType=PhysicalTime()`: Time element formulation
-
-# Returns
-- `RegularizedCoordinateConfig`: Configuration struct with computed scales
-"""
-function RegularizedCoordinateConfig(
-    state::AbstractVector,
-    μ::Number;
-    W::Number=0.0,
-    ϕ::Union{Number,Nothing}=nothing,
-    t₀::Number=0.0,
-    flag_time::AbstractTimeType=PhysicalTime(),
-)
-    DU, TU = compute_characteristic_scales(state, μ)
-
-    # Auto-compute ϕ if not provided
-    if ϕ === nothing
-        ϕ = compute_initial_phi(state, μ, DU, TU, W)
-    end
-
-    return RegularizedCoordinateConfig(; DU=DU, TU=TU, W=W, ϕ=ϕ, t₀=t₀, flag_time=flag_time)
 end

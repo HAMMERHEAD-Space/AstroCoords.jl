@@ -38,8 +38,8 @@
                                 )
 
                                 # Perform the round trip
-                                edromo_state = EDromo(from_state, μ, defaults)
-                                roundtrip_state = FromCoord(edromo_state, μ, defaults)
+                                edromo_state = EDromo(from_state, μ, ϕ, defaults)
+                                roundtrip_state = FromCoord(edromo_state, μ, ϕ, defaults)
 
                                 # Test for numerical equality
                                 @test params(roundtrip_state) ≈ params(from_state) atol=1e-8

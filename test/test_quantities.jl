@@ -54,10 +54,10 @@
                             state, μ; W=W, t₀=t₀, flag_time=flag_time
                         )
 
-                        edromo_state = EDromo(cart_state, μ, edromo_params)
-                        NRG2 = orbitalNRG(edromo_state, μ, edromo_params)
-                        h_vec2 = angularMomentumVector(edromo_state, μ, edromo_params)
-                        h2 = angularMomentumQuantity(edromo_state, μ, edromo_params)
+                        edromo_state = EDromo(cart_state, μ, ϕ, edromo_params)
+                        NRG2 = orbitalNRG(edromo_state, μ, ϕ, edromo_params)
+                        h_vec2 = angularMomentumVector(edromo_state, μ, ϕ, edromo_params)
+                        h2 = angularMomentumQuantity(edromo_state, μ, ϕ, edromo_params)
 
                         @test NRG ≈ NRG2 rtol = 1e-12
                         @test h_vec ≈ h_vec2 rtol = 1e-12
@@ -96,11 +96,14 @@
                     ss_params = RegularizedCoordinateConfig(
                         state, μ; W=W, t₀=t₀, flag_time=flag_time
                     )
+                    
+                    # Compute phi for Stiefel-Scheifele
+                    ϕ = compute_initial_phi(state, μ, ss_params.DU, ss_params.TU, W)
 
-                    ss_state = StiefelScheifele(cart_state, μ, ss_params)
-                    NRG2 = orbitalNRG(ss_state, μ, ss_params)
-                    h_vec2 = angularMomentumVector(ss_state, μ, ss_params)
-                    h2 = angularMomentumQuantity(ss_state, μ, ss_params)
+                    ss_state = StiefelScheifele(cart_state, μ, ϕ, ss_params)
+                    NRG2 = orbitalNRG(ss_state, μ, ϕ, ss_params)
+                    h_vec2 = angularMomentumVector(ss_state, μ, ϕ, ss_params)
+                    h2 = angularMomentumQuantity(ss_state, μ, ϕ, ss_params)
 
                     @test NRG ≈ NRG2 rtol = 1e-12
                     @test h_vec ≈ h_vec2 rtol = 1e-12

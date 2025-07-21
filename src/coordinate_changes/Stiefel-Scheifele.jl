@@ -1,22 +1,23 @@
 export get_stiefelscheifele_time
 
 """
-    StiefelScheifele2cart(ss_vec, μ, config::RegularizedCoordinateConfig)
+    StiefelScheifele2cart(ss_vec, μ, ϕ::Number, config::RegularizedCoordinateConfig)
 
 Converts a Stiefel-Scheifele state vector to a Cartesian state vector.
 
 # Arguments
 - `ss_vec::AbstractVector`: The Stiefel-Scheifele state vector.
 - `μ::Number`: The gravitational parameter of the central body.
+- `ϕ::Number`: Fictitious time parameter.
 - `config::RegularizedCoordinateConfig`: Configuration parameters.
 
 # Returns
 - `Cartesian`: The Cartesian state vector.
 """
 function StiefelScheifele2cart(
-    ss_vec::AbstractVector, μ::Number, config::RegularizedCoordinateConfig
+    ss_vec::AbstractVector, μ::Number, ϕ::Number, config::RegularizedCoordinateConfig
 )
-    ϕ, DU, TU = config.ϕ, config.DU, config.TU
+    DU, TU = config.DU, config.TU
 
     α = SVector{4}(ss_vec[1], ss_vec[2], ss_vec[3], ss_vec[4])
     β = SVector{4}(ss_vec[5], ss_vec[6], ss_vec[7], ss_vec[8])
@@ -57,23 +58,24 @@ function StiefelScheifele2cart(
 end
 
 """
-    cart2StiefelScheifele(cart_vec, μ, config::RegularizedCoordinateConfig)
+    cart2StiefelScheifele(cart_vec, μ, ϕ::Number, config::RegularizedCoordinateConfig)
 
 Converts Cartesian coordinates to Stiefel-Scheifele coordinates.
 
 # Arguments
 - `cart_vec::AbstractVector`: The Cartesian state vector.
 - `μ::Number`: The gravitational parameter of the central body.
+- `ϕ::Number`: Fictitious time parameter.
 - `config::RegularizedCoordinateConfig`: Configuration parameters.
 
 # Returns
 - `StiefelScheifele`: The Stiefel-Scheifele state vector.
 """
 function cart2StiefelScheifele(
-    cart_vec::AbstractVector, μ::Number, config::RegularizedCoordinateConfig
+    cart_vec::AbstractVector, μ::Number, ϕ::Number, config::RegularizedCoordinateConfig
 )
-    DU, TU, W, ϕ, t₀, flag_time = config.DU,
-    config.TU, config.W, config.ϕ, config.t₀,
+    DU, TU, W, t₀, flag_time = config.DU,
+    config.TU, config.W, config.t₀,
     config.flag_time
 
     ##################################################
@@ -132,19 +134,20 @@ function cart2StiefelScheifele(
 end
 
 """
-    get_stiefelscheifele_time(u::AbstractVector{T}, config::RegularizedCoordinateConfig) where {T<:Number}
+    get_stiefelscheifele_time(u::AbstractVector{T}, ϕ::Number, config::RegularizedCoordinateConfig) where {T<:Number}
 
 Computes the time element for Stiefel-Scheifele transformations.
 
 # Arguments
 - `u::AbstractVector{T}`: The Stiefel-Scheifele state vector.
+- `ϕ::Number`: Fictitious time parameter.
 - `config::RegularizedCoordinateConfig`: Configuration parameters.
 
 # Returns
 - The time element.
 """
-function get_stiefelscheifele_time(u::AbstractVector, config::RegularizedCoordinateConfig)
-    ϕ, flag_time = config.ϕ, config.flag_time
+function get_stiefelscheifele_time(u::AbstractVector, ϕ::Number, config::RegularizedCoordinateConfig)
+    flag_time = config.flag_time
 
     if flag_time isa PhysicalTime
         return u[10]

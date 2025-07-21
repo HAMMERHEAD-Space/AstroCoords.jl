@@ -1,28 +1,29 @@
 export get_EDromo_time
 
 """
-    cart2EDromo(u, μ, config::RegularizedCoordinateConfig)
+    cart2EDromo(u, μ, ϕ::Number, config::RegularizedCoordinateConfig)
 
 Converts a Cartesian state vector to an EDromo state vector.
 
 This is the backend implementation for the transformation from `Cartesian` to `EDromo`.
-It requires a `RegularizedCoordinateConfig` with all necessary parameters.
+It requires the fictitious time `ϕ` and a `RegularizedCoordinateConfig` with necessary parameters.
 
 # Arguments
 - `u::AbstractVector`: Cartesian state vector `[x, y, z, ẋ, ẏ, ż]` in `[L]` and `[L/T]`.
 - `μ::Number`: Gravitational parameter in `[L³/T²]`.
+- `ϕ::Number`: Fictitious time parameter.
 - `config::RegularizedCoordinateConfig`: Configuration parameters for the transformation.
 
 # Returns
 - `SVector{8, RT}`: The 8-element EDromo state vector.
 """
 function cart2EDromo(
-    u::AbstractVector{T}, μ::V, config::RegularizedCoordinateConfig
-) where {T<:Number,V<:Number}
-    DU, TU, W, ϕ, t₀, flag_time = config.DU,
-    config.TU, config.W, config.ϕ, config.t₀,
+    u::AbstractVector{T}, μ::V, ϕ::P, config::RegularizedCoordinateConfig
+) where {T<:Number,V<:Number,P<:Number}
+    DU, TU, W, t₀, flag_time = config.DU,
+    config.TU, config.W, config.t₀,
     config.flag_time
-    RT = promote_type(T, V, typeof(DU), typeof(TU), typeof(W), typeof(ϕ), typeof(t₀))
+    RT = promote_type(T, V, typeof(DU), typeof(TU), typeof(W), typeof(t₀), P)
 
     x, y, z, ẋ, ẏ, ż = u
 
@@ -119,26 +120,27 @@ function cart2EDromo(
 end
 
 """
-    EDromo2cart(u, μ, config::RegularizedCoordinateConfig)
+    EDromo2cart(u, μ, ϕ::Number, config::RegularizedCoordinateConfig)
 
 Converts an EDromo state vector to a Cartesian state vector.
 
 This is the backend implementation for the transformation from `EDromo` to `Cartesian`.
-It requires a `RegularizedCoordinateConfig` with the same parameters used in the forward transformation.
+It requires the fictitious time `ϕ` and a `RegularizedCoordinateConfig` with the same parameters used in the forward transformation.
 
 # Arguments
 - `u::AbstractVector`: EDromo state vector `[ζ₁, ζ₂, ζ₃, ζ₄, ζ₅, ζ₆, ζ₇, ζ₈]`.
 - `μ::Number`: Gravitational parameter of the central body.
+- `ϕ::Number`: Fictitious time parameter.
 - `config::RegularizedCoordinateConfig`: Configuration parameters for the transformation.
 
 # Returns
 - `SVector{6, RT}`: The 6-element Cartesian state vector `[x, y, z, ẋ, ẏ, ż]`.
 """
 function EDromo2cart(
-    u::AbstractVector{T}, μ::V, config::RegularizedCoordinateConfig
-) where {T<:Number,V<:Number}
-    DU, TU, W, ϕ, t₀ = config.DU, config.TU, config.W, config.ϕ, config.t₀
-    RT = promote_type(T, V, typeof(DU), typeof(TU), typeof(W), typeof(ϕ), typeof(t₀))
+    u::AbstractVector{T}, μ::V, ϕ::P, config::RegularizedCoordinateConfig
+) where {T<:Number,V<:Number,P<:Number}
+    DU, TU, W, t₀ = config.DU, config.TU, config.W, config.t₀
+    RT = promote_type(T, V, typeof(DU), typeof(TU), typeof(W), typeof(t₀), P)
 
     ζ₁, ζ₂, ζ₃, ζ₄, ζ₅, ζ₆, ζ₇, ζ₈ = u
 
@@ -190,22 +192,23 @@ function EDromo2cart(
 end
 
 """
-    get_EDromo_time(u, config::RegularizedCoordinateConfig)
+    get_EDromo_time(u, ϕ::Number, config::RegularizedCoordinateConfig)
 
 Computes the physical time from the EDromo state vector.
 
 # Arguments
 - `u::AbstractVector`: EDromo state vector `[ζ₁, ζ₂, ζ₃, ζ₄, ζ₅, ζ₆, ζ₇, ζ₈]`.
+- `ϕ::Number`: Fictitious time parameter.
 - `config::RegularizedCoordinateConfig`: Configuration parameters for the transformation.
 
 # Returns
 - `Number`: The computed physical time.
 """
 function get_EDromo_time(
-    u::AbstractVector{T}, config::RegularizedCoordinateConfig
-) where {T<:Number}
-    TU, ϕ, t₀, flag_time = config.TU, config.ϕ, config.t₀, config.flag_time
-    RT = promote_type(T, typeof(ϕ))
+    u::AbstractVector{T}, ϕ::P, config::RegularizedCoordinateConfig
+) where {T<:Number,P<:Number}
+    TU, t₀, flag_time = config.TU, config.t₀, config.flag_time
+    RT = promote_type(T, P)
 
     sϕ, cϕ = sincos(ϕ)
 

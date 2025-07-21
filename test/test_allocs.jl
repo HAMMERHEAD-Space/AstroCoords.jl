@@ -38,16 +38,18 @@ end
         -1.1880157328553503,
     ])
     μ = 3.986004415e5
-    edromo_params = RegularizedCoordinateConfig(state, μ)
-    edromo_state = EDromo(state, μ, edromo_params)
+    edromo_params = RegularizedCoordinateConfig(params(state), μ)
+    # Compute phi separately
+    ϕ = compute_initial_phi(params(state), μ, edromo_params.DU, edromo_params.TU, edromo_params.W)
+    edromo_state = EDromo(state, μ, ϕ, edromo_params)
 
-    to_edromo(x, μ) = EDromo(x, μ, edromo_params)
-    from_edromo(x, μ) = Cartesian(x, μ, edromo_params)
-    mm_edromo(x, μ) = meanMotion(x, μ, edromo_params)
-    op_edromo(x, μ) = orbitalPeriod(x, μ, edromo_params)
-    on_edromo(x, μ) = orbitalNRG(x, μ, edromo_params)
-    av_edromo(x, μ) = angularMomentumVector(x, μ, edromo_params)
-    aq_edromo(x, μ) = angularMomentumQuantity(x, μ, edromo_params)
+    to_edromo(x, μ) = EDromo(x, μ, ϕ, edromo_params)
+    from_edromo(x, μ) = Cartesian(x, μ, ϕ, edromo_params)
+    mm_edromo(x, μ) = meanMotion(x, μ, ϕ, edromo_params)
+    op_edromo(x, μ) = orbitalPeriod(x, μ, ϕ, edromo_params)
+    on_edromo(x, μ) = orbitalNRG(x, μ, ϕ, edromo_params)
+    av_edromo(x, μ) = angularMomentumVector(x, μ, ϕ, edromo_params)
+    aq_edromo(x, μ) = angularMomentumQuantity(x, μ, ϕ, edromo_params)
 
     @test length(check_allocs(to_edromo, (Cartesian{Float64}, Float64))) == 0
     @test length(check_allocs(from_edromo, (EDromo{Float64}, Float64))) == 0
@@ -106,16 +108,18 @@ end
         -1.1880157328553503,
     ])
     μ = 3.986004415e5
-    ss_params = RegularizedCoordinateConfig(state, μ)
-    ss_state = StiefelScheifele(state, μ, ss_params)
+    ss_params = RegularizedCoordinateConfig(params(state), μ)
+    # Compute phi separately
+    ϕ = compute_initial_phi(params(state), μ, ss_params.DU, ss_params.TU, ss_params.W)
+    ss_state = StiefelScheifele(state, μ, ϕ, ss_params)
 
-    to_ss(x, μ) = StiefelScheifele(x, μ, ss_params)
-    from_ss(x, μ) = Cartesian(x, μ, ss_params)
-    mm_ss(x, μ) = meanMotion(x, μ, ss_params)
-    op_ss(x, μ) = orbitalPeriod(x, μ, ss_params)
-    on_ss(x, μ) = orbitalNRG(x, μ, ss_params)
-    av_ss(x, μ) = angularMomentumVector(x, μ, ss_params)
-    aq_ss(x, μ) = angularMomentumQuantity(x, μ, ss_params)
+    to_ss(x, μ) = StiefelScheifele(x, μ, ϕ, ss_params)
+    from_ss(x, μ) = Cartesian(x, μ, ϕ, ss_params)
+    mm_ss(x, μ) = meanMotion(x, μ, ϕ, ss_params)
+    op_ss(x, μ) = orbitalPeriod(x, μ, ϕ, ss_params)
+    on_ss(x, μ) = orbitalNRG(x, μ, ϕ, ss_params)
+    av_ss(x, μ) = angularMomentumVector(x, μ, ϕ, ss_params)
+    aq_ss(x, μ) = angularMomentumQuantity(x, μ, ϕ, ss_params)
 
     @test length(check_allocs(to_ss, (Cartesian{Float64}, Float64))) == 0
     @test length(check_allocs(from_ss, (StiefelScheifele{Float64}, Float64))) == 0
