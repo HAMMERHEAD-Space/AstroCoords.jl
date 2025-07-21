@@ -12,11 +12,16 @@ function ChainRulesCore.rrule(::Type{T}, args...) where {T<:AstroCoords.AstroCoo
 
     function astrocoord_pullback(Δ)
         # The gradient Δ is w.r.t. the output AstroCoord object
-        # We need the gradient w.r.t. each input argument
-        grad_vals = collect(Δ)  # Convert to vector if needed
-
-        # Each gradient component corresponds to one input argument
-        return (NoTangent(), grad_vals...)
+        # We need to extract the gradient for each input parameter
+        if Δ isa AbstractVector
+            # Direct vector gradient
+            return (NoTangent(), Δ...)
+        else
+            # Try to extract from structured gradient (Tangent, etc.)
+            # Convert to params vector first to get proper structure
+            param_grad = params(Δ)
+            return (NoTangent(), param_grad...)
+        end
     end
 
     return result, astrocoord_pullback
