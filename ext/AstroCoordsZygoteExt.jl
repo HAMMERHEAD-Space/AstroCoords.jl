@@ -13,7 +13,7 @@ function ChainRulesCore.rrule(
 
     function AstroCoord_pullback(Δ::AbstractArray)
         # Define the pullback (how gradients propagate backwards)
-        Δcoords = typeof(coord)(Δ)
+        Δcoords = typeof(coord)(Δ...)
         return (NoTangent(), Δcoords)
     end
 
