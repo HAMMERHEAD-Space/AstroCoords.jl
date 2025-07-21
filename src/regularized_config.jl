@@ -89,7 +89,7 @@ function compute_initial_phi(
     state::AbstractVector{T}, μ::V, config::RegularizedCoordinateConfig
 ) where {T<:Number,V<:Number}
     DU, TU, W = config.DU, config.TU, config.W
-    RT = promote_type(T, V, DT, TT, WT)
+    RT = promote_type(T, V, typeof(DU), typeof(TU), typeof(W))
 
     x, y, z, ẋ, ẏ, ż = state
 
