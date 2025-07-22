@@ -122,10 +122,10 @@ function cart2StiefelScheifele(
 
     # Time / Time Element
     if flag_time isa PhysicalTime
-        t_val = t₀ * TU
+        t_val = t₀ / TU
     elseif flag_time isa LinearTime
         t_val =
-            t₀ * TU + dot(SVector{4}(u₁, u₂, u₃, u₄), SVector{4}(du₁, du₂, du₃, du₄)) / ω
+            t₀ / TU + dot(SVector{4}(u₁, u₂, u₃, u₄), SVector{4}(du₁, du₂, du₃, du₄)) / ω
     end
 
     return SVector{10}(α[1], α[2], α[3], α[4], β[1], β[2], β[3], β[4], ω, t_val)
@@ -147,15 +147,17 @@ Computes the time element for Stiefel-Scheifele transformations.
 function get_stiefelscheifele_time(
     u::AbstractVector, ϕ::Number, config::RegularizedCoordinateConfig
 )
-    flag_time = config.flag_time
+    t₀, TU, flag_time = config.t₀, config.TU, config.flag_time
 
     if flag_time isa PhysicalTime
-        return u[10]
+        t = u[10]
     elseif flag_time isa LinearTime
         sph, cph = sincos(ϕ)
         αsq = u[1]^2 + u[2]^2 + u[3]^2 + u[4]^2
         βsq = u[5]^2 + u[6]^2 + u[7]^2 + u[8]^2
         αβ = u[1] * u[5] + u[2] * u[6] + u[3] * u[7] + u[4] * u[8]
-        return u[10] + 0.5 * ((αsq - βsq) / 2.0 * sph - αβ * cph) / u[9]
+        t = u[10] + 0.5 * ((αsq - βsq) / 2.0 * sph - αβ * cph) / u[9]
     end
+
+    return t * TU + t₀
 end
