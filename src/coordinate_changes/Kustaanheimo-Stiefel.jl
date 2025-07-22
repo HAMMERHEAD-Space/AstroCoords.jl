@@ -123,7 +123,7 @@ Computes the physical time from the KS state vector.
 function get_KS_time(
     u::AbstractVector{T}, config::RegularizedCoordinateConfig
 ) where {T<:Number}
-    flag_time = config.flag_time
+    t₀, TU, flag_time = config.t₀, config.TU, config.flag_time
     if flag_time isa PhysicalTime
         t = u[10]
     elseif flag_time isa LinearTime
@@ -132,5 +132,5 @@ function get_KS_time(
             dot(SVector{4}(u[1], u[2], u[3], u[4]), SVector{4}(u[5], u[6], u[7], u[8])) /
             u[9]
     end
-    return t
+    return t * TU + t₀
 end
