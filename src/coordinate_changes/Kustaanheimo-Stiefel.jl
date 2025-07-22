@@ -29,6 +29,9 @@ function cart2KS(
     r = norm(r_vec)
     t = t₀ / TU
 
+    W_non_dim = W / (DU^2 / TU^2)
+    Μ = μ / (DU^3 / TU^2)
+
     ##################################################
     #* 2. Initialize KS-Position and KS-Velocity
     ##################################################
@@ -52,7 +55,7 @@ function cart2KS(
     u₈ = 0.5 * dot(SVector{3,RT}(u₄, -u₃, u₂), v_vec)
 
     # Total energy
-    h = μ / r - 0.5 * dot(v_vec, v_vec) - W
+    h = Μ / r - 0.5 * dot(v_vec, v_vec) - W_non_dim
 
     # Time element
     if flag_time isa PhysicalTime
@@ -80,8 +83,8 @@ Converts a Kustaanheimo-Stiefel (KS) state vector to a Cartesian state vector.
 function KS2cart(
     u_ks::AbstractVector{T}, μ::V, config::RegularizedCoordinateConfig
 ) where {T<:Number,V<:Number}
-    W, DU, TU, t₀, flag_time = config.W, config.DU, config.TU, config.t₀, config.flag_time
-    RT = promote_type(T, V, typeof(W), typeof(DU), typeof(TU), typeof(t₀))
+    DU, TU = config.DU, config.TU
+    RT = promote_type(T, V, typeof(DU), typeof(TU))
 
     # Position
     x = u_ks[1]^2 - u_ks[2]^2 - u_ks[3]^2 + u_ks[4]^2
