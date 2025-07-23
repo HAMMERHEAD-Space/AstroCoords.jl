@@ -26,7 +26,7 @@ macro define_transformation_pair(
     quote
         struct $base_to_target_transform <: AstroCoordTransformation end
         @inline function (::$base_to_target_transform)(
-            x::$BaseFrameType{T}, μ::V; kwargs...
+            x::$BaseFrameType{T}, μ::V, args...
         ) where {T<:Number,V<:Number}
             RT = promote_type(T, V)
             return $TargetFrameType{RT}($(esc(base_to_target_backend))(params(x), μ))
@@ -35,7 +35,7 @@ macro define_transformation_pair(
 
         struct $target_to_base_transform <: AstroCoordTransformation end
         @inline function (::$target_to_base_transform)(
-            x::$TargetFrameType{T}, μ::V; kwargs...
+            x::$TargetFrameType{T}, μ::V, args...
         ) where {T<:Number,V<:Number}
             RT = promote_type(T, V)
             return $BaseFrameType{RT}($(esc(target_to_base_backend))(params(x), μ))
@@ -66,40 +66,44 @@ const ModifiedEquinoctialToKeplerian = ModEqToKeplerian
 # ~~~~~~~~~~~~~~~ EDromo Transformations ~~~~~~~~~~~~~~~ #
 export CartesianToEDromo, EDromoToCartesian
 
-struct CartesianToEDromoTransform{DT,TT,WT,PT,TT2,FT} <: AstroCoordTransformation
-    DU::DT
-    TU::TT
-    W::WT
-    ϕ₀::PT
-    t₀::TT2
-    flag_time::FT
+struct CartesianToEDromoTransform{C<:Union{Nothing,RegularizedCoordinateConfig}} <:
+       AstroCoordTransformation
+    config::C
 end
 function CartesianToEDromoTransform()
-    CartesianToEDromoTransform(nothing, nothing, nothing, nothing, nothing, nothing)
+    CartesianToEDromoTransform(nothing)
+end
+function CartesianToEDromoTransform(config::RegularizedCoordinateConfig)
+    CartesianToEDromoTransform{typeof(config)}(config)
 end
 
-struct EDromoToCartesianTransform{DT,TT,WT,PT,TT2,FT} <: AstroCoordTransformation
-    DU::DT
-    TU::TT
-    W::WT
-    ϕ₀::PT
-    t₀::TT2
-    flag_time::FT
+struct EDromoToCartesianTransform{C<:Union{Nothing,RegularizedCoordinateConfig}} <:
+       AstroCoordTransformation
+    config::C
 end
 function EDromoToCartesianTransform()
-    EDromoToCartesianTransform(nothing, nothing, nothing, nothing, nothing, nothing)
+    EDromoToCartesianTransform(nothing)
+end
+function EDromoToCartesianTransform(config::RegularizedCoordinateConfig)
+    EDromoToCartesianTransform{typeof(config)}(config)
 end
 
-function (t::CartesianToEDromoTransform)(x::Cartesian, μ::Number; kwargs...)
-    edromo_vec = cart2EDromo(params(x), μ; kwargs...)
+function (t::CartesianToEDromoTransform)(
+    x::Cartesian, μ::Number, ϕ::Number, config::RegularizedCoordinateConfig
+)
+    edromo_vec = cart2EDromo(params(x), μ, ϕ, config)
     return EDromo(edromo_vec...)
 end
+
 const CartesianToEDromo = CartesianToEDromoTransform()
 
-function (t::EDromoToCartesianTransform)(x::EDromo, μ::Number; kwargs...)
-    cart_vec = EDromo2cart(params(x), μ; kwargs...)
+function (t::EDromoToCartesianTransform)(
+    x::EDromo, μ::Number, ϕ::Number, config::RegularizedCoordinateConfig
+)
+    cart_vec = EDromo2cart(params(x), μ, ϕ, config)
     return Cartesian(cart_vec...)
 end
+
 const EDromoToCartesian = EDromoToCartesianTransform()
 
 Base.inv(::CartesianToEDromoTransform) = EDromoToCartesianTransform()
@@ -108,38 +112,38 @@ Base.inv(::EDromoToCartesianTransform) = CartesianToEDromoTransform()
 # ~~~~~~~~~~~~~~~ Kustaanheimo-Stiefel Transformations ~~~~~~~~~~~~~~~ #
 export CartesianToKustaanheimoStiefel, KustaanheimoStiefelToCartesian
 
-struct CartesianToKustaanheimoStiefelTransform{DT,TT,VP,TT2,FT} <: AstroCoordTransformation
-    DU::DT
-    TU::TT
-    Vpot::VP
-    t₀::TT2
-    flag_time::FT
+struct CartesianToKustaanheimoStiefelTransform{
+    CT<:Union{Nothing,RegularizedCoordinateConfig}
+} <: AstroCoordTransformation
+    config::CT
 end
 function CartesianToKustaanheimoStiefelTransform()
-    CartesianToKustaanheimoStiefelTransform(nothing, nothing, nothing, nothing, nothing)
+    CartesianToKustaanheimoStiefelTransform(nothing)
 end
 
-struct KustaanheimoStiefelToCartesianTransform{DT,TT,VP,TT2,FT} <: AstroCoordTransformation
-    DU::DT
-    TU::TT
-    Vpot::VP
-    t₀::TT2
-    flag_time::FT
+struct KustaanheimoStiefelToCartesianTransform{
+    CT<:Union{Nothing,RegularizedCoordinateConfig}
+} <: AstroCoordTransformation
+    config::CT
 end
 function KustaanheimoStiefelToCartesianTransform()
-    KustaanheimoStiefelToCartesianTransform(nothing, nothing, nothing, nothing, nothing)
+    KustaanheimoStiefelToCartesianTransform(nothing)
 end
 
-function (t::CartesianToKustaanheimoStiefelTransform)(x::Cartesian, μ::Number; kwargs...)
-    ks_vec = cart2KS(params(x), μ; kwargs...)
+function (t::CartesianToKustaanheimoStiefelTransform)(
+    x::Cartesian,
+    μ::Number,
+    config::RegularizedCoordinateConfig=RegularizedCoordinateConfig(params(x), μ),
+)
+    ks_vec = cart2KS(params(x), μ, config)
     return KustaanheimoStiefel(ks_vec...)
 end
 const CartesianToKustaanheimoStiefel = CartesianToKustaanheimoStiefelTransform()
 
 function (t::KustaanheimoStiefelToCartesianTransform)(
-    x::KustaanheimoStiefel, μ::Number; kwargs...
+    x::KustaanheimoStiefel, μ::Number, config::RegularizedCoordinateConfig
 )
-    cart_vec = KS2cart(params(x), μ; kwargs...)
+    cart_vec = KS2cart(params(x), μ, config)
     return Cartesian(cart_vec...)
 end
 const KustaanheimoStiefelToCartesian = KustaanheimoStiefelToCartesianTransform()
@@ -154,46 +158,39 @@ end
 # ~~~~~~~~~~~~~~~ Stiefel-Scheifele Transformations ~~~~~~~~~~~~~~~ #
 export CartesianToStiefelScheifele, StiefelScheifeleToCartesian
 
-struct CartesianToStiefelScheifeleTransform{DT,TT,VP,PT,TT2,FT} <: AstroCoordTransformation
-    DU::DT
-    TU::TT
-    W::VP
-    ϕ₀::PT
-    t₀::TT2
-    flag_time::FT
+struct CartesianToStiefelScheifeleTransform{
+    CT<:Union{Nothing,RegularizedCoordinateConfig}
+} <: AstroCoordTransformation
+    config::CT
 end
 function CartesianToStiefelScheifeleTransform()
-    CartesianToStiefelScheifeleTransform(
-        nothing, nothing, nothing, nothing, nothing, nothing
-    )
+    CartesianToStiefelScheifeleTransform(nothing)
 end
 
-struct StiefelScheifeleToCartesianTransform{DT,TT,VP,PT,TT2,FT} <: AstroCoordTransformation
-    DU::DT
-    TU::TT
-    W::VP
-    ϕ₀::PT
-    t₀::TT2
-    flag_time::FT
+struct StiefelScheifeleToCartesianTransform{
+    CT<:Union{Nothing,RegularizedCoordinateConfig}
+} <: AstroCoordTransformation
+    config::CT
 end
 function StiefelScheifeleToCartesianTransform()
-    StiefelScheifeleToCartesianTransform(
-        nothing, nothing, nothing, nothing, nothing, nothing
-    )
+    StiefelScheifeleToCartesianTransform(nothing)
 end
 
-function (t::CartesianToStiefelScheifeleTransform)(x::Cartesian, μ::Number; kwargs...)
-    ss_vec = cart2StiefelScheifele(params(x), μ; kwargs...)
+function (t::CartesianToStiefelScheifeleTransform)(
+    x::Cartesian, μ::Number, ϕ::Number, config::RegularizedCoordinateConfig
+)
+    ss_vec = cart2StiefelScheifele(params(x), μ, ϕ, config)
     return StiefelScheifele(ss_vec...)
 end
 const CartesianToStiefelScheifele = CartesianToStiefelScheifeleTransform()
 
 function (t::StiefelScheifeleToCartesianTransform)(
-    x::StiefelScheifele, μ::Number; kwargs...
+    x::StiefelScheifele, μ::Number, ϕ::Number, config::RegularizedCoordinateConfig
 )
-    cart_vec = StiefelScheifele2cart(params(x), μ; kwargs...)
+    cart_vec = StiefelScheifele2cart(params(x), μ, ϕ, config)
     return Cartesian(cart_vec...)
 end
+
 const StiefelScheifeleToCartesian = StiefelScheifeleToCartesianTransform()
 
 Base.inv(::CartesianToStiefelScheifeleTransform) = StiefelScheifeleToCartesianTransform()
@@ -338,10 +335,10 @@ for ToCoord in COORD_TYPES
             FromCoordTransformName = COORD_NAMES[FromCoord]
             Transform = Symbol(FromCoordTransformName, :To, ToCoordTransformName)
             @eval function ($ToCoordName)(
-                X::$FromCoord{T}, μ::Number; kwargs...
+                X::$FromCoord{T}, μ::Number, args...
             ) where {T<:Number}
                 transform = $(getfield(@__MODULE__, Transform))
-                return transform(X, μ; kwargs...)
+                return transform(X, μ, args...)
             end
         end
     end

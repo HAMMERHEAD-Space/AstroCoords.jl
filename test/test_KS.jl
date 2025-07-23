@@ -31,13 +31,13 @@
                         @testset "Params: time_flag=$(typeof(flag)), Vpot=$Vpot, t₀=$t₀" begin
 
                             # Get the full set of parameters for this test case
-                            configs = set_ks_configurations(
-                                base_state_vec, μ; Vpot=Vpot, t₀=t₀, flag_time=flag
+                            configs = RegularizedCoordinateConfig(
+                                base_state_vec, μ; W=Vpot, t₀=t₀, flag_time=flag
                             )
 
                             # Perform the round trip
-                            ks_state = KustaanheimoStiefel(from_state, μ; configs...)
-                            roundtrip_state = FromCoord(ks_state, μ; configs...)
+                            ks_state = KustaanheimoStiefel(from_state, μ, configs)
+                            roundtrip_state = FromCoord(ks_state, μ, configs)
 
                             # Test for numerical equality
                             @test params(roundtrip_state) ≈ params(from_state) atol=1e-8

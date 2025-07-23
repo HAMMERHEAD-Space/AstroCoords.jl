@@ -11,7 +11,7 @@ function ChainRulesCore.rrule(
     # Forward evaluation (Keplerian transformation)
     y = new_coord(coord)
 
-    function AstroCoord_pullback(Δ::AbstractVector)
+    function AstroCoord_pullback(Δ::AbstractArray)
         # Define the pullback (how gradients propagate backwards)
         Δcoords = typeof(coord)(Δ)
         return (NoTangent(), Δcoords)

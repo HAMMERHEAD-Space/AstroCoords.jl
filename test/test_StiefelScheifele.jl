@@ -31,13 +31,16 @@
                     for t₀ in t0_values
                         @testset "Params: time_flag=$(typeof(flag)), W=$W, t₀=$t₀" begin
                             # Get the full set of parameters for this test case
-                            defaults = set_stiefelscheifele_configurations(
+                            defaults = RegularizedCoordinateConfig(
                                 base_state_vec, μ; W=W, t₀=t₀, flag_time=flag
                             )
 
+                            # Compute phi for this configuration
+                            ϕ = compute_initial_phi(base_state_vec, μ, defaults)
+
                             # Perform the round trip
-                            ss_state = StiefelScheifele(from_state, μ; defaults...)
-                            roundtrip_state = FromCoord(ss_state, μ; defaults...)
+                            ss_state = StiefelScheifele(from_state, μ, ϕ, defaults)
+                            roundtrip_state = FromCoord(ss_state, μ, ϕ, defaults)
 
                             # Test for numerical equality
                             @test params(roundtrip_state) ≈ params(from_state) atol=1e-8

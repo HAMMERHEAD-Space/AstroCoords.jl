@@ -4,6 +4,7 @@ using LinearAlgebra
 using StaticArrays
 
 include("./core_types.jl")
+include("regularized_config.jl")
 include("utils.jl")
 include("./anomalies.jl")
 include("./attitude_changes.jl")

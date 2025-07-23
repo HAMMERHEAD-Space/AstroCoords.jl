@@ -1,5 +1,4 @@
 using AstroCoords
-using Aqua
 using Test
 
 using DifferentiationInterface
@@ -11,6 +10,7 @@ using Mooncake
 using PolyesterForwardDiff
 using Zygote
 
+using Aqua
 using JET
 using AllocCheck
 
@@ -51,5 +51,7 @@ end
 end
 
 @testset "Aqua.jl" begin
-    Aqua.test_all(AstroCoords; ambiguities=(recursive = false))
+    Aqua.test_all(
+        AstroCoords; ambiguities=(recursive = false), deps_compat=(check_extras = false)
+    )
 end

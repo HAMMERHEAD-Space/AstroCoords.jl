@@ -18,8 +18,9 @@
 
     # Parameter sets to test
     time_flags = [PhysicalTime(), ConstantTime(), LinearTime()]
-    W_values = [0.0, 1e-8]
+    W_values = [0.0, -1e-8, 1e-8]
     t0_values = [0.0, 100.0]
+    ϕ_values = [0.0, 100.0]
 
     for FromCoord in coord_types_to_test
         @testset "Roundtrip from $FromCoord" begin
@@ -29,18 +30,20 @@
             for flag in time_flags
                 for W in W_values
                     for t₀ in t0_values
-                        @testset "Params: time_flag=$(typeof(flag)), W=$W, t₀=$t₀" begin
-                            # Get the full set of parameters for this test case
-                            defaults = set_edromo_configurations(
-                                base_state_vec, μ; W=W, t₀=t₀, flag_time=flag
-                            )
+                        for ϕ in ϕ_values
+                            @testset "Params: time_flag=$(typeof(flag)), W=$W, t₀=$t₀, ϕ=$ϕ" begin
+                                # Get the full set of parameters for this test case
+                                defaults = RegularizedCoordinateConfig(
+                                    base_state_vec, μ; W=W, t₀=t₀, flag_time=flag
+                                )
 
-                            # Perform the round trip
-                            edromo_state = EDromo(from_state, μ; defaults...)
-                            roundtrip_state = FromCoord(edromo_state, μ; defaults...)
+                                # Perform the round trip
+                                edromo_state = EDromo(from_state, μ, ϕ, defaults)
+                                roundtrip_state = FromCoord(edromo_state, μ, ϕ, defaults)
 
-                            # Test for numerical equality
-                            @test params(roundtrip_state) ≈ params(from_state) atol=1e-8
+                                # Test for numerical equality
+                                @test params(roundtrip_state) ≈ params(from_state) atol=1e-8
+                            end
                         end
                     end
                 end
