@@ -42,6 +42,6 @@ If you use `AstroCoords.jl` in your work, please consider citing it.
     year = {2024},
     publisher = {GitHub},
     journal = {GitHub repository},
-    howpublished = {\\url{https://github.com/jmurphy6895/AstroCoords.jl}}
+    howpublished = {\\url{https://github.com/HAMMERHEAD-Space/AstroCoords.jl}}
 }
 ```
