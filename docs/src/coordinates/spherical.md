@@ -38,5 +38,5 @@ The Cylindrical Orbital Elements describe the state of an orbiting object using 
     * rate of change of out-of-plane angle (ż): instantaneous rate of change of the out-of-plane distance
 
 ## References
-[1]: https://en.wikipedia.org/wiki/Spherical_coordinate_system#Cylindrical_coordinates
+[1]: https://en.wikipedia.org/wiki/Spherical_coordinate_system
 [2]: https://en.wikipedia.org/wiki/Cylindrical_coordinate_system

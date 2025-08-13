@@ -43,5 +43,20 @@ julia> Pkg.add("AstroCoords")
 
 For more information, see the [documentation][docs-dev-url].
 
+## Citing
+
+If you use `AstroCoords.jl` in your work, please consider citing it.
+
+```bibtex
+@misc{AstroCoords.jl,
+    author = {Murphy, Jordan},
+    title = {AstroCoords.jl},
+    year = {2024},
+    publisher = {GitHub},
+    journal = {GitHub repository},
+    howpublished = {\\url{https://github.com/jmurphy6895/AstroCoords.jl}}
+}
+```
+
 [docs-dev-url]: https://hammerhead-space.github.io/AstroCoords.jl/dev/
 [docs-stable-url]: https://hammerhead-space.github.io/AstroCoords.jl/stable/

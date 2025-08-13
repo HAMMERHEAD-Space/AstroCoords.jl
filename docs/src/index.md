@@ -30,3 +30,18 @@ This package may eventually support Attitude Coordinates as well.
 julia> using Pkg
 julia> Pkg.add("AstroCoords")
 ```
+
+## Citing
+
+If you use `AstroCoords.jl` in your work, please consider citing it.
+
+```bibtex
+@misc{AstroCoords.jl,
+    author = {Murphy, Jordan},
+    title = {AstroCoords.jl},
+    year = {2024},
+    publisher = {GitHub},
+    journal = {GitHub repository},
+    howpublished = {\\url{https://github.com/jmurphy6895/AstroCoords.jl}}
+}
+```
