@@ -49,13 +49,15 @@ For more information, see the [documentation][docs-dev-url].
 If you use `AstroCoords.jl` in your work, please consider citing it.
 
 ```bibtex
-@misc{AstroCoords.jl,
-    author = {Murphy, Jordan},
-    title = {AstroCoords.jl},
-    year = {2024},
-    publisher = {GitHub},
-    journal = {GitHub repository},
-    howpublished = {\\url{https://github.com/HAMMERHEAD-Space/AstroCoords.jl}}
+@software{jordan_murphy_2025_16954330,
+  author       = {Jordan Murphy},
+  title        = {HAMMERHEAD-Space/AstroCoords.jl: v0.3.1},
+  month        = aug,
+  year         = 2025,
+  publisher    = {Zenodo},
+  version      = {v0.3.1},
+  doi          = {10.5281/zenodo.16954330},
+  url          = {https://doi.org/10.5281/zenodo.16954330},
 }
 ```
 
