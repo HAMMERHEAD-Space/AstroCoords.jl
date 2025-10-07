@@ -113,7 +113,7 @@ Computes the instantaneous angular momentum vector from a Cartesian state vector
 -`u::AbstractVector{<:Number}`: The Cartesian state vector [x; y; z; ẋ; ẏ; ż].
 
 # Returns
--'angular_momentum::Vector{<:Number}': 3-Dimensional angular momemtum vector.
+-'angular_momentum::Vector{<:Number}': 3-Dimensional angular momentum vector.
 """
 function angularMomentumVector(u::AbstractVector{<:Number})
     r = SVector{3}(u[1], u[2], u[3])
@@ -132,7 +132,7 @@ Computes the instantaneous angular momentum vector from a Cartesian state vector
 -`μ::Number`: Standard graviational parameter of central body.
 
 # Returns
--`angular_momentum::Vector{<:Number}`: 3-Dimensional angular momemtum vector.
+-`angular_momentum::Vector{<:Number}`: 3-Dimensional angular momentum vector.
 """
 function angularMomentumVector(X::AstroCoord, μ::Number, args...)
     cart = Cartesian(X, μ, args...)
