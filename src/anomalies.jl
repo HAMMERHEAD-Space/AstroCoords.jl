@@ -29,7 +29,14 @@ function KeplerSolver(M::T, e::Number; tol::Float64=10 * eps(T)) where {T<:Numbe
         end
         E_guess = rem2pi(E_guess, RoundDown)
 
-        f = 2 * atan(√(1 + e) * sin(E_guess / 2), √(1 - e) * cos(E_guess / 2))
+        # Compute square roots once to avoid repeated allocations
+        E_half = E_guess / 2
+        sin_E_half = sin(E_half)
+        cos_E_half = cos(E_half)
+        sqrt_1_plus_e = √(1 + e)
+        sqrt_1_minus_e = √(1 - e)
+        
+        f = 2 * atan(sqrt_1_plus_e * sin_E_half, sqrt_1_minus_e * cos_E_half)
 
         if f < 0.0
             f = 2.0 * π - abs(f)
@@ -47,7 +54,14 @@ function KeplerSolver(M::T, e::Number; tol::Float64=10 * eps(T)) where {T<:Numbe
 
         F_guess = rem2pi(F_guess, RoundDown)
 
-        f = 2.0 * atan(√(1 + e) * sinh(F_guess / 2), √(e - 1) * cosh(F_guess / 2))
+        # Compute square roots once to avoid repeated allocations
+        F_half = F_guess / 2
+        sinh_F_half = sinh(F_half)
+        cosh_F_half = cosh(F_half)
+        sqrt_1_plus_e = √(1 + e)
+        sqrt_e_minus_1 = √(e - 1)
+        
+        f = 2.0 * atan(sqrt_1_plus_e * sinh_F_half, sqrt_e_minus_1 * cosh_F_half)
 
         if f < 0.0
             f = 2.0 * π - abs(f)
@@ -98,9 +112,11 @@ Converts the true anomaly into the mean anomaly.
 
         E = rem2pi(E, RoundDown)
     else
-        E = 2.0 * atanh(√((e - 1.0) / (1.0 + e)) * tan(f / 2.0))
+        F = atanh(sin(f) * √(e^2 - 1.0) / (1.0 + e * cos(f)))
 
-        E = rem2pi(E, RoundDown)
+        F = rem2pi(F, RoundDown)
+
+        E = F
     end
 
     return E
@@ -110,14 +126,14 @@ export eccentricAnomaly2MeanAnomaly
 """
     eccentricAnomaly2MeanAnomaly(E::Number, e::Number)
 
-Converts the true anomaly into the mean anomaly.
+Converts the eccentric anomaly into the mean anomaly.
 
 # Arguments
 -`E::Number`: Eccentric anomaly of the orbit [radians].
 -`e::Number`: Eccentricity of the orbit.
 
 # Returns
--'M::Number': Mean anomaly of the orbit [radians].
+-`M::Number`: Mean anomaly of the orbit [radians].
 """
 @inline function eccentricAnomaly2MeanAnomaly(E::Number, e::Number)
     if e < 1.0
@@ -133,31 +149,9 @@ Converts the true anomaly into the mean anomaly.
     return M
 end
 
-export eccentricAnomaly2TrueAnomaly
-"""
-    eccentricAnomaly2TrueAnomaly(E::Number, e::Number)
-
-Converts the eccentric anomaly into the true anomaly.
-
-# Arguments
--`E::Number`: Eccentric anomaly of the orbit [radians].
--`e::Number`: Eccentricity of the orbit.
-
-# Returns
--`f::Number`: True anomaly of the orbit [radians].
-"""
-@inline function eccentricAnomaly2TrueAnomaly(E::Number, e::Number)
-    if e < 1.0
-        f = 2.0 * atan(√(1.0 + e) * sin(E / 2.0), √(1.0 - e) * cos(E / 2.0))
-    else
-        f = atan(√(e + 1.0) * sinh(E / 2.0), √(e - 1.0) * cosh(E / 2.0))
-    end
-    return f
-end
-
 export meanAnomaly2TrueAnomaly
 """
-    meanAnomaly2TrueAnomaly(M::T, e::Number; tol::Float64=10 * eps(T)) where {T<:Number}
+    meanAnomaly2TrueAnomaly(M::Number, e::Number)
 
 Converts the mean anomaly into the true anomaly.
 
@@ -165,36 +159,11 @@ Converts the mean anomaly into the true anomaly.
 -`M::Number`: Mean anomaly of the orbit [radians].
 -`e::Number`: Eccentricity of the orbit.
 
-# Keyword Arguments
--`tol::Float64`: Convergence tolerance of Kepler solver. [Default=10*eps(T)]
-
 # Returns
--`f::Number`: Mean anomaly of the orbit [radians].
+-`f::Number`: True anomaly of the orbit [radians].
 """
-@inline function meanAnomaly2TrueAnomaly(
-    M::T, e::Number; tol::Float64=10 * eps(T)
-) where {T<:Number}
-    return KeplerSolver(M, e; tol=tol)
-end
+@inline function meanAnomaly2TrueAnomaly(M::Number, e::Number)
+    f = KeplerSolver(M, e)
 
-export meanAnomaly2EccentricAnomaly
-"""
-    meanAnomaly2EccentricAnomaly(M::T, e::Number; tol::Float64=10 * eps(T)) where {T<:Number}
-
-Converts the Mean Anomaly into the Eccentric Anomaly
-
-# Arguments
--`M::Number`: Mean Anomaly of the orbit [radians]
--`e::Number`: Eccentricity of the orbit
-
-# Keyword Arguments
--`tol::Float64`: Convergence tolerance of Kepler solver. [Default=10*eps(T)]
-
-# Returns
--`E::Number`: Eccentric Anomaly of the orbit [radians]
-"""
-@inline function meanAnomaly2EccentricAnomaly(
-    M::T, e::Number; tol::Float64=10 * eps(T)
-) where {T<:Number}
-    return trueAnomaly2EccentricAnomaly(meanAnomaly2TrueAnomaly(M, e; tol=tol), e)
+    return f
 end

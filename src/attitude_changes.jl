@@ -38,7 +38,8 @@ Converts Modified Rodriguez Parameters rotation description into Euler Parameter
 - `β::AbstractVector{<:Number}`: The Euler Parameter description of a rotation.
 """
 function MRP2EP(σ::AbstractVector{<:Number})
-    σ_sq = sum(abs2.(σ))
+    # Avoid allocation by using sum(abs2, σ) instead of sum(abs2.(σ))
+    σ_sq = sum(abs2, σ)
 
     denom = 1.0 + σ_sq
 
