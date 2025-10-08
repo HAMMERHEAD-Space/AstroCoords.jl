@@ -8,7 +8,7 @@
 ########################################################################################
 const _BACKENDS = (
     ("ForwardDiff", AutoForwardDiff()),
-    ("Diffractor", AutoDiffractor()),
+    #("Diffractor", AutoDiffractor()),
     ("Enzyme", AutoEnzyme()),
     ("Mooncake", AutoMooncake(; config=nothing)),
     ("PolyesterForwardDiff", AutoPolyesterForwardDiff()),
