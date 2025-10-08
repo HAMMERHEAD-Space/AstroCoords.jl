@@ -26,7 +26,8 @@ function StiefelScheifele2cart(
     ##################################################
     #* 1. Auxiliary Quantities
     ##################################################
-    sph2, cph2 = sincos(0.5 * ϕ)
+    sph2 = sin(0.5 * ϕ)
+    cph2 = cos(0.5 * ϕ)
 
     ##################################################
     #* 2. Position in the Inertial Frame
@@ -90,7 +91,8 @@ function cart2StiefelScheifele(
     #* 2. Auxiliary Quantities
     ##################################################
     Rmag = norm(x)
-    sph2, cph2 = sincos(ϕ / 2)
+    sph2 = sin(ϕ / 2)
+    cph2 = cos(ϕ / 2)
 
     ##################################################
     #* 2. Compute Components
@@ -152,7 +154,8 @@ function get_stiefelscheifele_time(
     if flag_time isa PhysicalTime
         t = u[10]
     elseif flag_time isa LinearTime
-        sph, cph = sincos(ϕ)
+        sph = sin(ϕ)
+        cph = cos(ϕ)
         αsq = u[1]^2 + u[2]^2 + u[3]^2 + u[4]^2
         βsq = u[5]^2 + u[6]^2 + u[7]^2 + u[8]^2
         αβ = u[1] * u[5] + u[2] * u[6] + u[3] * u[7] + u[4] * u[8]

@@ -42,7 +42,8 @@ function cart2EDromo(
     r_mag = norm(r)
     v_mag = norm(v)
 
-    sϕ, cϕ = sincos(ϕ)
+    sϕ = sin(ϕ)
+    cϕ = cos(ϕ)
 
     # Total Energy
     E = v_mag^2 / 2 - Μ / r_mag + W_non_dim
@@ -65,7 +66,8 @@ function cart2EDromo(
     #* 3. Quaternion Elements
     ##################################################
     ν₀ = ϕ + 2.0*atan(r_dot_v, c₀ + r_mag*√(-2.0*E))
-    sν, cν = sincos(ν₀)
+    sν = sin(ν₀)
+    cν = cos(ν₀)
 
     # Orbital Frame in the IRF
     î = r / r_mag
@@ -89,7 +91,7 @@ function cart2EDromo(
             aux = abs(0.5 * (1.0 - ŷ[2]))
             ζ₄ = √(aux)
             if aux <= eps(RT)
-                ζ₅ = 1.0
+                ζ₅ = RT(1.0)
             else
                 ζ₅ = ŷ[1] / (2.0*ζ₄)
             end
@@ -145,7 +147,8 @@ function EDromo2cart(
     ##################################################
     #* 1. Auxiliary Quantities
     ##################################################
-    sϕ, cϕ = sincos(ϕ)
+    sϕ = sin(ϕ)
+    cϕ = cos(ϕ)
 
     ρ = 1.0 - ζ₁*cϕ - ζ₂*sϕ
     r_mag = ζ₃ * ρ
@@ -161,9 +164,9 @@ function EDromo2cart(
     ##################################################
 
     # Intermediate Frame Unit Vectors
-    x̂ = 2.0 * SVector{3}(0.5 - ζ₅^2 - ζ₆^2, ζ₄*ζ₅ + ζ₆*ζ₇, ζ₄*ζ₆ - ζ₅*ζ₇)
+    x̂ = 2.0 * SVector{3,RT}(0.5 - ζ₅^2 - ζ₆^2, ζ₄*ζ₅ + ζ₆*ζ₇, ζ₄*ζ₆ - ζ₅*ζ₇)
 
-    ŷ = 2.0 * SVector{3}(ζ₄*ζ₅ - ζ₆*ζ₇, 0.5 - ζ₄^2 - ζ₆^2, ζ₅*ζ₆ + ζ₄*ζ₇)
+    ŷ = 2.0 * SVector{3,RT}(ζ₄*ζ₅ - ζ₆*ζ₇, 0.5 - ζ₄^2 - ζ₆^2, ζ₅*ζ₆ + ζ₄*ζ₇)
 
     r_non_dim = r_mag * (x̂ * cν + ŷ * sν)
 
@@ -208,7 +211,8 @@ function get_EDromo_time(
     TU, t₀, flag_time = config.TU, config.t₀, config.flag_time
     RT = promote_type(T, P)
 
-    sϕ, cϕ = sincos(ϕ)
+    sϕ = sin(ϕ)
+    cϕ = cos(ϕ)
 
     if flag_time isa PhysicalTime
         t = u[8]
