@@ -1,175 +1,217 @@
-export meanMotion
-"""
-    meanMotion(a::Number, μ::Number)
+using LinearAlgebra
+using StaticArrays
 
-Computes the Keplerian mean motion about a central body.
+export meanMotion,
+    orbitalPeriod, orbitalNRG, angularMomentumVector, angularMomentumQuantity
+
+"""
+    meanMotion(state::AstroCoord, μ)
+
+Compute the mean motion of the orbit.
 
 # Arguments
--`a::Number`: The semi-major axis of the orbit.
--`μ::Number`: Standard graviational parameter of central body.
+- `state::AstroCoord`: The orbital state.
+- `μ`: Gravitational parameter.
 
 # Returns
-- `n::Number`: The orbital mean motion.
+- Mean motion in rad/TU.
 """
-function meanMotion(a::Number, μ::Number)
-    return √(μ / (a^3.0))
+function meanMotion(state::AstroCoord, μ)
+    cart_state = Cartesian(state, μ)
+    return meanMotion(cart_state, μ)
+end
+
+function meanMotion(state::Cartesian, μ)
+    r = position(state)
+    v = velocity(state)
+    r_mag = norm(r)
+    v_mag = norm(v)
+    E = v_mag^2 / 2 - μ / r_mag
+    a = -μ / (2 * E)
+    return √(μ / a^3)
+end
+
+function meanMotion(state::Keplerian, μ)
+    return √(μ / state.a^3)
+end
+
+# Specialized methods for regularized coordinates
+function meanMotion(
+    state::EDromo, μ, ϕ::Number, config::RegularizedCoordinateConfig
+)
+    # Convert to Cartesian using provided ϕ and config
+    cart_state = Cartesian(state, μ, ϕ, config)
+    return meanMotion(cart_state, μ)
+end
+
+function meanMotion(
+    state::StiefelScheifele, μ, ϕ::Number, config::RegularizedCoordinateConfig
+)
+    # Convert to Cartesian using provided ϕ and config
+    cart_state = Cartesian(state, μ, ϕ, config)
+    return meanMotion(cart_state, μ)
 end
 
 """
-    meanMotion(X::AstroCoord, μ::Number)
+    orbitalPeriod(state::AstroCoord, μ)
 
-Computes the Keplerian mean motion about a central body.
+Compute the orbital period.
 
 # Arguments
--`X::AstroCoord`: An coordinate set describing the orbit.
--`μ::Number`: Standard graviational parameter of central body.
+- `state::AstroCoord`: The orbital state.
+- `μ`: Gravitational parameter.
 
 # Returns
-- `n::Number`: The orbital mean motion.
+- Orbital period in TU.
 """
-function meanMotion(X::AstroCoord, μ::Number, args...)
-    kep = Keplerian(X, μ, args...)
-
-    return meanMotion(kep.a, μ)
+function orbitalPeriod(state::AstroCoord, μ)
+    return 2 * π / meanMotion(state, μ)
 end
 
-export orbitalPeriod
-"""
-    orbitalPeriod(a::Number, μ::Number)
-
-Computes the Keplerian orbital period about a central body.
-
-# Arguments
--`a::Number`: The semi-major axis of the orbit.
--`μ::Number`: Standard graviational parameter of central body.
-
-# Returns
--`T::Number`: The orbital period.
-"""
-function orbitalPeriod(a::Number, μ::Number)
-    return 2.0 * π / √(μ / (a^3.0))
+function orbitalPeriod(state::Keplerian, μ)
+    return 2 * π * √(state.a^3 / μ)
 end
 
-"""
-    orbitalPeriod(X::AstroCoord, μ::Number)
-
-Computes the Keplerian orbital period about a central body.
-
-# Arguments
--`X::AstroCoord`: An coordinate set describing the orbit.
--`μ::Number`: Standard graviational parameter of central body.
-
-# Returns
--`T::Number`: The orbital period.
-"""
-function orbitalPeriod(X::AstroCoord, μ::Number, args...)
-    kep = Keplerian(X, μ, args...)
-
-    return orbitalPeriod(kep.a, μ)
+# Specialized methods for regularized coordinates
+function orbitalPeriod(
+    state::EDromo, μ, ϕ::Number, config::RegularizedCoordinateConfig
+)
+    return 2 * π / meanMotion(state, μ, ϕ, config)
 end
 
-export orbitalNRG
-"""
-    orbitalNRG(a::Number, μ::Number)
-
-Computes the keplerian orbital energy.
-
-# Arguments
--`a::Number`: The semi-major axis of the orbit.
--`μ::Number`: Standard graviational parameter of central body.
-
-# Returns
--`NRG::Number`: The orbital energy. 
-"""
-function orbitalNRG(a::Number, μ::Number)
-    return -μ / (2.0 * a)
+function orbitalPeriod(
+    state::StiefelScheifele, μ, ϕ::Number, config::RegularizedCoordinateConfig
+)
+    return 2 * π / meanMotion(state, μ, ϕ, config)
 end
 
 """
-    orbitalNRG(X::AstroCoord, μ::Number)
+    orbitalNRG(state::AstroCoord, μ)
 
-Computes the keplerian orbital energy.
+Compute the specific orbital energy.
 
 # Arguments
--`X::AstroCoord`: An coordinate set describing the orbit.
--`μ::Number`: Standard graviational parameter of central body.
+- `state::AstroCoord`: The orbital state.
+- `μ`: Gravitational parameter.
 
 # Returns
--`NRG::Number`: The orbital energy. 
+- Specific orbital energy in (L²/T²).
 """
-function orbitalNRG(X::AstroCoord, μ::Number, args...)
-    kep = Keplerian(X, μ, args...)
-
-    return orbitalNRG(kep.a, μ)
+function orbitalNRG(state::AstroCoord, μ)
+    cart_state = Cartesian(state, μ)
+    return orbitalNRG(cart_state, μ)
 end
 
-export angularMomentumVector
-"""
-    angularMomentumVector(u::AbstractVector{<:Number})
+function orbitalNRG(state::Cartesian, μ)
+    r = position(state)
+    v = velocity(state)
+    r_mag = norm(r)
+    v_mag = norm(v)
+    return v_mag^2 / 2 - μ / r_mag
+end
 
-Computes the instantaneous angular momentum vector from a Cartesian state vector.
+function orbitalNRG(state::Keplerian, μ)
+    return -μ / (2 * state.a)
+end
+
+# Specialized methods for regularized coordinates
+function orbitalNRG(
+    state::EDromo, μ, ϕ::Number, config::RegularizedCoordinateConfig
+)
+    cart_state = Cartesian(state, μ, ϕ, config)
+    return orbitalNRG(cart_state, μ)
+end
+
+function orbitalNRG(
+    state::StiefelScheifele, μ, ϕ::Number, config::RegularizedCoordinateConfig
+)
+    cart_state = Cartesian(state, μ, ϕ, config)
+    return orbitalNRG(cart_state, μ)
+end
+
+function orbitalNRG(
+    state::KustaanheimoStiefel, μ, config::RegularizedCoordinateConfig
+)
+    cart_state = Cartesian(state, μ, config)
+    return orbitalNRG(cart_state, μ)
+end
+
+"""
+    angularMomentumVector(state::AstroCoord, μ)
+
+Compute the angular momentum vector.
 
 # Arguments
--`u::AbstractVector{<:Number}`: The Cartesian state vector [x; y; z; ẋ; ẏ; ż].
+- `state::AstroCoord`: The orbital state.
+- `μ`: Gravitational parameter.
 
 # Returns
--'angular_momentum::Vector{<:Number}': 3-Dimensional angular momentum vector.
+- Angular momentum vector as `SVector{3}`.
 """
-function angularMomentumVector(u::AbstractVector{<:Number})
-    r = SVector{3}(u[1], u[2], u[3])
-    v = SVector{3}(u[4], u[5], u[6])
+function angularMomentumVector(state::AstroCoord, μ)
+    cart_state = Cartesian(state, μ)
+    return angularMomentumVector(cart_state, μ)
+end
 
+function angularMomentumVector(state::Cartesian, μ)
+    r = position(state)
+    v = velocity(state)
     return cross(r, v)
 end
 
-"""
-    angularMomentumVector(X::AstroCoord, μ::Number)
-
-Computes the instantaneous angular momentum vector from a Cartesian state vector.
-
-# Arguments
--`X::AstroCoord`: An coordinate set describing the orbit.
--`μ::Number`: Standard graviational parameter of central body.
-
-# Returns
--`angular_momentum::Vector{<:Number}`: 3-Dimensional angular momentum vector.
-"""
-function angularMomentumVector(X::AstroCoord, μ::Number, args...)
-    cart = Cartesian(X, μ, args...)
-
-    return angularMomentumVector(params(cart))
+# Specialized methods for regularized coordinates
+function angularMomentumVector(
+    state::EDromo, μ, ϕ::Number, config::RegularizedCoordinateConfig
+)
+    cart_state = Cartesian(state, μ, ϕ, config)
+    return angularMomentumVector(cart_state, μ)
 end
 
-export angularMomentumQuantity
-"""
-    angularMomentumQuantity(u::AbstractVector{<:Number})
+function angularMomentumVector(
+    state::StiefelScheifele, μ, ϕ::Number, config::RegularizedCoordinateConfig
+)
+    cart_state = Cartesian(state, μ, ϕ, config)
+    return angularMomentumVector(cart_state, μ)
+end
 
-Computes the instantaneous angular momentum.
-
-# Arguments
--`u::AbstractVector{<:Number}`: The Cartesian state vector [x; y; z; ẋ; ẏ; ż].
-
-# Returns
--`angular_momentum::Number`: Angular momentum of the body.
-"""
-function angularMomentumQuantity(u::AbstractVector{<:Number})
-    return norm(angularMomentumVector(u))
+function angularMomentumVector(
+    state::KustaanheimoStiefel, μ, config::RegularizedCoordinateConfig
+)
+    cart_state = Cartesian(state, μ, config)
+    return angularMomentumVector(cart_state, μ)
 end
 
 """
-    angularMomentumQuantity(X::AstroCoord, μ::Number)
+    angularMomentumQuantity(state::AstroCoord, μ)
 
-Computes the instantaneous angular momentum.
+Compute the magnitude of the angular momentum.
 
 # Arguments
--`X::AstroCoord`: An coordinate set describing the orbit.
--`μ::Number`: Standard graviational parameter of central body.
+- `state::AstroCoord`: The orbital state.
+- `μ`: Gravitational parameter.
 
 # Returns
--`angular_momentum::Number`: Angular momentum of the body.
+- Magnitude of angular momentum.
 """
-function angularMomentumQuantity(X::AstroCoord, μ::Number, args...)
-    cart = Cartesian(X, μ, args...)
+function angularMomentumQuantity(state::AstroCoord, μ)
+    return norm(angularMomentumVector(state, μ))
+end
 
-    return angularMomentumQuantity(params(cart))
+# Specialized methods for regularized coordinates
+function angularMomentumQuantity(
+    state::EDromo, μ, ϕ::Number, config::RegularizedCoordinateConfig
+)
+    return norm(angularMomentumVector(state, μ, ϕ, config))
+end
+
+function angularMomentumQuantity(
+    state::StiefelScheifele, μ, ϕ::Number, config::RegularizedCoordinateConfig
+)
+    return norm(angularMomentumVector(state, μ, ϕ, config))
+end
+
+function angularMomentumQuantity(
+    state::KustaanheimoStiefel, μ, config::RegularizedCoordinateConfig
+)
+    return norm(angularMomentumVector(state, μ, config))
 end
