@@ -144,19 +144,34 @@ Computes the time element for Stiefel-Scheifele transformations.
 # Returns
 - The time element.
 """
-function get_stiefelscheifele_time(
+@inline function get_stiefelscheifele_time(
     u::AbstractVector, ϕ::Number, config::RegularizedCoordinateConfig
 )
     t₀, TU, flag_time = config.t₀, config.TU, config.flag_time
 
+    sph = sin(ϕ)
+    cph = cos(ϕ)
+
+    α1 = u[1]
+    α2 = u[2]
+    α3 = u[3]
+    α4 = u[4]
+    β1 = u[5]
+    β2 = u[6]
+    β3 = u[7]
+    β4 = u[8]
+    ω = u[9]
+    t_elem = u[10]
+
     if flag_time isa PhysicalTime
-        t = u[10]
+        t = t_elem
     elseif flag_time isa LinearTime
-        sph, cph = sincos(ϕ)
-        αsq = u[1]^2 + u[2]^2 + u[3]^2 + u[4]^2
-        βsq = u[5]^2 + u[6]^2 + u[7]^2 + u[8]^2
-        αβ = u[1] * u[5] + u[2] * u[6] + u[3] * u[7] + u[4] * u[8]
-        t = u[10] + 0.5 * ((αsq - βsq) / 2.0 * sph - αβ * cph) / u[9]
+        αsq = α1*α1 + α2*α2 + α3*α3 + α4*α4
+        βsq = β1*β1 + β2*β2 + β3*β3 + β4*β4
+        αβ = α1*β1 + α2*β2 + α3*β3 + α4*β4
+        t = t_elem + 0.5 * ((αsq - βsq) / 2.0 * sph - αβ * cph) / ω
+    else
+        t = t_elem
     end
 
     return t * TU + t₀

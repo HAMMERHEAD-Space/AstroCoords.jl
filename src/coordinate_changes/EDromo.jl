@@ -202,20 +202,28 @@ Computes the physical time from the EDromo state vector.
 # Returns
 - `Number`: The computed physical time.
 """
-function get_EDromo_time(
+@inline function get_EDromo_time(
     u::AbstractVector{T}, ϕ::P, config::RegularizedCoordinateConfig
 ) where {T<:Number,P<:Number}
     TU, t₀, flag_time = config.TU, config.t₀, config.flag_time
-    RT = promote_type(T, P)
+    RT = promote_type(T, P, typeof(TU), typeof(t₀))
 
-    sϕ, cϕ = sincos(ϕ)
+    sϕ = sin(ϕ)
+    cϕ = cos(ϕ)
+
+    ζ₁ = u[1]
+    ζ₂ = u[2]
+    ζ₃ = u[3]
+    ζ₈ = u[8]
 
     if flag_time isa PhysicalTime
-        t = u[8]
+        t = ζ₈
     elseif flag_time isa ConstantTime
-        t = u[8] - u[3]^(1.5) * (u[1]*sϕ - u[2]*cϕ - ϕ)
+        t = ζ₈ - ζ₃^(1.5) * (ζ₁*sϕ - ζ₂*cϕ - ϕ)
     elseif flag_time isa LinearTime
-        t = u[8] - u[3]^(1.5) * (u[1]*sϕ - u[2]*cϕ)
+        t = ζ₈ - ζ₃^(1.5) * (ζ₁*sϕ - ζ₂*cϕ)
+    else
+        t = ζ₈
     end
 
     return RT(t * TU + t₀)
