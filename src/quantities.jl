@@ -33,22 +33,6 @@ function meanMotion(X::AstroCoord, μ::Number, args...)
     return meanMotion(kep.a, μ)
 end
 
-# Specialized allocation-free method for EDromo
-function meanMotion(X::EDromo, μ::Number, args...)
-    # For EDromo: ζ₃ = -1/(2E), so E = -1/(2ζ₃)
-    # For bound orbits: a = -μ/(2E) = μζ₃
-    a = μ * X.ζ₃
-    return meanMotion(a, μ)
-end
-
-# Specialized allocation-free method for StiefelScheifele
-function meanMotion(X::StiefelScheifele, μ::Number, args...)
-    # For StiefelScheifele: ω = sqrt(-E/2), so E = -2ω²
-    # For bound orbits: a = -μ/(2E) = μ/(4ω²)
-    a = μ / (4.0 * X.ω^2)
-    return meanMotion(a, μ)
-end
-
 export orbitalPeriod
 """
     orbitalPeriod(a::Number, μ::Number)
@@ -84,20 +68,6 @@ function orbitalPeriod(X::AstroCoord, μ::Number, args...)
     return orbitalPeriod(kep.a, μ)
 end
 
-# Specialized allocation-free method for EDromo
-function orbitalPeriod(X::EDromo, μ::Number, args...)
-    # For EDromo: ζ₃ = -1/(2E), so a = μζ₃
-    a = μ * X.ζ₃
-    return orbitalPeriod(a, μ)
-end
-
-# Specialized allocation-free method for StiefelScheifele
-function orbitalPeriod(X::StiefelScheifele, μ::Number, args...)
-    # For StiefelScheifele: ω = sqrt(-E/2), so a = μ/(4ω²)
-    a = μ / (4.0 * X.ω^2)
-    return orbitalPeriod(a, μ)
-end
-
 export orbitalNRG
 """
     orbitalNRG(a::Number, μ::Number)
@@ -131,18 +101,6 @@ function orbitalNRG(X::AstroCoord, μ::Number, args...)
     kep = Keplerian(X, μ, args...)
 
     return orbitalNRG(kep.a, μ)
-end
-
-# Specialized allocation-free method for EDromo
-function orbitalNRG(X::EDromo, μ::Number, args...)
-    # For EDromo: ζ₃ = -1/(2E), so E = -1/(2ζ₃)
-    return -1.0 / (2.0 * X.ζ₃)
-end
-
-# Specialized allocation-free method for StiefelScheifele
-function orbitalNRG(X::StiefelScheifele, μ::Number, args...)
-    # For StiefelScheifele: ω = sqrt(-E/2), so E = -2ω²
-    return -2.0 * X.ω^2
 end
 
 export angularMomentumVector
