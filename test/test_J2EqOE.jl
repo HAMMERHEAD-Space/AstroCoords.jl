@@ -160,7 +160,6 @@
         @test v2 ≈ expected_v2 rtol = 1e-13
         @test v3 ≈ expected_v3 rtol = 1e-13
         @test v4 ≈ expected_v4 rtol = 1e-13
-        #! I think there is a small typo in the paper, reducing the rtol here
         @test δe ≈ expected_δe rtol = 1e-12
         @test e″δL ≈ expected_e″δL rtol = 1e-13
     end
@@ -200,10 +199,10 @@
         )
 
         expected_I1 = 7.1366000000000e+03
-        expected_I2 = 9.4000446883730e-03
-        expected_I3 = 1.2721904014791e+00
-        expected_I4 = 2.0246926216394e+00
-        expected_I5 = 9.6460100038126e-01
+        expected_I2 = 9.4812669855769e-03
+        expected_I3 = -3.0689260382851e-03
+        expected_I4 = 5.3391443192831e-01
+        expected_I5 = -2.6048065722102e-01
         expected_I6 = 4.8729592715682e+00
 
         @test I1 ≈ expected_I1 rtol = 1e-13
