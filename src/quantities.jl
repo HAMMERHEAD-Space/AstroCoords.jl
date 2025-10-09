@@ -1,4 +1,5 @@
 using StaticArrays
+using LinearAlgebra: cross, norm
 
 export meanMotion
 """    meanMotion(a::Number, μ::Number)
