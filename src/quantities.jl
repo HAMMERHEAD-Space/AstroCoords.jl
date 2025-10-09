@@ -1,3 +1,6 @@
+using LinearAlgebra: cross, norm
+using StaticArrays: SVector
+
 export meanMotion
 """
     meanMotion(a::Number, μ::Number)
