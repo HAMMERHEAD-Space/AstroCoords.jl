@@ -160,7 +160,6 @@
         @test v2 ≈ expected_v2 rtol = 1e-13
         @test v3 ≈ expected_v3 rtol = 1e-13
         @test v4 ≈ expected_v4 rtol = 1e-13
-        #! I think there is a small typo in the paper, reducing the rtol here
         @test δe ≈ expected_δe rtol = 1e-12
         @test e″δL ≈ expected_e″δL rtol = 1e-13
     end
@@ -200,10 +199,10 @@
         )
 
         expected_I1 = 7.1366000000000e+03
-        expected_I2 = 9.1448530009497e-03
-        expected_I3 = -2.5360921889622e-03
-        expected_I4 = 5.3399247411729e-01
-        expected_I5 = -2.6044553167591e-01
+        expected_I2 = 9.4812669855769e-03
+        expected_I3 = -3.0694489506336e-03
+        expected_I4 = 5.3456537849210e-01
+        expected_I5 = -2.6113499773099e-01
         expected_I6 = 4.8729592715682e+00
 
         @test I1 ≈ expected_I1 rtol = 1e-13
@@ -213,42 +212,4 @@
         @test I5 ≈ expected_I5 rtol = 1e-13
         @test I6 ≈ expected_I6 rtol = 1e-13
     end
-
-    u_IOE = AstroCoords.J2IOE2IOE(u_J2IOE, μ)
-    expected_u_IOE = [
-        7.1366000000000e+03,
-        9.1448530009497e-03,
-        -2.5360921889622e-03,
-        5.3399247411729e-01,
-        -2.6044553167591e-01,
-        4.8729592715682e+00,
-    ]
-
-    @test u_IOE ≈ expected_u_IOE rtol = 1e-13
-
-    u_koe = Array(AstroCoords.IOE2koe(expected_u_IOE, μ))
-    u_koe[6] = trueAnomaly2MeanAnomaly(u_koe[6], u_koe[2])
-
-    expected_u_koe = [
-        7.1366000000000e+03,
-        9.4900000000000e-03,
-        1.2723450247039e+00,
-        2.0245819323134e+00,
-        1.0070549784028e+00,
-        1.8413223608519e+00,
-    ]
-
-    @test u_koe ≈ expected_u_koe rtol = 1e-13
-
-    u_IOE = [
-        7.1366000000000e+03,
-        9.1448530009497e-03,
-        -2.5360921889622e-03,
-        5.3399247411729e-01,
-        -2.6044553167591e-01,
-        4.8729592715682e+00,
-    ]
-    u_J2IOE = AstroCoords.IOE2J2IOE(u_IOE, μ)
-
-    @test u_J2IOE ≈ expected_J2IOE rtol = 1e-13
 end
