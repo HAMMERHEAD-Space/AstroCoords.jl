@@ -1,3 +1,5 @@
+using StaticArrays
+
 export meanMotion
 """    meanMotion(a::Number, μ::Number)
 
