@@ -1,4 +1,4 @@
-using LinearAlgebra
+using LinearAlgebra: norm, cross
 using StaticArrays
 
 export meanMotion,
