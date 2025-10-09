@@ -28,7 +28,9 @@ Computes the Keplerian mean motion about a central body.
 - `n::Number`: The orbital mean motion.
 """
 function meanMotion(X::AstroCoord, μ::Number, args...)
-    kep = Keplerian(X, μ, args...)
+    # Convert to Cartesian first to avoid allocations in regularized coordinates
+    cart = Cartesian(X, μ, args...)
+    kep = Keplerian(cart, μ)
 
     return meanMotion(kep.a, μ)
 end
@@ -63,7 +65,9 @@ Computes the Keplerian orbital period about a central body.
 -`T::Number`: The orbital period.
 """
 function orbitalPeriod(X::AstroCoord, μ::Number, args...)
-    kep = Keplerian(X, μ, args...)
+    # Convert to Cartesian first to avoid allocations in regularized coordinates
+    cart = Cartesian(X, μ, args...)
+    kep = Keplerian(cart, μ)
 
     return orbitalPeriod(kep.a, μ)
 end
@@ -98,7 +102,9 @@ Computes the keplerian orbital energy.
 -`NRG::Number`: The orbital energy. 
 """
 function orbitalNRG(X::AstroCoord, μ::Number, args...)
-    kep = Keplerian(X, μ, args...)
+    # Convert to Cartesian first to avoid allocations in regularized coordinates
+    cart = Cartesian(X, μ, args...)
+    kep = Keplerian(cart, μ)
 
     return orbitalNRG(kep.a, μ)
 end
@@ -110,7 +116,7 @@ export angularMomentumVector
 Computes the instantaneous angular momentum vector from a Cartesian state vector.
 
 # Arguments
--`u::AbstractVector{<:Number}`: The Cartesian state vector [x; y; z; ẋ; ẏ; ż].
+-`u::AbstractVector{<:Number}`: The Cartesian state vector [x; y; z; ẋ; ẏ; ż].
 
 # Returns
 -'angular_momentum::Vector{<:Number}': 3-Dimensional angular momentum vector.
@@ -147,7 +153,7 @@ export angularMomentumQuantity
 Computes the instantaneous angular momentum.
 
 # Arguments
--`u::AbstractVector{<:Number}`: The Cartesian state vector [x; y; z; ẋ; ẏ; ż].
+-`u::AbstractVector{<:Number}`: The Cartesian state vector [x; y; z; ẋ; ẏ; ż].
 
 # Returns
 -`angular_momentum::Number`: Angular momentum of the body.
