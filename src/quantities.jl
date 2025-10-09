@@ -1,3 +1,5 @@
+using LinearAlgebra
+
 export meanMotion
 """
     meanMotion(a::Number, μ::Number)
