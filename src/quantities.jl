@@ -37,14 +37,14 @@ function meanMotion(X::AstroCoord, μ::Number, args...)
 end
 
 # Specialized allocation-free method for EDromo
-function meanMotion(X::EDromo, μ::Number, args...)
+function meanMotion(X::EDromo, μ::Number)
     # For EDromo, ζ₃ = -μ/(2a), so a = -μ/(2ζ₃)
     a = -μ / (2.0 * X.ζ₃)
     return meanMotion(a, μ)
 end
 
 # Specialized allocation-free method for StiefelScheifele
-function meanMotion(X::StiefelScheifele, μ::Number, args...)
+function meanMotion(X::StiefelScheifele, μ::Number)
     # For StiefelScheifele, ω = √(-E/2) where E is total energy
     # E = -2ω², and a = -μ/(2E) = μ/(4ω²)
     a = μ / (4.0 * X.ω^2)
@@ -87,14 +87,14 @@ function orbitalPeriod(X::AstroCoord, μ::Number, args...)
 end
 
 # Specialized allocation-free method for EDromo
-function orbitalPeriod(X::EDromo, μ::Number, args...)
+function orbitalPeriod(X::EDromo, μ::Number)
     # For EDromo, ζ₃ = -μ/(2a), so a = -μ/(2ζ₃)
     a = -μ / (2.0 * X.ζ₃)
     return orbitalPeriod(a, μ)
 end
 
 # Specialized allocation-free method for StiefelScheifele
-function orbitalPeriod(X::StiefelScheifele, μ::Number, args...)
+function orbitalPeriod(X::StiefelScheifele, μ::Number)
     # For StiefelScheifele, ω = √(-E/2) where E is total energy
     # E = -2ω², and a = -μ/(2E) = μ/(4ω²)
     a = μ / (4.0 * X.ω^2)
