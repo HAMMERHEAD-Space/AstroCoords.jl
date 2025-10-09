@@ -12,7 +12,7 @@ Computes the Keplerian mean motion about a central body.
 - `n::Number`: The orbital mean motion.
 """
 function meanMotion(a::Number, μ::Number)
-    return √(μ / (a^3.0))
+    return √(μ / (a*a*a))
 end
 
 """
@@ -47,7 +47,7 @@ Computes the Keplerian orbital period about a central body.
 -`T::Number`: The orbital period.
 """
 function orbitalPeriod(a::Number, μ::Number)
-    return 2.0 * π / √(μ / (a^3.0))
+    return 2.0 * π / √(μ / (a*a*a))
 end
 
 """
@@ -110,7 +110,7 @@ export angularMomentumVector
 Computes the instantaneous angular momentum vector from a Cartesian state vector.
 
 # Arguments
--`u::AbstractVector{<:Number}`: The Cartesian state vector [x; y; z; ẋ; ẏ; ż].
+-`u::AbstractVector{<:Number}`: The Cartesian state vector [x; y; z; ẋ; ẏ; ż].
 
 # Returns
 -'angular_momentum::Vector{<:Number}': 3-Dimensional angular momentum vector.
@@ -147,7 +147,7 @@ export angularMomentumQuantity
 Computes the instantaneous angular momentum.
 
 # Arguments
--`u::AbstractVector{<:Number}`: The Cartesian state vector [x; y; z; ẋ; ẏ; ż].
+-`u::AbstractVector{<:Number}`: The Cartesian state vector [x; y; z; ẋ; ẏ; ż].
 
 # Returns
 -`angular_momentum::Number`: Angular momentum of the body.
