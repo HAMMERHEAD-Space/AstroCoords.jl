@@ -33,6 +33,21 @@ function meanMotion(X::AstroCoord, μ::Number, args...)
     return meanMotion(kep.a, μ)
 end
 
+# Specialized allocation-free method for EDromo
+function meanMotion(X::EDromo, μ::Number, args...)
+    # For EDromo, ζ₃ = -μ/(2a), so a = -μ/(2ζ₃)
+    a = -μ / (2.0 * X.ζ₃)
+    return meanMotion(a, μ)
+end
+
+# Specialized allocation-free method for StiefelScheifele
+function meanMotion(X::StiefelScheifele, μ::Number, args...)
+    # For StiefelScheifele, ω = √(-E/2) where E is total energy
+    # E = -2ω², and a = -μ/(2E) = μ/(4ω²)
+    a = μ / (4.0 * X.ω^2)
+    return meanMotion(a, μ)
+end
+
 export orbitalPeriod
 """
     orbitalPeriod(a::Number, μ::Number)
@@ -66,6 +81,21 @@ function orbitalPeriod(X::AstroCoord, μ::Number, args...)
     kep = Keplerian(X, μ, args...)
 
     return orbitalPeriod(kep.a, μ)
+end
+
+# Specialized allocation-free method for EDromo
+function orbitalPeriod(X::EDromo, μ::Number, args...)
+    # For EDromo, ζ₃ = -μ/(2a), so a = -μ/(2ζ₃)
+    a = -μ / (2.0 * X.ζ₃)
+    return orbitalPeriod(a, μ)
+end
+
+# Specialized allocation-free method for StiefelScheifele
+function orbitalPeriod(X::StiefelScheifele, μ::Number, args...)
+    # For StiefelScheifele, ω = √(-E/2) where E is total energy
+    # E = -2ω², and a = -μ/(2E) = μ/(4ω²)
+    a = μ / (4.0 * X.ω^2)
+    return orbitalPeriod(a, μ)
 end
 
 export orbitalNRG
@@ -110,7 +140,7 @@ export angularMomentumVector
 Computes the instantaneous angular momentum vector from a Cartesian state vector.
 
 # Arguments
--`u::AbstractVector{<:Number}`: The Cartesian state vector [x; y; z; ẋ; ẏ; ż].
+-`u::AbstractVector{<:Number}`: The Cartesian state vector [x; y; z; ẋ; ẏ; ż].
 
 # Returns
 -'angular_momentum::Vector{<:Number}': 3-Dimensional angular momentum vector.
@@ -147,7 +177,7 @@ export angularMomentumQuantity
 Computes the instantaneous angular momentum.
 
 # Arguments
--`u::AbstractVector{<:Number}`: The Cartesian state vector [x; y; z; ẋ; ẏ; ż].
+-`u::AbstractVector{<:Number}`: The Cartesian state vector [x; y; z; ẋ; ẏ; ż].
 
 # Returns
 -`angular_momentum::Number`: Angular momentum of the body.
