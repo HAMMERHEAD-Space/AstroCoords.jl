@@ -35,23 +35,6 @@ function meanMotion(state::Keplerian, μ)
     return √(μ / state.a^3)
 end
 
-# Specialized methods for regularized coordinates
-function meanMotion(
-    state::EDromo, μ, ϕ::Number, config::RegularizedCoordinateConfig
-)
-    # Convert to Cartesian using provided ϕ and config
-    cart_state = Cartesian(state, μ, ϕ, config)
-    return meanMotion(cart_state, μ)
-end
-
-function meanMotion(
-    state::StiefelScheifele, μ, ϕ::Number, config::RegularizedCoordinateConfig
-)
-    # Convert to Cartesian using provided ϕ and config
-    cart_state = Cartesian(state, μ, ϕ, config)
-    return meanMotion(cart_state, μ)
-end
-
 """
     orbitalPeriod(state::AstroCoord, μ)
 
@@ -70,19 +53,6 @@ end
 
 function orbitalPeriod(state::Keplerian, μ)
     return 2 * π * √(state.a^3 / μ)
-end
-
-# Specialized methods for regularized coordinates
-function orbitalPeriod(
-    state::EDromo, μ, ϕ::Number, config::RegularizedCoordinateConfig
-)
-    return 2 * π / meanMotion(state, μ, ϕ, config)
-end
-
-function orbitalPeriod(
-    state::StiefelScheifele, μ, ϕ::Number, config::RegularizedCoordinateConfig
-)
-    return 2 * π / meanMotion(state, μ, ϕ, config)
 end
 
 """
@@ -114,28 +84,6 @@ function orbitalNRG(state::Keplerian, μ)
     return -μ / (2 * state.a)
 end
 
-# Specialized methods for regularized coordinates
-function orbitalNRG(
-    state::EDromo, μ, ϕ::Number, config::RegularizedCoordinateConfig
-)
-    cart_state = Cartesian(state, μ, ϕ, config)
-    return orbitalNRG(cart_state, μ)
-end
-
-function orbitalNRG(
-    state::StiefelScheifele, μ, ϕ::Number, config::RegularizedCoordinateConfig
-)
-    cart_state = Cartesian(state, μ, ϕ, config)
-    return orbitalNRG(cart_state, μ)
-end
-
-function orbitalNRG(
-    state::KustaanheimoStiefel, μ, config::RegularizedCoordinateConfig
-)
-    cart_state = Cartesian(state, μ, config)
-    return orbitalNRG(cart_state, μ)
-end
-
 """
     angularMomentumVector(state::AstroCoord, μ)
 
@@ -159,28 +107,6 @@ function angularMomentumVector(state::Cartesian, μ)
     return cross(r, v)
 end
 
-# Specialized methods for regularized coordinates
-function angularMomentumVector(
-    state::EDromo, μ, ϕ::Number, config::RegularizedCoordinateConfig
-)
-    cart_state = Cartesian(state, μ, ϕ, config)
-    return angularMomentumVector(cart_state, μ)
-end
-
-function angularMomentumVector(
-    state::StiefelScheifele, μ, ϕ::Number, config::RegularizedCoordinateConfig
-)
-    cart_state = Cartesian(state, μ, ϕ, config)
-    return angularMomentumVector(cart_state, μ)
-end
-
-function angularMomentumVector(
-    state::KustaanheimoStiefel, μ, config::RegularizedCoordinateConfig
-)
-    cart_state = Cartesian(state, μ, config)
-    return angularMomentumVector(cart_state, μ)
-end
-
 """
     angularMomentumQuantity(state::AstroCoord, μ)
 
@@ -195,23 +121,4 @@ Compute the magnitude of the angular momentum.
 """
 function angularMomentumQuantity(state::AstroCoord, μ)
     return norm(angularMomentumVector(state, μ))
-end
-
-# Specialized methods for regularized coordinates
-function angularMomentumQuantity(
-    state::EDromo, μ, ϕ::Number, config::RegularizedCoordinateConfig
-)
-    return norm(angularMomentumVector(state, μ, ϕ, config))
-end
-
-function angularMomentumQuantity(
-    state::StiefelScheifele, μ, ϕ::Number, config::RegularizedCoordinateConfig
-)
-    return norm(angularMomentumVector(state, μ, ϕ, config))
-end
-
-function angularMomentumQuantity(
-    state::KustaanheimoStiefel, μ, config::RegularizedCoordinateConfig
-)
-    return norm(angularMomentumVector(state, μ, config))
 end
