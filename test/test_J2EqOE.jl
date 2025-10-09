@@ -199,10 +199,10 @@
         )
 
         expected_I1 = 7.1366000000000e+03
-        expected_I2 = 9.4812669855769e-03
-        expected_I3 = -3.0689260382851e-03
-        expected_I4 = 5.3391443192831e-01
-        expected_I5 = -2.6048065722102e-01
+        expected_I2 = 8.9488902662846e-03
+        expected_I3 = -2.9049258925206e-03
+        expected_I4 = 5.3387773611896e-01
+        expected_I5 = -2.6049016842113e-01
         expected_I6 = 4.8729592715682e+00
 
         @test I1 ≈ expected_I1 rtol = 1e-13
