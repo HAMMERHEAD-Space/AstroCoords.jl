@@ -1,4 +1,5 @@
 using LinearAlgebra
+using StaticArrays
 
 export meanMotion
 """
