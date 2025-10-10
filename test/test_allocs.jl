@@ -43,21 +43,35 @@ end
     ϕ = compute_initial_phi(params(state), μ, edromo_params)
     edromo_state = EDromo(state, μ, ϕ, edromo_params)
 
-    to_edromo(x, μ) = EDromo(x, μ, ϕ, edromo_params)
-    from_edromo(x, μ) = Cartesian(x, μ, ϕ, edromo_params)
-    mm_edromo(x, μ) = meanMotion(x, μ, ϕ, edromo_params)
-    op_edromo(x, μ) = orbitalPeriod(x, μ, ϕ, edromo_params)
-    on_edromo(x, μ) = orbitalNRG(x, μ, ϕ, edromo_params)
-    av_edromo(x, μ) = angularMomentumVector(x, μ, ϕ, edromo_params)
-    aq_edromo(x, μ) = angularMomentumQuantity(x, μ, ϕ, edromo_params)
-
-    @test length(check_allocs(to_edromo, (Cartesian{Float64}, Float64))) == 0
-    @test length(check_allocs(from_edromo, (EDromo{Float64}, Float64))) == 0
-    @test length(check_allocs(mm_edromo, (EDromo{Float64}, Float64))) == 0
-    @test length(check_allocs(op_edromo, (EDromo{Float64}, Float64))) == 0
-    @test length(check_allocs(on_edromo, (EDromo{Float64}, Float64))) == 0
-    @test length(check_allocs(av_edromo, (EDromo{Float64}, Float64))) == 0
-    @test length(check_allocs(aq_edromo, (EDromo{Float64}, Float64))) == 0
+    @test length(
+        check_allocs(EDromo, (Cartesian{Float64}, Float64, Float64, typeof(edromo_params)))
+    ) == 0
+    @test length(
+        check_allocs(Cartesian, (EDromo{Float64}, Float64, Float64, typeof(edromo_params)))
+    ) == 0
+    @test length(
+        check_allocs(meanMotion, (EDromo{Float64}, Float64, Float64, typeof(edromo_params)))
+    ) == 0
+    @test length(
+        check_allocs(
+            orbitalPeriod, (EDromo{Float64}, Float64, Float64, typeof(edromo_params))
+        ),
+    ) == 0
+    @test length(
+        check_allocs(orbitalNRG, (EDromo{Float64}, Float64, Float64, typeof(edromo_params)))
+    ) == 0
+    @test length(
+        check_allocs(
+            angularMomentumVector,
+            (EDromo{Float64}, Float64, Float64, typeof(edromo_params)),
+        ),
+    ) == 0
+    @test length(
+        check_allocs(
+            angularMomentumQuantity,
+            (EDromo{Float64}, Float64, Float64, typeof(edromo_params)),
+        ),
+    ) == 0
 
     # Test allocation for config construction
     config_constructor(state, μ) = RegularizedCoordinateConfig(state, μ)
@@ -77,21 +91,44 @@ end
     ks_params = RegularizedCoordinateConfig(state, μ)
     ks_state = KustaanheimoStiefel(state, μ, ks_params)
 
-    to_ks(x, μ) = KustaanheimoStiefel(x, μ, ks_params)
-    from_ks(x, μ) = Cartesian(x, μ, ks_params)
-    mm_ks(x, μ) = meanMotion(x, μ, ks_params)
-    op_ks(x, μ) = orbitalPeriod(x, μ, ks_params)
-    on_ks(x, μ) = orbitalNRG(x, μ, ks_params)
-    av_ks(x, μ) = angularMomentumVector(x, μ, ks_params)
-    aq_ks(x, μ) = angularMomentumQuantity(x, μ, ks_params)
-
-    @test length(check_allocs(to_ks, (Cartesian{Float64}, Float64))) == 0
-    @test length(check_allocs(from_ks, (KustaanheimoStiefel{Float64}, Float64))) == 0
-    @test length(check_allocs(mm_ks, (KustaanheimoStiefel{Float64}, Float64))) == 0
-    @test length(check_allocs(op_ks, (KustaanheimoStiefel{Float64}, Float64))) == 0
-    @test length(check_allocs(on_ks, (KustaanheimoStiefel{Float64}, Float64))) == 0
-    @test length(check_allocs(av_ks, (KustaanheimoStiefel{Float64}, Float64))) == 0
-    @test length(check_allocs(aq_ks, (KustaanheimoStiefel{Float64}, Float64))) == 0
+    @test length(
+        check_allocs(
+            KustaanheimoStiefel, (Cartesian{Float64}, Float64, Float64, typeof(ks_params))
+        ),
+    ) == 0
+    @test length(
+        check_allocs(
+            Cartesian, (KustaanheimoStiefel{Float64}, Float64, Float64, typeof(ks_params))
+        ),
+    ) == 0
+    @test length(
+        check_allocs(
+            meanMotion, (KustaanheimoStiefel{Float64}, Float64, Float64, typeof(ks_params))
+        ),
+    ) == 0
+    @test length(
+        check_allocs(
+            orbitalPeriod,
+            (KustaanheimoStiefel{Float64}, Float64, Float64, typeof(ks_params)),
+        ),
+    ) == 0
+    @test length(
+        check_allocs(
+            orbitalNRG, (KustaanheimoStiefel{Float64}, Float64, Float64, typeof(ks_params))
+        ),
+    ) == 0
+    @test length(
+        check_allocs(
+            angularMomentumVector,
+            (KustaanheimoStiefel{Float64}, Float64, Float64, typeof(ks_params)),
+        ),
+    ) == 0
+    @test length(
+        check_allocs(
+            angularMomentumQuantity,
+            (KustaanheimoStiefel{Float64}, Float64, Float64, typeof(ks_params)),
+        ),
+    ) == 0
 
     # Test allocation for config construction 
     config_constructor_ks(state, μ) = RegularizedCoordinateConfig(state, μ)
@@ -113,21 +150,43 @@ end
     ϕ = compute_initial_phi(params(state), μ, ss_params)
     ss_state = StiefelScheifele(state, μ, ϕ, ss_params)
 
-    to_ss(x, μ) = StiefelScheifele(x, μ, ϕ, ss_params)
-    from_ss(x, μ) = Cartesian(x, μ, ϕ, ss_params)
-    mm_ss(x, μ) = meanMotion(x, μ, ϕ, ss_params)
-    op_ss(x, μ) = orbitalPeriod(x, μ, ϕ, ss_params)
-    on_ss(x, μ) = orbitalNRG(x, μ, ϕ, ss_params)
-    av_ss(x, μ) = angularMomentumVector(x, μ, ϕ, ss_params)
-    aq_ss(x, μ) = angularMomentumQuantity(x, μ, ϕ, ss_params)
-
-    @test length(check_allocs(to_ss, (Cartesian{Float64}, Float64))) == 0
-    @test length(check_allocs(from_ss, (StiefelScheifele{Float64}, Float64))) == 0
-    @test length(check_allocs(mm_ss, (StiefelScheifele{Float64}, Float64))) == 0
-    @test length(check_allocs(op_ss, (StiefelScheifele{Float64}, Float64))) == 0
-    @test length(check_allocs(on_ss, (StiefelScheifele{Float64}, Float64))) == 0
-    @test length(check_allocs(av_ss, (StiefelScheifele{Float64}, Float64))) == 0
-    @test length(check_allocs(aq_ss, (StiefelScheifele{Float64}, Float64))) == 0
+    @test length(
+        check_allocs(
+            StiefelScheifele, (Cartesian{Float64}, Float64, Float64, typeof(ss_params))
+        ),
+    ) == 0
+    @test length(
+        check_allocs(
+            Cartesian, (StiefelScheifele{Float64}, Float64, Float64, typeof(ss_params))
+        ),
+    ) == 0
+    @test length(
+        check_allocs(
+            meanMotion, (StiefelScheifele{Float64}, Float64, Float64, typeof(ss_params))
+        ),
+    ) == 0
+    @test length(
+        check_allocs(
+            orbitalPeriod, (StiefelScheifele{Float64}, Float64, Float64, typeof(ss_params))
+        ),
+    ) == 0
+    @test length(
+        check_allocs(
+            orbitalNRG, (StiefelScheifele{Float64}, Float64, Float64, typeof(ss_params))
+        ),
+    ) == 0
+    @test length(
+        check_allocs(
+            angularMomentumVector,
+            (StiefelScheifele{Float64}, Float64, Float64, typeof(ss_params)),
+        ),
+    ) == 0
+    @test length(
+        check_allocs(
+            angularMomentumQuantity,
+            (StiefelScheifele{Float64}, Float64, Float64, typeof(ss_params)),
+        ),
+    ) == 0
 
     # Test allocation for config construction
     config_constructor_ss(state, μ) = RegularizedCoordinateConfig(state, μ)
