@@ -1,1 +1,42 @@
-using AstroCoords\nusing Test\nusing AllocCheck\nusing DifferentiationInterface\nusing FiniteDiff\nusing ForwardDiff\nusing Enzyme\nusing Diffractor\nusing Mooncake\nusing PolyesterForwardDiff\nusing Zygote\nusing JET\nusing LinearAlgebra\nusing StaticArrays\n\nconst _COORDINATE_SETS = (\n    Cartesian,\n    Cylindrical,\n    Delaunay,\n    J2EqOE,\n    Keplerian,\n    Milankovich,\n    ModEq,\n    Spherical,\n    USM6,\n    USM7,\n    USMEM,\n)\n\n@testset \"AstroCoords.jl\" begin\n    include(\"test_anomalies.jl\")\n    include(\"test_quantities.jl\")\n    include(\"test_coordinate_changes.jl\")\n    include(\"test_J2EqOE.jl\")\n    include(\"test_EDromo.jl\")\n    include(\"test_KS.jl\")\n    include(\"test_StiefelScheifele.jl\")\n    include(\"test_differentiability.jl\")\n    include(\"test_allocs.jl\")\n    include(\"test_JET.jl\")\n    include(\"test_coverage.jl\")\nend\n
+using AstroCoords
+using Test
+using AllocCheck
+using DifferentiationInterface
+using FiniteDiff
+using ForwardDiff
+using Enzyme
+using Diffractor
+using Mooncake
+using PolyesterForwardDiff
+using Zygote
+using JET
+using LinearAlgebra
+using StaticArrays
+
+const _COORDINATE_SETS = (
+    Cartesian,
+    Cylindrical,
+    Delaunay,
+    J2EqOE,
+    Keplerian,
+    Milankovich,
+    ModEq,
+    Spherical,
+    USM6,
+    USM7,
+    USMEM,
+)
+
+@testset "AstroCoords.jl" begin
+    include("test_anomalies.jl")
+    include("test_quantities.jl")
+    include("test_coordinate_changes.jl")
+    include("test_J2EqOE.jl")
+    include("test_EDromo.jl")
+    include("test_KS.jl")
+    include("test_StiefelScheifele.jl")
+    include("test_differentiability.jl")
+    include("test_allocs.jl")
+    include("test_JET.jl")
+    include("test_coverage.jl")
+end
