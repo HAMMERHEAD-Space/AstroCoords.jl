@@ -3,53 +3,56 @@ module AstroCoords
 using LinearAlgebra
 using StaticArrays
 
-export Cartesian,
-    Cylindrical,
-    Spherical,
+# attitude
+export EP2MRP, MRP2EP
+export DCM2EP, EP2DCM
+export DCM2MRP, MRP2DCM
+
+# coordinate sets
+export CoordinateSet
+export Cartesian
+export Keplerian
+export ModEq
+export Delaunay
+export Milankovich
+export Spherical
+export Cylindrical
+export USM6, USM7, USMEM
+export J2EqOE
+export EDromo, KustaanheimoStiefel, StiefelScheifele
+
+export params
+export orbitalNRG
+export angularMomentumQuantity
+
+# regularized coordinates
+export RegularizedCoordinateConfig
+export PhysicalTime, ConstantTime, LinearTime
+export compute_characteristic_scales
+export compute_initial_phi
+
+include("angle_utils.jl")
+include("anomalies.jl")
+include("quantities.jl")
+include("attitude/attitude.jl")
+include("coordinate_sets.jl")
+include("regularized/regularized.jl")
+
+const COORD_TYPES = (
+    Cartesian,
     Keplerian,
     ModEq,
-    Milankovich,
     Delaunay,
+    Milankovich,
+    Spherical,
+    Cylindrical,
     USM6,
     USM7,
     USMEM,
     J2EqOE,
     EDromo,
     KustaanheimoStiefel,
-    StiefelScheifele
-
-export PhysicalTime, ConstantTime, LinearTime
-export RegularizedCoordinateConfig
-
-# Include base types first
-include("coordinate_sets/coordinate_set.jl")
-
-# Then include all other coordinate set files
-for file in readdir(joinpath(@__DIR__, "coordinate_sets"); join=true)
-    # Skip the base file since we already included it
-    if !endswith(file, "coordinate_set.jl")
-        include(file)
-    end
-end
-
-include("quantities.jl")
-include("attitude.jl")
-include("anomalies.jl")
-include("coordinate_changes.jl")
-include("utils.jl")
-
-const COORD_TYPES = (
-    Cartesian,
-    Cylindrical,
-    Delaunay,
-    J2EqOE,
-    Keplerian,
-    Milankovich,
-    ModEq,
-    Spherical,
-    USM6,
-    USM7,
-    USMEM,
+    StiefelScheifele,
 )
 
 end
