@@ -1,0 +1,1 @@
+I cannot fix this without seeing src/AstroCoords.jl. The error shows it's trying to include 'coordinate_sets/coordinate_set.jl' but this file doesn't exist. I need to see the actual include statements in src/AstroCoords.jl to provide the correct fix. Please provide the content of src/AstroCoords.jl.
