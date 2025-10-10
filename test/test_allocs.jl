@@ -92,41 +92,32 @@ end
     ks_state = KustaanheimoStiefel(state, μ, ks_params)
 
     @test length(
-        check_allocs(
-            KustaanheimoStiefel, (Cartesian{Float64}, Float64, Float64, typeof(ks_params))
-        ),
+        check_allocs(KustaanheimoStiefel, (Cartesian{Float64}, Float64, typeof(ks_params)))
+    ) == 0
+    @test length(
+        check_allocs(Cartesian, (KustaanheimoStiefel{Float64}, Float64, typeof(ks_params)))
+    ) == 0
+    @test length(
+        check_allocs(meanMotion, (KustaanheimoStiefel{Float64}, Float64, typeof(ks_params)))
     ) == 0
     @test length(
         check_allocs(
-            Cartesian, (KustaanheimoStiefel{Float64}, Float64, Float64, typeof(ks_params))
+            orbitalPeriod, (KustaanheimoStiefel{Float64}, Float64, typeof(ks_params))
         ),
     ) == 0
     @test length(
-        check_allocs(
-            meanMotion, (KustaanheimoStiefel{Float64}, Float64, Float64, typeof(ks_params))
-        ),
-    ) == 0
-    @test length(
-        check_allocs(
-            orbitalPeriod,
-            (KustaanheimoStiefel{Float64}, Float64, Float64, typeof(ks_params)),
-        ),
-    ) == 0
-    @test length(
-        check_allocs(
-            orbitalNRG, (KustaanheimoStiefel{Float64}, Float64, Float64, typeof(ks_params))
-        ),
+        check_allocs(orbitalNRG, (KustaanheimoStiefel{Float64}, Float64, typeof(ks_params)))
     ) == 0
     @test length(
         check_allocs(
             angularMomentumVector,
-            (KustaanheimoStiefel{Float64}, Float64, Float64, typeof(ks_params)),
+            (KustaanheimoStiefel{Float64}, Float64, typeof(ks_params)),
         ),
     ) == 0
     @test length(
         check_allocs(
             angularMomentumQuantity,
-            (KustaanheimoStiefel{Float64}, Float64, Float64, typeof(ks_params)),
+            (KustaanheimoStiefel{Float64}, Float64, typeof(ks_params)),
         ),
     ) == 0
 
