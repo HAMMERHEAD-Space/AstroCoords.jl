@@ -3,48 +3,53 @@ module AstroCoords
 using LinearAlgebra
 using StaticArrays
 
-include("./core_types.jl")
-include("regularized_config.jl")
+export Cartesian,
+    Cylindrical,
+    Spherical,
+    Keplerian,
+    ModEq,
+    Milankovich,
+    Delaunay,
+    USM6,
+    USM7,
+    USMEM,
+    J2EqOE,
+    EDromo,
+    KustaanheimoStiefel,
+    StiefelScheifele
+
+export PhysicalTime, ConstantTime, LinearTime
+export RegularizedCoordinateConfig
+
+# Include base types first
+include("coordinate_sets/coordinate_set.jl")
+
+# Then include all other coordinate set files
+for file in readdir(joinpath(@__DIR__, "coordinate_sets"); join=true)
+    # Skip the base file since we already included it
+    if !endswith(file, "coordinate_set.jl")
+        include(file)
+    end
+end
+
+include("quantities.jl")
+include("attitude.jl")
+include("anomalies.jl")
+include("coordinate_changes.jl")
 include("utils.jl")
-include("./anomalies.jl")
-include("./attitude_changes.jl")
 
-include("./coordinate_changes/coordinate_changes.jl")
-include("./coordinate_changes/J2EqOE.jl")
-include("./coordinate_changes/EDromo.jl")
-include("./coordinate_changes/Kustaanheimo-Stiefel.jl")
-include("./coordinate_changes/Stiefel-Scheifele.jl")
-
-include("./coordinate_sets/cartesian.jl")
-include("./coordinate_sets/delaunay.jl")
-include("./coordinate_sets/keplerian.jl")
-include("./coordinate_sets/milankovich.jl")
-include("./coordinate_sets/modEq.jl")
-include("./coordinate_sets/spherical.jl")
-include("./coordinate_sets/usm.jl")
-include("./coordinate_sets/edromo.jl")
-include("./coordinate_sets/kustaanheimo-stiefel.jl")
-include("./coordinate_sets/stiefel-scheifele.jl")
-
-include("./transformations.jl")
-
-const COORDINATE_SET_ALIASES = Dict(
-    "Cartesian" => Cartesian,
-    "Cylindrical" => Cylindrical,
-    "Delaunay" => Delaunay,
-    "EDromo" => EDromo,
-    "J2EqOE" => J2EqOE,
-    "Keplerian" => Keplerian,
-    "KustaanheimoStiefel" => KustaanheimoStiefel,
-    "StiefelScheifele" => StiefelScheifele,
-    "Milankovich" => Milankovich,
-    "ModifiedEquinoctial" => ModEq,
-    "Spherical" => Spherical,
-    "USM6" => USM6,
-    "USM7" => USM7,
-    "USMEM" => USMEM,
+const COORD_TYPES = (
+    Cartesian,
+    Cylindrical,
+    Delaunay,
+    J2EqOE,
+    Keplerian,
+    Milankovich,
+    ModEq,
+    Spherical,
+    USM6,
+    USM7,
+    USMEM,
 )
-
-include("./quantities.jl")
 
 end
