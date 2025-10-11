@@ -1,0 +1,27 @@
+        - module AstroCoordsZygoteExt
+        - 
+        - using AstroCoords
+        - 
+        - using Zygote.ChainRulesCore: ChainRulesCore
+        - import Zygote.ChainRulesCore: Tangent, NoTangent, ProjectTo
+        - 
+      213 function ChainRulesCore.rrule(
+        -     new_coord::Type{<:AstroCoords.AstroCoord}, coord::AbstractArray
+        - )
+        -     # Forward evaluation (Keplerian transformation)
+      213     y = new_coord(coord)
+        - 
+      334     function AstroCoord_pullback(Δ::AbstractArray)
+        -         # Define the pullback (how gradients propagate backwards)
+      127         Δcoords = typeof(coord)(Δ)
+      121         return (NoTangent(), Δcoords)
+        -     end
+        - 
+      324     function AstroCoord_pullback(Δ::Tangent)
+     2184         return (NoTangent(), collect(values(Δ)))
+        -     end
+        - 
+      213     return y, AstroCoord_pullback
+        - end
+        - 
+        - end

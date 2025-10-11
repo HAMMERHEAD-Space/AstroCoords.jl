@@ -1,0 +1,78 @@
+        - export Milankovich
+        - """
+        -     Milankovich{T} <: AstroCoord
+        - 
+        - Milankovich Orbital Elements. 7D parameterziation of the orbit.
+        - hx - X-component of Angular Momentum Vector
+        - hy - Y-component of Angular Momentum Vector
+        - hz - Z-component of Angular Momentum Vector
+        - ex - X-component of Eccentricity Vector
+        - ey - Y-component of Eccentricity Vector
+        - ez - Z-component of Eccentricity Vector
+        - L - True Longitude
+        - 
+        - Constructors
+        - Milankovich(hx, hy, hz, ex, ey, ez, L)
+        - Milankovich(X::AbstractArray)
+        - Milankovich(X::AstroCoord, μ::Number)
+        - 
+        - """
+        - struct Milankovich{T} <: AstroCoord{7,T}
+        -     hx::T
+        -     hy::T
+        -     hz::T
+        -     ex::T
+        -     ey::T
+        -     ez::T
+        -     L::T
+      186     @inline Milankovich{T}(hx, hy, hz, ex, ey, ez, L) where {T} = new{T}(
+        -         hx, hy, hz, ex, ey, ez, L
+        -     )
+        -     @inline Milankovich{T}(X::Milankovich{T}) where {T} = new{T}(
+        -         X.hx, X.hy, X.hz, X.ex, X.ey, X.ez, X.L
+        -     )
+        - end
+        - 
+        - # ~~~~~~~~~~~~~~~ Constructors ~~~~~~~~~~~~~~~ #
+        - function Milankovich(X::AbstractVector{T}) where {T}
+        -     return Milankovich{T}(X[1], X[2], X[3], X[4], X[5], X[6], X[7])
+        - end
+        - function Milankovich(
+        -     hx::HX, hy::HY, hz::HZ, ex::EX, ey::EY, ez::EZ, L::LT
+        - ) where {HX,HY,HZ,EX,EY,EZ,LT}
+        -     return Milankovich{promote_type(HX, HY, HZ, EX, EY, EZ, LT)}(hx, hy, hz, ex, ey, ez, L)
+        - end
+      179 function (::Type{M})(g::StaticVector) where {M<:Milankovich}
+      186     return M(g[1], g[2], g[3], g[4], g[5], g[6], g[7])
+        - end
+        - 
+        - # ~~~~~~~~~~~~~~~ Conversions ~~~~~~~~~~~~~~~ #
+      220 function params(M::Milankovich{T}) where {T<:Number}
+      259     return SVector{7,T}(M.hx, M.hy, M.hz, M.ex, M.ey, M.ez, M.L)
+        - end
+        - 
+        - # ~~~~~~~~~~~~~~~ Initializers ~~~~~~~~~~~~~~~ #
+        - function Base.one(::Type{M}; T::DataType=Float64) where {M<:Milankovich}
+        -     return M{T}(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+        - end
+        - 
+        - # ~~~~~~~~~~~~~~~ StaticArrays Interface ~~~~~~~~~~~~~~~ #
+      686 function Base.getindex(p::Milankovich{T}, i::Int) where {T<:Number}
+      686     if i == 1
+       98         return p.hx
+      588     elseif i == 2
+       98         return p.hy
+      490     elseif i == 3
+       98         return p.hz
+      392     elseif i == 4
+       98         return p.ex
+      294     elseif i == 5
+       98         return p.ey
+      196     elseif i == 6
+       98         return p.ez
+       98     elseif i == 7
+       98         return p.L
+        -     else
+        0         throw(BoundsError(p, i))
+        -     end
+        - end
