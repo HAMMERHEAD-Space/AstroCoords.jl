@@ -2,3 +2,4 @@
 /docs/Manifest.toml
 /.vscode/*
 /benchmark/Manifest.toml
+*.cov
