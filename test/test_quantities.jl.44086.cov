@@ -1,0 +1,115 @@
+        1 @testset "Test Quantities" begin
+        7     state = [
+        -         -1076.225324679696
+        -         -6765.896364327722
+        -         -332.3087833503755
+        -         9.356857417032581
+        -         -3.3123476319597557
+        -         -1.1880157328553503
+        -     ]
+        - 
+        1     μ = 3.986004415e5
+        - 
+        1     cart_state = Cartesian(state)
+        - 
+        1     NRG = orbitalNRG(cart_state, μ)
+        1     h_vec = angularMomentumVector(cart_state, μ)
+        1     h = angularMomentumQuantity(cart_state, μ)
+        - 
+        -     # Regression Tests
+        1     @test NRG ≈ -8.146487030627135 rtol = 1e-14
+        1     @test h_vec ≈ [6937.269116080104; -4387.938522053871; 66872.35998509153] rtol = 1e-14
+        1     @test h ≈ 67374.26984567562 rtol = 1e-14
+        - 
+       10     coordinate_sets = [
+        -         Cartesian,
+        -         Delaunay,
+        -         Keplerian,
+        -         Milankovich,
+        -         ModEq,
+        -         Cylindrical,
+        -         Spherical,
+        -         USM7,
+        -         USM6,
+        -         USMEM,
+        -     ]
+        - 
+        1     for coord in coordinate_sets
+       10         coord_state = coord(cart_state, μ)
+       10         NRG2 = orbitalNRG(coord_state, μ)
+       10         h_vec2 = angularMomentumVector(coord_state, μ)
+       10         h2 = angularMomentumQuantity(coord_state, μ)
+        - 
+       10         @test NRG ≈ NRG2 rtol = 1e-14
+       10         @test h_vec ≈ h_vec2 rtol = 1e-14
+       10         @test h ≈ h2 rtol = 1e-14
+       10     end
+        - 
+        0     @testset "Test EDromo Quantities" begin
+        2         for W in (0.0, 1e-8)
+        2             for t₀ in (0.0, 100.0)
+        4                 for ϕ in (0.0, 100.0)
+        8                     for flag_time in (PhysicalTime(), ConstantTime(), LinearTime())
+       24                         edromo_params = RegularizedCoordinateConfig(
+        -                             state, μ; W=W, t₀=t₀, flag_time=flag_time
+        -                         )
+        - 
+       24                         edromo_state = EDromo(cart_state, μ, ϕ, edromo_params)
+       24                         NRG2 = orbitalNRG(edromo_state, μ, ϕ, edromo_params)
+       24                         h_vec2 = angularMomentumVector(edromo_state, μ, ϕ, edromo_params)
+       24                         h2 = angularMomentumQuantity(edromo_state, μ, ϕ, edromo_params)
+        - 
+       24                         @test NRG ≈ NRG2 rtol = 1e-12
+       24                         @test h_vec ≈ h_vec2 rtol = 1e-12
+       24                         @test h ≈ h2 rtol = 1e-12
+       32                     end
+       12                 end
+        6             end
+        3         end
+        -     end
+        - 
+        0     @testset "Test Kustaanheimo-Stiefel Quantities" begin
+        2         for Vpot in (0.0, 1e-8)
+        2             for t₀ in (0.0, 100.0)
+        4                 for flag_time in (PhysicalTime(), LinearTime())
+        8                     ks_params = RegularizedCoordinateConfig(
+        -                         state, μ; W=Vpot, t₀=t₀, flag_time=flag_time
+        -                     )
+        - 
+        8                     ks_state = KustaanheimoStiefel(cart_state, μ, ks_params)
+        8                     NRG2 = orbitalNRG(ks_state, μ, ks_params)
+        8                     h_vec2 = angularMomentumVector(ks_state, μ, ks_params)
+        8                     h2 = angularMomentumQuantity(ks_state, μ, ks_params)
+        - 
+        8                     @test NRG ≈ NRG2 rtol = 1e-12
+        8                     @test h_vec ≈ h_vec2 rtol = 1e-12
+        8                     @test h ≈ h2 rtol = 1e-12
+       12                 end
+        6             end
+        3         end
+        -     end
+        - 
+        0     @testset "Test Stiefel-Scheifele Quantities" begin
+        2         for W in (0.0, 1e-8)
+        2             for t₀ in (0.0, 100.0)
+        4                 for flag_time in (PhysicalTime(), LinearTime())
+        8                     ss_params = RegularizedCoordinateConfig(
+        -                         state, μ; W=W, t₀=t₀, flag_time=flag_time
+        -                     )
+        - 
+        -                     # Compute phi for Stiefel-Scheifele
+        8                     ϕ = compute_initial_phi(state, μ, ss_params)
+        - 
+        8                     ss_state = StiefelScheifele(cart_state, μ, ϕ, ss_params)
+        8                     NRG2 = orbitalNRG(ss_state, μ, ϕ, ss_params)
+        8                     h_vec2 = angularMomentumVector(ss_state, μ, ϕ, ss_params)
+        8                     h2 = angularMomentumQuantity(ss_state, μ, ϕ, ss_params)
+        - 
+        8                     @test NRG ≈ NRG2 rtol = 1e-12
+        8                     @test h_vec ≈ h_vec2 rtol = 1e-12
+        8                     @test h ≈ h2 rtol = 1e-12
+       12                 end
+        6             end
+        3         end
+        -     end
+        - end

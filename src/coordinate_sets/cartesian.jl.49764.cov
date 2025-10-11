@@ -1,0 +1,64 @@
+        - export Cartesian
+        - """
+        -     Cartesian{T} <: AstroCoord
+        - 
+        - Cartesian Orbital Elements. 6D parameterziation of the orbit.
+        - x - X-position
+        - y - Y-position
+        - z - Z-position
+        - ẋ - X-velocity
+        - ẏ - Y-velocity
+        - ż - Z-velocity
+        - 
+        - Constructors
+        - Cartesian(x, y, z, ẋ, ẏ, ż)
+        - Cartesian(X::AbstractArray)
+        - Cartesian(X::AstroCoord, μ::Number)
+        - 
+        - """
+        - struct Cartesian{T} <: AstroCoord{6,T}
+        -     x::T
+        -     y::T
+        -     z::T
+        -     ẋ::T
+        -     ẏ::T
+        -     ż::T
+     4038     @inline Cartesian{T}(x, y, z, ẋ, ẏ, ż) where {T} = new{T}(x, y, z, ẋ, ẏ, ż)
+        -     @inline Cartesian{T}(p::Cartesian{T}) where {T} = new{T}(
+        -         p.x, p.y, p.z, p.ẋ, p.ẏ, p.ż
+        -     )
+        - end
+        - 
+        - # ~~~~~~~~~~~~~~~ Constructors ~~~~~~~~~~~~~~~ #
+     1473 Cartesian(X::AbstractVector{T}) where {T} = Cartesian{T}(X[1], X[2], X[3], X[4], X[5], X[6])
+     1620 function Cartesian(x::X, y::Y, z::Z, ẋ::XV, ẏ::YV, ż::ZV) where {X,Y,Z,XV,YV,ZV}
+     1819     return Cartesian{promote_type(X, Y, Z, XV, YV, ZV)}(x, y, z, ẋ, ẏ, ż)
+        - end
+      702 (::Type{C})(g::StaticVector) where {C<:Cartesian} = C(g[1], g[2], g[3], g[4], g[5], g[6])
+        - 
+        - # ~~~~~~~~~~~~~~~ Conversions ~~~~~~~~~~~~~~~ #
+     5425 params(g::Cartesian{T}) where {T<:Number} = SVector{6,T}(g.x, g.y, g.z, g.ẋ, g.ẏ, g.ż)
+        - 
+        - # ~~~~~~~~~~~~~~~ Initializers ~~~~~~~~~~~~~~~ #
+        - function Base.one(::Type{C}; T::DataType=Float64) where {C<:Cartesian}
+        -     return C{T}(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+        - end
+        - 
+        - # ~~~~~~~~~~~~~~~ StaticArrays Interface ~~~~~~~~~~~~~~~ #
+      576 function Base.getindex(p::Cartesian{T}, i::Int) where {T<:Number}
+      576     if i == 1
+       96         return p.x
+      480     elseif i == 2
+       96         return p.y
+      384     elseif i == 3
+       96         return p.z
+      288     elseif i == 4
+       96         return p.ẋ
+      192     elseif i == 5
+       96         return p.ẏ
+       96     elseif i == 6
+       96         return p.ż
+        -     else
+        0         throw(BoundsError(p, i))
+        -     end
+        - end

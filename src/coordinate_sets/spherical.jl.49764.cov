@@ -1,0 +1,143 @@
+        - export Spherical
+        - """
+        -     Spherical{T} <: AstroCoord
+        - 
+        - Spherical Orbital Elements. 6D parameterziation of the orbit
+        - r - radius
+        - θ - in-plane angle
+        - ϕ - out-of-plane angle
+        - ṙ - instantaneous rate of change of radius
+        - θdot - instantaneous rate of change of θ
+        - ϕdot - instantaneous rate of change of ϕ
+        - 
+        - Constructors
+        - Spherical(r, θ, ϕ, ṙ, ω, Ω)
+        - Spherical(X::AbstractArray)
+        - Spherical(X::AstroCoord, μ::Number)
+        - 
+        - """
+        - struct Spherical{T} <: AstroCoord{6,T}
+        -     r::T
+        -     θ::T
+        -     ϕ::T
+        -     ṙ::T
+        -     θdot::T
+        -     ϕdot::T
+      160     @inline Spherical{T}(r, θ, ϕ, ṙ, θdot, ϕdot) where {T} = new{T}(
+        -         r, θ, ϕ, ṙ, θdot, ϕdot
+        -     )
+        -     @inline Spherical{T}(X::Spherical{T}) where {T} = new{T}(
+        -         X.r, X.θ, X.ϕ, X.ṙ, X.θdot, X.ϕdot
+        -     )
+        - end
+        - 
+        - # ~~~~~~~~~~~~~~~ Constructors ~~~~~~~~~~~~~~~ #
+        - Spherical(X::AbstractVector{T}) where {T} = Spherical{T}(X[1], X[2], X[3], X[4], X[5], X[6])
+        - function Spherical(r::R, θ::T, ϕ::P, ṙ::RD, θdot::TD, ϕdot::PD) where {R,T,P,RD,TD,PD}
+        -     return Spherical{promote_type(R, T, P, RD, TD, PD)}(r, θ, ϕ, ṙ, θdot, ϕdot)
+        - end
+      153 function (::Type{S})(g::StaticVector) where {S<:Spherical}
+      160     return S(g[1], g[2], g[3], g[4], g[5], g[6])
+        - end
+        - 
+        - # ~~~~~~~~~~~~~~~ Conversions ~~~~~~~~~~~~~~~ #
+      212 function params(g::Spherical{T}) where {T<:Number}
+      219     return SVector{6,T}(g.r, g.θ, g.ϕ, g.ṙ, g.θdot, g.ϕdot)
+        - end
+        - 
+        - # ~~~~~~~~~~~~~~~ Initializers ~~~~~~~~~~~~~~~ #
+        - function Base.one(::Type{S}; T::DataType=Float64) where {S<:Spherical}
+        -     return S{T}(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+        - end
+        - 
+        - # ~~~~~~~~~~~~~~~ StaticArrays Interface ~~~~~~~~~~~~~~~ #
+      480 function Base.getindex(p::Spherical{T}, i::Int) where {T<:Number}
+      480     if i == 1
+       80         return p.r
+      400     elseif i == 2
+       80         return p.θ
+      320     elseif i == 3
+       80         return p.ϕ
+      240     elseif i == 4
+       80         return p.ṙ
+      160     elseif i == 5
+       80         return p.θdot
+       80     elseif i == 6
+       80         return p.ϕdot
+        -     else
+        0         throw(BoundsError(p, i))
+        -     end
+        - end
+        - 
+        - export Cylindrical
+        - """
+        -     Cylindrical{T} <: AstroCoord
+        - 
+        - Cylindrical Orbital Elements. 6D parameterziation of the orbit
+        - ρ - in-plane radius
+        - θ - in-plane angle
+        - z - out-of-plane distance
+        - ρdot - instantaneous rate of change of in-plsne radius
+        - θdot - instantaneous rate of change of θ
+        - ż - instantaneous rate of change of z
+        - 
+        - Constructors
+        - Cylindrical(r, θ, z, ṙ, θdot, ż)
+        - Cylindrical(X::AbstractArray)
+        - Cylindrical(X::AstroCoord, μ::Number)
+        - 
+        - """
+        - struct Cylindrical{T} <: AstroCoord{6,T}
+        -     ρ::T
+        -     θ::T
+        -     z::T
+        -     ρdot::T
+        -     θdot::T
+        -     ż::T
+      160     @inline Cylindrical{T}(ρ, θ, z, ρdot, θdot, ż) where {T} = new{T}(
+        -         ρ, θ, z, ρdot, θdot, ż
+        -     )
+        -     @inline Cylindrical{T}(X::Cylindrical{T}) where {T} = new{T}(
+        -         X.ρ, X.θ, X.z, X.ρdot, X.θdot, X.ż
+        -     )
+        - end
+        - 
+        - # ~~~~~~~~~~~~~~~ Constructors ~~~~~~~~~~~~~~~ #
+        - function Cylindrical(X::AbstractVector{T}) where {T}
+        -     return Cylindrical{T}(X[1], X[2], X[3], X[4], X[5], X[6])
+        - end
+        - function Cylindrical(ρ::R, θ::T, z::Z, ρdot::RD, θdot::TD, ż::ZD) where {R,T,Z,RD,TD,ZD}
+        -     return Cylindrical{promote_type(R, T, Z, RD, TD, ZD)}(ρ, θ, z, ρdot, θdot, ż)
+        - end
+      153 function (::Type{C})(g::StaticVector) where {C<:Cylindrical}
+      160     return C(g[1], g[2], g[3], g[4], g[5], g[6])
+        - end
+        - 
+        - # ~~~~~~~~~~~~~~~ Conversions ~~~~~~~~~~~~~~~ #
+      212 function params(g::Cylindrical{T}) where {T<:Number}
+      219     return SVector{6,T}(g.ρ, g.θ, g.z, g.ρdot, g.θdot, g.ż)
+        - end
+        - 
+        - # ~~~~~~~~~~~~~~~ Initializers ~~~~~~~~~~~~~~~ #
+        - function Base.one(::Type{C}; T::DataType=Float64) where {C<:Cylindrical}
+        -     return C{T}(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+        - end
+        - 
+        - # ~~~~~~~~~~~~~~~ StaticArrays Interface ~~~~~~~~~~~~~~~ #
+      480 function Base.getindex(p::Cylindrical{T}, i::Int) where {T<:Number}
+      480     if i == 1
+       80         return p.ρ
+      400     elseif i == 2
+       80         return p.θ
+      320     elseif i == 3
+       80         return p.z
+      240     elseif i == 4
+       80         return p.ρdot
+      160     elseif i == 5
+       80         return p.θdot
+       80     elseif i == 6
+       80         return p.ż
+        -     else
+        0         throw(BoundsError(p, i))
+        -     end
+        - end

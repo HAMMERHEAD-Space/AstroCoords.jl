@@ -1,0 +1,136 @@
+        - export get_KS_time
+        - 
+        - """
+        -     cart2KS(u, μ, config::RegularizedCoordinateConfig)
+        - 
+        - Converts a Cartesian state vector to a Kustaanheimo-Stiefel (KS) state vector.
+        - 
+        - # Arguments
+        - - `u::AbstractVector`: Cartesian state `[x, y, z, ẋ, ẏ, ż]`.
+        - - `μ::Number`: Gravitational parameter.
+        - - `config::RegularizedCoordinateConfig`: Configuration parameters (uses config.W for perturbing potential).
+        - 
+        - # Returns
+        - - `SVector{10, RT}`: The 10-element KS state vector.
+        - """
+      384 function cart2KS(
+        -     u_cart::AbstractVector{T}, μ::V, config::RegularizedCoordinateConfig
+        - ) where {T<:Number,V<:Number}
+      618     W, DU, TU, t₀, flag_time = config.W, config.DU, config.TU, config.t₀, config.flag_time
+      486     RT = promote_type(T, V, typeof(W), typeof(DU), typeof(TU), typeof(t₀))
+        - 
+        -     ##################################################
+        -     #* 1. Non-Dimensionalize
+        -     ##################################################
+      546     r_vec = SVector{3,RT}(u_cart[1] / DU, u_cart[2] / DU, u_cart[3] / DU)
+      546     v_vec = SVector{3,RT}(
+        -         u_cart[4] / (DU / TU), u_cart[5] / (DU / TU), u_cart[6] / (DU / TU)
+        -     )
+      546     r = norm(r_vec)
+      546     t = t₀ / TU
+        - 
+      486     W_non_dim = W / (DU^2 / TU^2)
+      486     Μ = μ / (DU^3 / TU^2)
+        - 
+        -     ##################################################
+        -     #* 2. Initialize KS-Position and KS-Velocity
+        -     ##################################################
+        -     # KS-Position
+      546     if r_vec[1] >= 0
+        0         u₁ = 0.0
+        0         u₄ = √(0.5 * (r + r_vec[1]))
+        0         u₂ = (r_vec[2]*u₁ + r_vec[3]*u₄) / (r + r_vec[1])
+        0         u₃ = (r_vec[3]*u₁ - r_vec[2]*u₄) / (r + r_vec[1])
+        -     else
+      402         u₂ = 0.0
+      546         u₃ = √(0.5 * (r - r_vec[1]))
+      546         u₁ = (r_vec[2]*u₂ + r_vec[3]*u₃) / (r - r_vec[1])
+      546         u₄ = (r_vec[3]*u₂ - r_vec[2]*u₃) / (r - r_vec[1])
+        -     end
+        - 
+        -     # KS-Velocity
+      558     u₅ = 0.5 * dot(SVector{3,RT}(u₁, u₂, u₃), v_vec)
+      558     u₆ = 0.5 * dot(SVector{3,RT}(-u₂, u₁, u₄), v_vec)
+      558     u₇ = 0.5 * dot(SVector{3,RT}(-u₃, -u₄, u₁), v_vec)
+      546     u₈ = 0.5 * dot(SVector{3,RT}(u₄, -u₃, u₂), v_vec)
+        - 
+        -     # Total energy
+      546     h = Μ / r - 0.5 * dot(v_vec, v_vec) - W_non_dim
+        - 
+        -     # Time element
+      486     if flag_time isa PhysicalTime
+      201         τ = t
+      243     elseif flag_time isa LinearTime
+      279         τ = t + dot(SVector{4}(u₁, u₂, u₃, u₄), SVector{4}(u₅, u₆, u₇, u₈)) / h
+        -     end
+        - 
+      546     return SVector{10,RT}(u₁, u₂, u₃, u₄, u₅, u₆, u₇, u₈, h, τ)
+        - end
+        - 
+        - """
+        -     KS2cart(u_ks, μ, config::RegularizedCoordinateConfig)
+        - 
+        - Converts a Kustaanheimo-Stiefel (KS) state vector to a Cartesian state vector.
+        - 
+        - # Arguments
+        - - `u_ks::AbstractVector`: 10-element KS state vector.
+        - - `μ::Number`: Gravitational parameter (unused in this direction, kept for API consistency).
+        - - `config::RegularizedCoordinateConfig`: Configuration parameters.
+        - 
+        - # Returns
+        - - `SVector{6, RT}`: The 6-element Cartesian state `[x, y, z, ẋ, ẏ, ż]`.
+        - """
+      340 function KS2cart(
+        -     u_ks::AbstractVector{T}, μ::V, config::RegularizedCoordinateConfig
+        - ) where {T<:Number,V<:Number}
+      436     DU, TU = config.DU, config.TU
+      380     RT = promote_type(T, V, typeof(DU), typeof(TU))
+        - 
+        -     # Position
+      380     x = u_ks[1]^2 - u_ks[2]^2 - u_ks[3]^2 + u_ks[4]^2
+      380     y = 2 * (u_ks[1] * u_ks[2] - u_ks[3] * u_ks[4])
+      380     z = 2 * (u_ks[1] * u_ks[3] + u_ks[2] * u_ks[4])
+      380     r = u_ks[1]^2 + u_ks[2]^2 + u_ks[3]^2 + u_ks[4]^2
+        - 
+        -     # Velocity
+      380     ẋ =
+        -         2 *
+        -         (u_ks[1] * u_ks[5] - u_ks[2] * u_ks[6] - u_ks[3] * u_ks[7] + u_ks[4] * u_ks[8]) / r
+      380     ẏ =
+        -         2 *
+        -         (u_ks[2] * u_ks[5] + u_ks[1] * u_ks[6] - u_ks[4] * u_ks[7] - u_ks[3] * u_ks[8]) / r
+      380     ż =
+        -         2 *
+        -         (u_ks[3] * u_ks[5] + u_ks[4] * u_ks[6] + u_ks[1] * u_ks[7] + u_ks[2] * u_ks[8]) / r
+        - 
+      380     return SVector{6,RT}(
+        -         x * DU, y * DU, z * DU, ẋ * (DU / TU), ẏ * (DU / TU), ż * (DU / TU)
+        -     )
+        - end
+        - 
+        - """
+        -     get_KS_time(u, config::RegularizedCoordinateConfig)
+        - 
+        - Computes the physical time from the KS state vector.
+        - 
+        - # Arguments
+        - - `u::AbstractVector`: KS state vector `[u₁, u₂, u₃, u₄, u₅, u₆, u₇, u₈, h, τ]`.
+        - - `config::RegularizedCoordinateConfig`: Configuration parameters.
+        - 
+        - # Returns
+        - - `Number`: The computed physical time.
+        - """
+        - function get_KS_time(
+        -     u::AbstractVector{T}, config::RegularizedCoordinateConfig
+        - ) where {T<:Number}
+        -     t₀, TU, flag_time = config.t₀, config.TU, config.flag_time
+        -     if flag_time isa PhysicalTime
+        -         t = u[10]
+        -     elseif flag_time isa LinearTime
+        -         t =
+        -             u[10] -
+        -             dot(SVector{4}(u[1], u[2], u[3], u[4]), SVector{4}(u[5], u[6], u[7], u[8])) /
+        -             u[9]
+        -     end
+        -     return t * TU + t₀
+        - end

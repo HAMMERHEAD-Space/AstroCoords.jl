@@ -1,0 +1,222 @@
+        - export get_EDromo_time
+        - 
+        - """
+        -     cart2EDromo(u, μ, ϕ::Number, config::RegularizedCoordinateConfig)
+        - 
+        - Converts a Cartesian state vector to an EDromo state vector.
+        - 
+        - This is the backend implementation for the transformation from `Cartesian` to `EDromo`.
+        - It requires the fictitious time `ϕ` and a `RegularizedCoordinateConfig` with necessary parameters.
+        - 
+        - # Arguments
+        - - `u::AbstractVector`: Cartesian state vector `[x, y, z, ẋ, ẏ, ż]` in `[L]` and `[L/T]`.
+        - - `μ::Number`: Gravitational parameter in `[L³/T²]`.
+        - - `ϕ::Number`: Fictitious time parameter.
+        - - `config::RegularizedCoordinateConfig`: Configuration parameters for the transformation.
+        - 
+        - # Returns
+        - - `SVector{8, RT}`: The 8-element EDromo state vector.
+        - """
+      969 function cart2EDromo(
+        -     u::AbstractVector{T}, μ::V, ϕ::P, config::RegularizedCoordinateConfig
+        - ) where {T<:Number,V<:Number,P<:Number}
+     1365     DU, TU, W, t₀, flag_time = config.DU, config.TU, config.W, config.t₀, config.flag_time
+     1149     RT = promote_type(T, V, typeof(DU), typeof(TU), typeof(W), typeof(t₀), P)
+        - 
+     1299     x, y, z, ẋ, ẏ, ż = u
+        - 
+        -     ##################################################
+        -     #* 1. Non-Dimensionalize
+        -     ##################################################
+        - 
+     1245     r = SVector{3,RT}(x / DU, y / DU, z / DU)
+     1245     v = SVector{3,RT}(ẋ / (DU / TU), ẏ / (DU / TU), ż / (DU / TU))
+        - 
+     1149     W_non_dim = W / (DU^2 / TU^2)
+     1149     Μ = μ / (DU^3 / TU^2)
+        - 
+        -     ##################################################
+        -     #* 2. In-plane Elements
+        -     ##################################################
+        - 
+     1245     r_mag = norm(r)
+     1245     v_mag = norm(v)
+        - 
+     1245     sϕ, cϕ = sincos(ϕ)
+        - 
+        -     # Total Energy
+     1149     E = v_mag^2 / 2 - Μ / r_mag + W_non_dim
+        - 
+        -     # Angular Momentum
+     1245     h₀ = cross(r, v)
+     1245     h₀_mag = norm(h₀)
+        - 
+        -     # Generalized Angular Momentum
+     1149     c₀ = √(h₀_mag^2 + 2*r_mag^2*W_non_dim)
+        - 
+        -     # Dot Product of r and v
+     1245     r_dot_v = dot(r, v)
+        - 
+     1245     ζ₁ = (1.0 + 2.0*E*r_mag)*cϕ + r_dot_v * √(-2.0 * E) * sϕ
+     1245     ζ₂ = (1.0 + 2.0*E*r_mag)*sϕ - r_dot_v * √(-2.0 * E) * cϕ
+     1245     ζ₃ = -1.0 / (2.0 * E)
+        - 
+        -     ##################################################
+        -     #* 3. Quaternion Elements
+        -     ##################################################
+     1245     ν₀ = ϕ + 2.0*atan(r_dot_v, c₀ + r_mag*√(-2.0*E))
+     1245     sν, cν = sincos(ν₀)
+        - 
+        -     # Orbital Frame in the IRF
+     1245     î = r / r_mag
+     1245     k̂ = h₀ / h₀_mag
+     1245     ĵ = cross(k̂, î)
+        - 
+        -     # Intermediate Frame Unit Vectors in the IRF
+     1245     x̂ = cν * î - sν * ĵ
+     1245     ŷ = sν * î + cν * ĵ
+        - 
+        -     # Safe Initialization of the Quaternion
+        -     # Arguments of the roots have to be always positive, so we can safely use abs()
+     1245     aux = abs(1.0 + x̂[1] + ŷ[2] + k̂[3])
+     1245     ζ₇ = 0.5 * √(aux)
+        - 
+        -     # Check for Singularities and NaNs
+     1149     if aux <= eps(RT)
+        0         aux = abs(0.5 * (k̂[3] + 1.0))
+        0         ζ₆ = √(aux)
+        0         if aux <= eps(RT)
+        0             aux = abs(0.5 * (1.0 - ŷ[2]))
+        0             ζ₄ = √(aux)
+        0             if aux <= eps(RT)
+        0                 ζ₅ = 1.0
+        -             else
+        0                 ζ₅ = ŷ[1] / (2.0*ζ₄)
+        -             end
+        -         else
+        0             ζ₄ = k̂[1] / (2.0*ζ₆)
+        0             ζ₅ = k̂[2] / (2.0*ζ₆)
+        -         end
+        -     else
+     1245         ζ₄ = (ŷ[3] - k̂[2]) / (4.0 * ζ₇)
+     1245         ζ₅ = (k̂[1] - x̂[3]) / (4.0 * ζ₇)
+     1245         ζ₆ = (x̂[2] - ŷ[1]) / (4.0 * ζ₇)
+        -     end
+        - 
+        -     ##################################################
+        -     #* 4. Time Element
+        -     ##################################################
+     1149     if flag_time isa PhysicalTime
+      383         ζ₈ = t₀ / TU
+      766     elseif flag_time isa ConstantTime
+      704         ζ₈ = t₀ / TU + ζ₃^(1.5) * (ζ₁*sϕ - ζ₂*cϕ - ϕ)
+      383     elseif flag_time isa LinearTime
+      736         ζ₈ = t₀ / TU + ζ₃^(1.5) * (ζ₁*sϕ - ζ₂*cϕ)
+        -     end
+        - 
+     1245     return SVector{8,RT}(ζ₁, ζ₂, ζ₃, ζ₄, ζ₅, ζ₆, ζ₇, ζ₈)
+        - end
+        - 
+        - """
+        -     EDromo2cart(u, μ, ϕ::Number, config::RegularizedCoordinateConfig)
+        - 
+        - Converts an EDromo state vector to a Cartesian state vector.
+        - 
+        - This is the backend implementation for the transformation from `EDromo` to `Cartesian`.
+        - It requires the fictitious time `ϕ` and a `RegularizedCoordinateConfig` with the same parameters used in the forward transformation.
+        - 
+        - # Arguments
+        - - `u::AbstractVector`: EDromo state vector `[ζ₁, ζ₂, ζ₃, ζ₄, ζ₅, ζ₆, ζ₇, ζ₈]`.
+        - - `μ::Number`: Gravitational parameter of the central body.
+        - - `ϕ::Number`: Fictitious time parameter.
+        - - `config::RegularizedCoordinateConfig`: Configuration parameters for the transformation.
+        - 
+        - # Returns
+        - - `SVector{6, RT}`: The 6-element Cartesian state vector `[x, y, z, ẋ, ẏ, ż]`.
+        - """
+      873 function EDromo2cart(
+        -     u::AbstractVector{T}, μ::V, ϕ::P, config::RegularizedCoordinateConfig
+        - ) where {T<:Number,V<:Number,P<:Number}
+     1092     DU, TU, W, t₀ = config.DU, config.TU, config.W, config.t₀
+      966     RT = promote_type(T, V, typeof(DU), typeof(TU), typeof(W), typeof(t₀), P)
+        - 
+     1302     ζ₁, ζ₂, ζ₃, ζ₄, ζ₅, ζ₆, ζ₇, ζ₈ = u
+        - 
+        -     ##################################################
+        -     #* 1. Auxiliary Quantities
+        -     ##################################################
+     1005     sϕ, cϕ = sincos(ϕ)
+        - 
+      966     ρ = 1.0 - ζ₁*cϕ - ζ₂*sϕ
+      966     r_mag = ζ₃ * ρ
+        - 
+      966     Z = ζ₁*sϕ - ζ₂*cϕ
+      966     emme = √(1.0 - ζ₁^2 - ζ₂^2)
+        - 
+      966     cν = (cϕ - ζ₁ + (Z*ζ₂) / (emme + 1.0)) / ρ
+      966     sν = (sϕ - ζ₂ - (Z*ζ₁) / (emme + 1.0)) / ρ
+        - 
+        -     ##################################################
+        -     #* 2. Compute Position in the Inertial Frame
+        -     ##################################################
+        - 
+        -     # Intermediate Frame Unit Vectors
+      966     x̂ = 2.0 * SVector{3}(0.5 - ζ₅^2 - ζ₆^2, ζ₄*ζ₅ + ζ₆*ζ₇, ζ₄*ζ₆ - ζ₅*ζ₇)
+        - 
+      966     ŷ = 2.0 * SVector{3}(ζ₄*ζ₅ - ζ₆*ζ₇, 0.5 - ζ₄^2 - ζ₆^2, ζ₅*ζ₆ + ζ₄*ζ₇)
+        - 
+      966     r_non_dim = r_mag * (x̂ * cν + ŷ * sν)
+        - 
+        -     ##################################################
+        -     #* 3. Perturbing Potential
+        -     ##################################################
+      966     U = W / (DU^2 / TU^2)
+        - 
+        -     ##################################################
+        -     #* 4. Compute Velocity in the Inertial Frame
+        -     ##################################################
+      966     î = x̂*cν + ŷ*sν
+      966     ĵ = -x̂*sν + ŷ*cν
+        - 
+      966     v_rad = Z / (√(ζ₃)*ρ)
+      966     v_tan = √((1.0 - ζ₁^2 - ζ₂^2) / (ζ₃*ρ^2) - 2.0 * U)
+        - 
+      966     v_non_dim = v_rad * î + v_tan * ĵ
+        - 
+      966     r = r_non_dim * DU
+      966     v = v_non_dim * (DU / TU)
+        - 
+      966     return SVector{6,RT}(r[1], r[2], r[3], v[1], v[2], v[3])
+        - end
+        - 
+        - """
+        -     get_EDromo_time(u, ϕ::Number, config::RegularizedCoordinateConfig)
+        - 
+        - Computes the physical time from the EDromo state vector.
+        - 
+        - # Arguments
+        - - `u::AbstractVector`: EDromo state vector `[ζ₁, ζ₂, ζ₃, ζ₄, ζ₅, ζ₆, ζ₇, ζ₈]`.
+        - - `ϕ::Number`: Fictitious time parameter.
+        - - `config::RegularizedCoordinateConfig`: Configuration parameters for the transformation.
+        - 
+        - # Returns
+        - - `Number`: The computed physical time.
+        - """
+        - function get_EDromo_time(
+        -     u::AbstractVector{T}, ϕ::P, config::RegularizedCoordinateConfig
+        - ) where {T<:Number,P<:Number}
+        -     TU, t₀, flag_time = config.TU, config.t₀, config.flag_time
+        -     RT = promote_type(T, P)
+        - 
+        -     sϕ, cϕ = sincos(ϕ)
+        - 
+        -     if flag_time isa PhysicalTime
+        -         t = u[8]
+        -     elseif flag_time isa ConstantTime
+        -         t = u[8] - u[3]^(1.5) * (u[1]*sϕ - u[2]*cϕ - ϕ)
+        -     elseif flag_time isa LinearTime
+        -         t = u[8] - u[3]^(1.5) * (u[1]*sϕ - u[2]*cϕ)
+        -     end
+        - 
+        -     return RT(t * TU + t₀)
+        - end
