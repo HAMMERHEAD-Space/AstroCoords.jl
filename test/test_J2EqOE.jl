@@ -1,3 +1,6 @@
+using Test
+using AstroCoords
+
 @testset "J2EqOE Conversion" begin
     μ = 3.986004415e+05
     R = 6.378137e+03
@@ -160,7 +163,6 @@
         @test v2 ≈ expected_v2 rtol = 1e-13
         @test v3 ≈ expected_v3 rtol = 1e-13
         @test v4 ≈ expected_v4 rtol = 1e-13
-        #! I think there is a small typo in the paper, reducing the rtol here
         @test δe ≈ expected_δe rtol = 1e-12
         @test e″δL ≈ expected_e″δL rtol = 1e-13
     end
@@ -251,4 +253,95 @@
     u_J2IOE = AstroCoords.IOE2J2IOE(u_IOE, μ)
 
     @test u_J2IOE ≈ expected_J2IOE rtol = 1e-13
+
+    @testset "Circular Orbit Edge Case" begin
+        # Test with near-circular orbit (e ≈ 0)
+        a_circ = 7000.0
+        e_circ = 1e-8
+        i_circ = 0.5
+        Ω_circ = 1.0
+        ω_circ = 2.0
+        L_circ = 3.0
+        
+        koe_circ = AstroCoords.KeplerianOrbitElements(a_circ, e_circ, i_circ, Ω_circ, ω_circ, L_circ)
+        ioe_circ = AstroCoords.koe2IOE(koe_circ, μ)
+        
+        # Convert to J2IOE and back
+        j2ioe_circ = AstroCoords.IOE2J2IOE(ioe_circ, μ)
+        ioe_back = AstroCoords.J2IOE2IOE(j2ioe_circ, μ)
+        
+        # Round-trip should preserve state within numerical tolerance
+        @test ioe_back[1] ≈ ioe_circ[1] rtol=1e-10
+        @test ioe_back[2] ≈ ioe_circ[2] atol=1e-12
+        @test ioe_back[3] ≈ ioe_circ[3] atol=1e-12
+    end
+
+    @testset "Equatorial Orbit Edge Case" begin
+        # Test with equatorial orbit (i ≈ 0)
+        a_eq = 7000.0
+        e_eq = 0.01
+        i_eq = 1e-8
+        Ω_eq = 1.0
+        ω_eq = 2.0
+        L_eq = 3.0
+        
+        koe_eq = AstroCoords.KeplerianOrbitElements(a_eq, e_eq, i_eq, Ω_eq, ω_eq, L_eq)
+        ioe_eq = AstroCoords.koe2IOE(koe_eq, μ)
+        
+        # Convert to J2IOE and back
+        j2ioe_eq = AstroCoords.IOE2J2IOE(ioe_eq, μ)
+        ioe_back = AstroCoords.J2IOE2IOE(j2ioe_eq, μ)
+        
+        # Round-trip should preserve state
+        @test ioe_back[1] ≈ ioe_eq[1] rtol=1e-10
+        @test ioe_back[6] ≈ ioe_eq[6] rtol=1e-10
+    end
+
+    @testset "Hyperbolic Orbit" begin
+        # Test with hyperbolic orbit (e > 1)
+        a_hyp = -7000.0  # negative for hyperbola
+        e_hyp = 1.5
+        i_hyp = 0.5
+        Ω_hyp = 1.0
+        ω_hyp = 2.0
+        L_hyp = 0.5  # small true anomaly for hyperbola
+        
+        koe_hyp = AstroCoords.KeplerianOrbitElements(a_hyp, e_hyp, i_hyp, Ω_hyp, ω_hyp, L_hyp)
+        ioe_hyp = AstroCoords.koe2IOE(koe_hyp, μ)
+        
+        # Convert to J2IOE and back
+        j2ioe_hyp = AstroCoords.IOE2J2IOE(ioe_hyp, μ)
+        ioe_back = AstroCoords.J2IOE2IOE(j2ioe_hyp, μ)
+        
+        # Round-trip should preserve state
+        @test ioe_back[1] ≈ ioe_hyp[1] rtol=1e-10
+        @test ioe_back[2] ≈ ioe_hyp[2] rtol=1e-10
+    end
+
+    @testset "Round-Trip Consistency" begin
+        # Test that koe → IOE → J2IOE → IOE → koe preserves state
+        a_test = 7500.0
+        e_test = 0.05
+        i_test = 0.8
+        Ω_test = 1.5
+        ω_test = 2.5
+        ν_test = 3.5
+        
+        koe_orig = AstroCoords.KeplerianOrbitElements(a_test, e_test, i_test, Ω_test, ω_test, ν_test)
+        
+        # Forward: koe → IOE → J2IOE
+        ioe1 = AstroCoords.koe2IOE(koe_orig, μ)
+        j2ioe = AstroCoords.IOE2J2IOE(ioe1, μ)
+        
+        # Backward: J2IOE → IOE → koe
+        ioe2 = AstroCoords.J2IOE2IOE(j2ioe, μ)
+        koe_back = AstroCoords.IOE2koe(ioe2, μ)
+        
+        # Check preservation
+        @test koe_back.a ≈ koe_orig.a rtol=1e-10
+        @test koe_back.e ≈ koe_orig.e rtol=1e-10
+        @test koe_back.i ≈ koe_orig.i rtol=1e-10
+        @test koe_back.Ω ≈ koe_orig.Ω rtol=1e-10
+        @test koe_back.ω ≈ koe_orig.ω rtol=1e-10
+    end
 end
