@@ -69,7 +69,7 @@
         # vz_retro = v_retro * sin(i_retro)
         # state_retrograde = [x_retro, 0.0, 0.0, vx_retro, vy_retro, vz_retro]
 
-        # states = [state_circular_equatorial, state_ecc_equatorial, state_ecc_equatorial, state_near_parabolic, state_hyperbolic, state_retrograde]
+        # states = [state_elliptical, state_circular_equatorial, state_ecc_equatorial, state_ecc_equatorial, state_near_parabolic, state_hyperbolic, state_retrograde]
         states = [state_elliptical]
 
         for state in states
