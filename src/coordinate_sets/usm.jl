@@ -40,9 +40,9 @@ function USM7(
 ) where {CT,R1,R2,E1,E2,E3,N}
     return USM7{promote_type(CT, R1, R2, E1, E2, E3, N)}(C, Rf1, Rf2, ϵO1, ϵO2, ϵO3, η0)
 end
-function (::Type{U7})(g::StaticVector) where {U7<:USM7}
-    return U7(g[1], g[2], g[3], g[4], g[5], g[6], g[7])
-end
+# More specific than AbstractVector to avoid ambiguity
+USM7(g::StaticVector{N,T}) where {N,T} = USM7{T}(g[1], g[2], g[3], g[4], g[5], g[6], g[7])
+USM7{T}(g::StaticVector) where {T} = USM7{T}(g[1], g[2], g[3], g[4], g[5], g[6], g[7])
 
 # ~~~~~~~~~~~~~~~ Conversions ~~~~~~~~~~~~~~~ #
 function params(g::USM7{T}) where {T<:Number}
@@ -109,7 +109,9 @@ USM6(X::AbstractVector{T}) where {T} = USM6{T}(X[1], X[2], X[3], X[4], X[5], X[6
 function USM6(C::CT, Rf1::R1, Rf2::R2, σ1::S1, σ2::S2, σ3::S3) where {CT,R1,R2,S1,S2,S3}
     return USM6{promote_type(CT, R1, R2, S1, S2, S3)}(C, Rf1, Rf2, σ1, σ2, σ3)
 end
-(::Type{U6})(g::StaticVector) where {U6<:USM6} = U6(g[1], g[2], g[3], g[4], g[5], g[6])
+# More specific than AbstractVector to avoid ambiguity
+USM6(g::StaticVector{N,T}) where {N,T} = USM6{T}(g[1], g[2], g[3], g[4], g[5], g[6])
+USM6{T}(g::StaticVector) where {T} = USM6{T}(g[1], g[2], g[3], g[4], g[5], g[6])
 
 # ~~~~~~~~~~~~~~~ Conversions ~~~~~~~~~~~~~~~ #
 params(g::USM6{T}) where {T<:Number} = SVector{6,T}(g.C, g.Rf1, g.Rf2, g.σ1, g.σ2, g.σ3)
@@ -172,7 +174,9 @@ USMEM(X::AbstractVector{T}) where {T} = USMEM{T}(X[1], X[2], X[3], X[4], X[5], X
 function USMEM(C::CT, Rf1::R1, Rf2::R2, a1::A1, a2::A2, a3::A3) where {CT,R1,R2,A1,A2,A3}
     return USMEM{promote_type(CT, R1, R2, A1, A2, A3)}(C, Rf1, Rf2, a1, a2, a3)
 end
-(::Type{UET})(g::StaticVector) where {UET<:USMEM} = UET(g[1], g[2], g[3], g[4], g[5], g[6])
+# More specific than AbstractVector to avoid ambiguity
+USMEM(g::StaticVector{N,T}) where {N,T} = USMEM{T}(g[1], g[2], g[3], g[4], g[5], g[6])
+USMEM{T}(g::StaticVector) where {T} = USMEM{T}(g[1], g[2], g[3], g[4], g[5], g[6])
 
 # ~~~~~~~~~~~~~~~ Conversions ~~~~~~~~~~~~~~~ #
 params(g::USMEM{T}) where {T<:Number} = SVector{6,T}(g.C, g.Rf1, g.Rf2, g.a1, g.a2, g.a3)

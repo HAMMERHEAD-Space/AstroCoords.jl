@@ -36,9 +36,11 @@ Spherical(X::AbstractVector{T}) where {T} = Spherical{T}(X[1], X[2], X[3], X[4],
 function Spherical(r::R, θ::T, ϕ::P, ṙ::RD, θdot::TD, ϕdot::PD) where {R,T,P,RD,TD,PD}
     return Spherical{promote_type(R, T, P, RD, TD, PD)}(r, θ, ϕ, ṙ, θdot, ϕdot)
 end
-function (::Type{S})(g::StaticVector) where {S<:Spherical}
-    return S(g[1], g[2], g[3], g[4], g[5], g[6])
+# More specific than AbstractVector to avoid ambiguity
+function Spherical(g::StaticVector{N,T}) where {N,T}
+    Spherical{T}(g[1], g[2], g[3], g[4], g[5], g[6])
 end
+Spherical{T}(g::StaticVector) where {T} = Spherical{T}(g[1], g[2], g[3], g[4], g[5], g[6])
 
 # ~~~~~~~~~~~~~~~ Conversions ~~~~~~~~~~~~~~~ #
 function params(g::Spherical{T}) where {T<:Number}
@@ -109,8 +111,12 @@ end
 function Cylindrical(ρ::R, θ::T, z::Z, ρdot::RD, θdot::TD, ż::ZD) where {R,T,Z,RD,TD,ZD}
     return Cylindrical{promote_type(R, T, Z, RD, TD, ZD)}(ρ, θ, z, ρdot, θdot, ż)
 end
-function (::Type{C})(g::StaticVector) where {C<:Cylindrical}
-    return C(g[1], g[2], g[3], g[4], g[5], g[6])
+# More specific than AbstractVector to avoid ambiguity
+function Cylindrical(g::StaticVector{N,T}) where {N,T}
+    Cylindrical{T}(g[1], g[2], g[3], g[4], g[5], g[6])
+end
+function Cylindrical{T}(g::StaticVector) where {T}
+    Cylindrical{T}(g[1], g[2], g[3], g[4], g[5], g[6])
 end
 
 # ~~~~~~~~~~~~~~~ Conversions ~~~~~~~~~~~~~~~ #

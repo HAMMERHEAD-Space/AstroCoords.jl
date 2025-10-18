@@ -51,8 +51,12 @@ function StiefelScheifele(
     T = promote_type(A1, A2, A3, A4, B1, B2, B3, B4, W, TT)
     return StiefelScheifele{T}(α1, α2, α3, α4, β1, β2, β3, β4, ω, t)
 end
-function (::Type{SS})(g::StaticVector) where {SS<:StiefelScheifele}
-    SS(g[1], g[2], g[3], g[4], g[5], g[6], g[7], g[8], g[9], g[10])
+# More specific than AbstractVector to avoid ambiguity
+function StiefelScheifele(g::StaticVector{N,T}) where {N,T}
+    StiefelScheifele{T}(g[1], g[2], g[3], g[4], g[5], g[6], g[7], g[8], g[9], g[10])
+end
+function StiefelScheifele{T}(g::StaticVector) where {T}
+    StiefelScheifele{T}(g[1], g[2], g[3], g[4], g[5], g[6], g[7], g[8], g[9], g[10])
 end
 
 # ~~~~~~~~~~~~~~~ Conversions ~~~~~~~~~~~~~~~ #

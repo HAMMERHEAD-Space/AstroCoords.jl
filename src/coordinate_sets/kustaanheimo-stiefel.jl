@@ -66,8 +66,12 @@ function KustaanheimoStiefel(
         u₁, u₂, u₃, u₄, u₁_prime, u₂_prime, u₃_prime, u₄_prime, h, τ
     )
 end
-function (::Type{KS})(g::StaticVector) where {KS<:KustaanheimoStiefel}
-    KS(g[1], g[2], g[3], g[4], g[5], g[6], g[7], g[8], g[9], g[10])
+# More specific than AbstractVector to avoid ambiguity
+function KustaanheimoStiefel(g::StaticVector{N,T}) where {N,T}
+    KustaanheimoStiefel{T}(g[1], g[2], g[3], g[4], g[5], g[6], g[7], g[8], g[9], g[10])
+end
+function KustaanheimoStiefel{T}(g::StaticVector) where {T}
+    KustaanheimoStiefel{T}(g[1], g[2], g[3], g[4], g[5], g[6], g[7], g[8], g[9], g[10])
 end
 
 # ~~~~~~~~~~~~~~~ Conversions ~~~~~~~~~~~~~~~ #

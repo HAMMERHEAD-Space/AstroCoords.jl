@@ -11,8 +11,9 @@ Computes the Keplerian mean motion about a central body.
 # Returns
 - `n::Number`: The orbital mean motion.
 """
-function meanMotion(a::Number, μ::Number)
-    return √(μ / (a^3.0))
+function meanMotion(a::T, μ::V) where {T<:Number,V<:Number}
+    RT = promote_type(T, V)
+    return √(μ / (a^RT(3)))
 end
 
 """
@@ -46,8 +47,9 @@ Computes the Keplerian orbital period about a central body.
 # Returns
 -`T::Number`: The orbital period.
 """
-function orbitalPeriod(a::Number, μ::Number)
-    return 2.0 * π / √(μ / (a^3.0))
+function orbitalPeriod(a::T, μ::V) where {T<:Number,V<:Number}
+    RT = promote_type(T, V)
+    return RT(2π) / √(μ / (a^RT(3)))
 end
 
 """
@@ -81,8 +83,9 @@ Computes the keplerian orbital energy.
 # Returns
 -`NRG::Number`: The orbital energy. 
 """
-function orbitalNRG(a::Number, μ::Number)
-    return -μ / (2.0 * a)
+function orbitalNRG(a::T, μ::V) where {T<:Number,V<:Number}
+    RT = promote_type(T, V)
+    return -μ / (RT(2) * a)
 end
 
 """

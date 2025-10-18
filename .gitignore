@@ -3,3 +3,4 @@
 /.vscode/*
 /benchmark/Manifest.toml
 *.cov
+.agent_rollback*
