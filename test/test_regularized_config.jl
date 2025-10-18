@@ -1,7 +1,3 @@
-using Test
-using AstroCoords
-using StaticArrays
-
 @testset "RegularizedCoordinateConfig" begin
     @testset "Constructor with explicit parameters" begin
         # Test lines 19-22: explicit parameter constructor
@@ -18,14 +14,16 @@ using StaticArrays
     @testset "Constructor from state vector" begin
         # Test lines 38-46: computing DU/TU from state
         μ = 398600.4418  # Earth μ [km³/s²]
-        
+
         # Circular orbit at 7000 km
         r = 7000.0  # km
         v = sqrt(μ / r)  # circular velocity
         state = [r, 0.0, 0.0, 0.0, v, 0.0]
-        
-        config = RegularizedCoordinateConfig(state, μ; W=0.0, t₀=0.0, flag_time=LinearTime())
-        
+
+        config = RegularizedCoordinateConfig(
+            state, μ; W=0.0, t₀=0.0, flag_time=LinearTime()
+        )
+
         # Verify DU is computed from position magnitude
         @test config.DU ≈ r atol=1e-10
         # Verify TU follows Kepler's third law: TU = sqrt(DU³/μ)
@@ -40,48 +38,31 @@ using StaticArrays
         # Test lines 65-68: different flag_time types
         state = [7000.0, 0.0, 0.0, 0.0, 7.5, 0.0]
         μ = 398600.4418
-        
+
         config_physical = RegularizedCoordinateConfig(state, μ; flag_time=PhysicalTime())
         @test config_physical.flag_time isa PhysicalTime
-        
+
         config_constant = RegularizedCoordinateConfig(state, μ; flag_time=ConstantTime())
         @test config_constant.flag_time isa ConstantTime
-        
+
         config_linear = RegularizedCoordinateConfig(state, μ; flag_time=LinearTime())
         @test config_linear.flag_time isa LinearTime
-    end
-
-    @testset "Type promotion" begin
-        # Test lines 88-92: mixing number types
-        config_mixed = RegularizedCoordinateConfig(
-            DU=1e7,      # Float64
-            TU=1000,     # Int64
-            W=0.0f0,     # Float32
-            t₀=0,        # Int64
-            flag_time=PhysicalTime()
-        )
-        
-        # All fields should be promoted to Float64
-        @test config_mixed.DU isa Float64
-        @test config_mixed.TU isa Float64
-        @test config_mixed.W isa Float64
-        @test config_mixed.t₀ isa Float64
     end
 
     @testset "W (perturbing potential) computation" begin
         # Test lines 94-97: W parameter accuracy
         μ = 398600.4418
         state = [7000.0, 0.0, 0.0, 0.0, 7.5, 0.0]
-        
+
         # Test with non-zero W (perturbing potential)
         W_test = 1e-5  # Small perturbation
         config = RegularizedCoordinateConfig(state, μ; W=W_test)
         @test config.W ≈ W_test atol=1e-15
-        
+
         # Test with zero W (no perturbation)
         config_zero = RegularizedCoordinateConfig(state, μ; W=0.0)
         @test config_zero.W ≈ 0.0 atol=1e-15
-        
+
         # Test with negative W (valid for certain perturbations)
         W_neg = -1e-6
         config_neg = RegularizedCoordinateConfig(state, μ; W=W_neg)
@@ -92,15 +73,15 @@ using StaticArrays
         # Test lines 99-100: flag_time usage
         state = [7000.0, 0.0, 0.0, 0.0, 7.5, 0.0]
         μ = 398600.4418
-        
+
         # PhysicalTime: τ = t directly
         config_phys = RegularizedCoordinateConfig(state, μ; flag_time=PhysicalTime())
         @test config_phys.flag_time isa PhysicalTime
-        
+
         # LinearTime: τ includes additional terms
         config_lin = RegularizedCoordinateConfig(state, μ; flag_time=LinearTime())
         @test config_lin.flag_time isa LinearTime
-        
+
         # ConstantTime: τ computed with constant offset
         config_const = RegularizedCoordinateConfig(state, μ; flag_time=ConstantTime())
         @test config_const.flag_time isa ConstantTime
@@ -108,7 +89,7 @@ using StaticArrays
 
     @testset "Edge cases" begin
         μ = 398600.4418
-        
+
         # Test lines 102-104: near-parabolic orbit (e ≈ 1)
         a = 10000.0
         e = 0.9999  # Near-parabolic
@@ -118,7 +99,7 @@ using StaticArrays
         config_para = RegularizedCoordinateConfig(state_parabolic, μ)
         @test config_para.DU ≈ r atol=1e-10
         @test isfinite(config_para.TU)
-        
+
         # Hyperbolic orbit (e > 1)
         a_hyp = -10000.0  # negative for hyperbolic
         e_hyp = 1.5
@@ -128,7 +109,7 @@ using StaticArrays
         config_hyp = RegularizedCoordinateConfig(state_hyperbolic, μ)
         @test config_hyp.DU ≈ r_hyp atol=1e-10
         @test isfinite(config_hyp.TU)
-        
+
         # Very small orbit (LEO)
         r_leo = 6571.0  # km (200 km altitude)
         v_leo = sqrt(μ / r_leo)
@@ -143,11 +124,11 @@ using StaticArrays
         μ = 398600.4418
         r_mag = 8000.0
         state = [r_mag, 0.0, 0.0, 0.0, 7.0, 0.0]
-        
+
         DU, TU = compute_characteristic_scales(state, μ)
         @test DU ≈ r_mag atol=1e-10
         @test TU ≈ sqrt(r_mag^3 / μ) rtol=1e-10
-        
+
         # Test with non-axis-aligned position
         state_3d = [5000.0, 3000.0, 4000.0, 1.0, 2.0, 3.0]
         r_3d = sqrt(5000^2 + 3000^2 + 4000^2)

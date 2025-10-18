@@ -1,4 +1,6 @@
 using AstroCoords
+using LinearAlgebra
+using StaticArrays
 using Test
 
 using DifferentiationInterface
@@ -32,8 +34,29 @@ const _COORDINATE_SETS = [
 ]
 
 @testset "AstroCoords.jl" begin
+    # Core Types
+    include("test_core_types.jl")
+    include("test_regularized_config.jl")
+    include("test_transformations.jl")
+
+    # Coordinate Constructors
+    include("coordinate_sets/test_cartesian_constructors.jl")
+    include("coordinate_sets/test_delaunay.jl")
+    include("coordinate_sets/test_keplerian.jl")
+    include("coordinate_sets/test_ks_set.jl")
+    include("coordinate_sets/test_milankovich.jl")
+    include("coordinate_sets/test_modeq.jl")
+    include("coordinate_sets/test_spherical.jl")
+    include("coordinate_sets/test_ss_set.jl")
+    include("coordinate_sets/test_usm.jl")
+
+    # Utility Functions
     include("test_anomalies.jl")
     include("test_quantities.jl")
+    include("test_utils.jl")
+
+    # Coordinate Changes
+    include("test_attitude_changes.jl")
     include("test_coordinate_changes.jl")
     include("test_J2EqOE.jl")
     include("test_EDromo.jl")

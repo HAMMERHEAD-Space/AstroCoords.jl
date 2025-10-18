@@ -32,7 +32,11 @@ Keplerian(X::AbstractVector{T}) where {T} = Keplerian{T}(X[1], X[2], X[3], X[4],
 function Keplerian(a::A, e::E, i::I, Ω::O, ω::W, f::F) where {A,E,I,O,W,F}
     return Keplerian{promote_type(A, E, I, O, W, F)}(a, e, i, Ω, ω, f)
 end
-(::Type{K})(g::StaticVector) where {K<:Keplerian} = K(g[1], g[2], g[3], g[4], g[5], g[6])
+# More specific than AbstractVector to avoid ambiguity
+function Keplerian(g::StaticVector{N,T}) where {N,T}
+    Keplerian{T}(g[1], g[2], g[3], g[4], g[5], g[6])
+end
+Keplerian{T}(g::StaticVector) where {T} = Keplerian{T}(g[1], g[2], g[3], g[4], g[5], g[6])
 
 # ~~~~~~~~~~~~~~~ Conversions ~~~~~~~~~~~~~~~ #
 params(g::Keplerian{T}) where {T<:Number} = SVector{6,T}(g.a, g.e, g.i, g.Ω, g.ω, g.f)

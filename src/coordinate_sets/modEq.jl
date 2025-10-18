@@ -32,7 +32,9 @@ ModEq(X::AbstractVector{T}) where {T} = ModEq{T}(X[1], X[2], X[3], X[4], X[5], X
 function ModEq(p::P, f::F, g::G, h::H, k::K, L::LT) where {P,F,G,H,K,LT}
     return ModEq{promote_type(P, F, G, H, K, LT)}(p, f, g, h, k, L)
 end
-(::Type{M})(g::StaticVector) where {M<:ModEq} = M(g[1], g[2], g[3], g[4], g[5], g[6])
+# More specific than AbstractVector to avoid ambiguity
+ModEq(g::StaticVector{N,T}) where {N,T} = ModEq{T}(g[1], g[2], g[3], g[4], g[5], g[6])
+ModEq{T}(g::StaticVector) where {T} = ModEq{T}(g[1], g[2], g[3], g[4], g[5], g[6])
 
 # ~~~~~~~~~~~~~~~ Conversions ~~~~~~~~~~~~~~~ #
 params(g::ModEq{T}) where {T<:Number} = SVector{6,T}(g.p, g.f, g.g, g.h, g.k, g.L)
@@ -95,7 +97,9 @@ J2EqOE(X::AbstractVector{T}) where {T} = J2EqOE{T}(X[1], X[2], X[3], X[4], X[5],
 function J2EqOE(n::N, h::H, k::K, p::P, q::Q, L::LT) where {N,H,K,P,Q,LT}
     return J2EqOE{promote_type(N, H, K, P, Q, LT)}(n, h, k, p, q, L)
 end
-(::Type{J})(g::StaticVector) where {J<:J2EqOE} = J(g[1], g[2], g[3], g[4], g[5], g[6])
+# More specific than AbstractVector to avoid ambiguity
+J2EqOE(g::StaticVector{N,T}) where {N,T} = J2EqOE{T}(g[1], g[2], g[3], g[4], g[5], g[6])
+J2EqOE{T}(g::StaticVector) where {T} = J2EqOE{T}(g[1], g[2], g[3], g[4], g[5], g[6])
 
 # ~~~~~~~~~~~~~~~ Conversions ~~~~~~~~~~~~~~~ #
 params(g::J2EqOE{T}) where {T<:Number} = SVector{6,T}(g.n, g.h, g.k, g.p, g.q, g.L)

@@ -652,7 +652,11 @@ function cart2delaunay(u::AbstractVector{T}, μ::V) where {T<:Number,V<:Number}
 
     h = cross(r, v)
 
-    L = √(μ * a)
+    if e < 1.0
+        L = √(μ * a)
+    else
+        L = √(-μ * a)
+    end
     G = norm(h)
     H = h[3]
 
@@ -681,8 +685,14 @@ function delaunay2cart(u::AbstractVector{T}, μ::V) where {T<:Number,V<:Number}
 
     L, G, H, M, ω, Ω = u
 
-    a = L^2 / μ
     e = √(1.0 - (G / L)^2)
+
+    if e < 1.0
+        a = L^2 / μ
+    else
+        a = -L^2 / μ
+    end
+
     i = acos(H / G)
 
     f = meanAnomaly2TrueAnomaly(M, e)

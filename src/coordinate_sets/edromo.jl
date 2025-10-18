@@ -44,8 +44,12 @@ function EDromo(
     T = promote_type(T1, T2, T3, T4, T5, T6, T7, T8)
     return EDromo{T}(T(ζ₁), T(ζ₂), T(ζ₃), T(ζ₄), T(ζ₅), T(ζ₆), T(ζ₇), T(ζ₈))
 end
-function (::Type{E})(g::StaticVector) where {E<:EDromo}
-    E(g[1], g[2], g[3], g[4], g[5], g[6], g[7], g[8])
+# More specific than AbstractVector to avoid ambiguity
+function EDromo(g::StaticVector{N,T}) where {N,T}
+    EDromo{T}(g[1], g[2], g[3], g[4], g[5], g[6], g[7], g[8])
+end
+function EDromo{T}(g::StaticVector) where {T}
+    EDromo{T}(g[1], g[2], g[3], g[4], g[5], g[6], g[7], g[8])
 end
 
 # ~~~~~~~~~~~~~~~ Conversions ~~~~~~~~~~~~~~~ #
