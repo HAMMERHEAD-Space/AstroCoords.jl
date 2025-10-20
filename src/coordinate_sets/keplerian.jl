@@ -5,30 +5,21 @@ export Keplerian
 Keplerian Orbital Elements. 6D parameterziation of the orbit.
 
 # Fields
-- `a` - semi-major axis
-- `e` - eccentricity
-- `i` - inclination
-- `Ω` - Right Ascension of Ascending Node
-- `ω` - Argument of Perigee
-- `f` - True Anomaly
+a - semi-major axis
+e - eccentricity
+i - inclination
+Ω - Right Ascension of Ascending Node
+ω - Argument of Perigee
+f - True Anomaly
 
 # Exotic Properties
-- `M` - Mean Anomaly (computed from true anomaly and eccentricity)
-- `E` - Eccentric Anomaly (computed from true anomaly and eccentricity)
+M - Mean Anomaly (computed from true anomaly and eccentricity)
+E - Eccentric Anomaly (computed from true anomaly and eccentricity)
 
 # Constructors
 - `Keplerian(a, e, i, Ω, ω, f)`
 - `Keplerian(X::AbstractArray)`
 - `Keplerian(X::AstroCoord, μ::Number)`
-
-# Examples
-```julia
-kep = Keplerian(7000e3, 0.1, 0.0, 0.0, 0.0, π/4)
-kep.a  # 7000000.0 (semi-major axis)
-kep.f  # 0.7854 (true anomaly)
-kep.M  # 0.6513 (mean anomaly - computed property)
-kep.E  # 0.7170 (eccentric anomaly - computed property)
-```
 """
 struct Keplerian{T} <: AstroCoord{6,T}
     a::T

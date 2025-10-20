@@ -5,27 +5,17 @@ export ModEq
 Modified Equinoctial Orbital Elements. 6D parameterziation of the orbit.
 
 # Fields
-- `p` - semi-parameter
-- `f` - eccentricity projection onto longitude of perigee
-- `g` - eccentricity projection onto ⟂ longitude of perigee
-- `h` - projection of half inclination onto RAAN
-- `k` - projection of half inclination onto ⟂ RAAN
-- `L` - true longitude
+p - semi-parameter
+f - eccentricity projection onto longitude of perigee
+g - eccentricity projection onto ⟂ longitude of perigee
+h - projection of half inclination onto RAAN
+k - projection of half inclination onto ⟂ RAAN
+L - true longitude
 
 # Constructors
 - `ModEq(p, f, g, h, k, L)`
 - `ModEq(X::AbstractArray)`
 - `ModEq(X::AstroCoord, μ::Number)`
-
-# Examples
-```julia
-# Create ModEq coordinates
-p = 6.93e6  # Semi-parameter
-f = 0.1     # Eccentricity projection
-modeq = ModEq(p, f, 0.0, 0.0, 0.0, π/3)
-modeq.p  # 6.93e6 (semi-parameter)
-modeq.f  # 0.1 (f component)
-```
 
 # See Also
 - [`ModEqN`](@ref): Modified Equinoctial coordinates with mean motion instead of semi-parameter
@@ -84,30 +74,17 @@ export ModEqN
 Modified Equinoctial Orbital Elements with Mean Motion. 6D parameterziation of the orbit.
 
 # Fields
-- `η` - mean motion (rad/s)
-- `f` - eccentricity projection onto longitude of perigee
-- `g` - eccentricity projection onto ⟂ longitude of perigee
-- `h` - projection of half inclination onto RAAN
-- `k` - projection of half inclination onto ⟂ RAAN
-- `L` - true longitude
+η - mean motion (rad/s)
+f - eccentricity projection onto longitude of perigee
+g - eccentricity projection onto ⟂ longitude of perigee
+h - projection of half inclination onto RAAN
+k - projection of half inclination onto ⟂ RAAN
+L - true longitude
 
 # Constructors
 - `ModEqN(η, f, g, h, k, L)`
 - `ModEqN(X::AbstractArray)`
 - `ModEqN(X::AstroCoord, μ::Number)`
-
-# Examples
-```julia
-# Create ModEqN coordinates with mean motion
-μ = 3.986004418e14  # Earth's gravitational parameter
-a = 7000e3          # Semi-major axis
-η = √(μ / a^3)      # Mean motion
-f = 0.1             # Eccentricity projection
-
-modeqn = ModEqN(η, f, 0.0, 0.0, 0.0, π/3)
-modeqn.η  # 0.001078 (mean motion)
-modeqn.f  # 0.1 (f component)
-```
 
 # See Also
 - [`ModEq`](@ref): Modified Equinoctial coordinates with semi-parameter instead of mean motion
