@@ -21,6 +21,15 @@ The Keplerian state vector consists of six elements, divided into size & shape, 
 * **Position within the Orbit**
     * True anomaly (f): The angle between the satellite's current position and the periapsis, measured from the central body at a specific moment in time.
 
+## Exotic Properties
+
+In addition to the six standard Keplerian elements stored as fields, the `Keplerian` coordinate type provides computed properties for additional anomaly types:
+
+* **Mean Anomaly (M)**: Computed property that represents the angle the satellite would have traveled if moving in a circular orbit with the same period. Automatically calculated from the true anomaly and eccentricity.
+* **Eccentric Anomaly (E)**: Computed property representing an auxiliary angle used in orbital mechanics calculations. Also automatically calculated from the true anomaly and eccentricity.
+
+These exotic properties are accessible as regular properties (e.g., `kep.M`, `kep.E`) but are computed on-demand rather than stored, ensuring consistency with the primary orbital elements while providing convenient access to commonly needed derived quantities.
+
 ## References
 [1]: https://en.wikipedia.org/wiki/Orbital_elements
 [2]: https://downloads.rene-schwarz.com/download/M002-Cartesian_State_Vectors_to_Keplerian_Orbit_Elements.pdf

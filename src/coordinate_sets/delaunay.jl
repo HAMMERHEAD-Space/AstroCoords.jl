@@ -3,18 +3,40 @@ export Delaunay
     Delaunay{T} <: AstroCoord
 
 Delaunay Orbital Elements. 6D parameterziation of the orbit.
-L - Canonical Keplerian Energy
-G - Canonical Total Angular Momentum
-H - Canonical Normal Angular Momentum (Relative to Equator)
-M - Mean Anomaly
-ω - Argument of Periapsis
-Ω - Right Ascention of the Ascending Node
 
-Constructors
-Delaunay(L, G, H, M, ω, Ω)
-Delaunay(X::AbstractVector{<:Number})
-Delaunay(X::AstroCoord, μ::Number)
+# Fields
+- `L` - Canonical Keplerian Energy
+- `G` - Canonical Total Angular Momentum
+- `H` - Canonical Normal Angular Momentum (Relative to Equator)
+- `M` - Mean Anomaly
+- `ω` - Argument of Periapsis
+- `Ω` - Right Ascension of the Ascending Node
 
+# Exotic Properties
+- `E` - Eccentric Anomaly (computed from mean anomaly and eccentricity extracted from L and G)
+- `f` - True Anomaly (computed from mean anomaly and eccentricity extracted from L and G)
+
+# Constructors
+- `Delaunay(L, G, H, M, ω, Ω)`
+- `Delaunay(X::AbstractVector{<:Number})`
+- `Delaunay(X::AstroCoord, μ::Number)`
+
+# Examples
+```julia
+# Create Delaunay coordinates
+μ = 3.986004418e14  # Earth's gravitational parameter
+a = 7000e3          # Semi-major axis
+e = 0.1             # Eccentricity
+L = √(μ * a)
+G = √(μ * a * (1 - e^2))
+H = G * cos(0.0)    # Inclination = 0
+M = π/6             # Mean anomaly
+
+del = Delaunay(L, G, H, M, 0.0, 0.0)
+del.M  # 0.5236 (mean anomaly - field)
+del.E  # 0.5783 (eccentric anomaly - computed property)
+del.f  # 0.6354 (true anomaly - computed property)
+```
 """
 struct Delaunay{T} <: AstroCoord{6,T}
     L::T
@@ -61,4 +83,27 @@ function Base.getindex(p::Delaunay{T}, i::Int) where {T<:Number}
     else
         throw(BoundsError(p, i))
     end
+end
+
+# ~~~~~~~~~~~~~~~ Property Interface for Exotic Coordinates ~~~~~~~~~~~~~~~ #
+function Base.getproperty(del::Delaunay, sym::Symbol)
+    if sym === :E
+        # Eccentric anomaly - computed from mean anomaly and eccentricity
+        # Need to extract eccentricity from G and L: e = √(1 - (G/L)²)
+        e_squared = 1 - (del.G / del.L)^2
+        e = √(max(0, e_squared))  # Ensure non-negative under sqrt
+        return meanAnomaly2EccentricAnomaly(del.M, e)
+    elseif sym === :f
+        # True anomaly - computed from mean anomaly and eccentricity
+        e_squared = 1 - (del.G / del.L)^2
+        e = √(max(0, e_squared))
+        return meanAnomaly2TrueAnomaly(del.M, e)
+    else
+        # Default behavior for regular fields
+        return getfield(del, sym)
+    end
+end
+
+function Base.propertynames(::Delaunay)
+    return (:L, :G, :H, :M, :ω, :Ω, :E, :f)
 end
