@@ -51,7 +51,7 @@ If you use `AstroCoords.jl` in your work, please consider citing it.
 ```bibtex
 @software{jordan_murphy_2025_16954330,
   author       = {Jordan Murphy},
-  title        = {HAMMERHEAD-Space/AstroCoords.jl: v0.3.1},
+  title        = {HAMMERHEAD-Space/AstroCoords.jl},
   month        = aug,
   year         = 2025,
   publisher    = {Zenodo},
