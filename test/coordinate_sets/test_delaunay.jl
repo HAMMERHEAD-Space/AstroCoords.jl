@@ -74,4 +74,84 @@
         @test_throws BoundsError d[0]
         @test_throws BoundsError d[7]
     end
+
+    @testset "Exotic coordinate properties" begin
+        @testset "Basic property access" begin
+            # Create realistic Delaunay coordinates
+            μ = 3.986004418e14  # Earth's gravitational parameter m³/s²
+            a = 7000e3          # Semi-major axis in meters
+            e = 0.2             # Eccentricity
+            i = 0.1             # Inclination
+            L = √(μ * a)
+            G = √(μ * a * (1 - e^2))
+            H = G * cos(i)
+            M = π/4             # Mean anomaly
+            ω = 0.2             # Argument of periapsis
+            Ω = 0.3             # RAAN
+
+            del = Delaunay(L, G, H, M, ω, Ω)
+
+            # Test that regular fields still work
+            @test del.L ≈ L
+            @test del.G ≈ G
+            @test del.M ≈ M
+
+            # Test that exotic properties are not fields but are accessible
+            @test hasfield(typeof(del), :E) == false
+            @test hasfield(typeof(del), :f) == false
+            @test hasmethod(getproperty, (typeof(del), Symbol))
+
+            # Test property values are computed correctly
+            e_computed = √(1 - (G/L)^2)
+            E_expected = meanAnomaly2EccentricAnomaly(M, e_computed)
+            f_expected = meanAnomaly2TrueAnomaly(M, e_computed)
+            @test del.E ≈ E_expected
+            @test del.f ≈ f_expected
+
+            # Verify eccentricity extraction is correct
+            @test e_computed ≈ e atol=1e-14
+        end
+
+        @testset "Property names" begin
+            del = Delaunay(1.0, 0.9, 0.8, π/6, 0.0, 0.0)
+            props = propertynames(del)
+
+            # Test that all expected properties are included
+            @test :L in props
+            @test :G in props
+            @test :H in props
+            @test :M in props
+            @test :ω in props
+            @test :Ω in props
+            @test :E in props  # Eccentric anomaly
+            @test :f in props  # True anomaly
+
+            # Test exact property list
+            @test props == (:L, :G, :H, :M, :ω, :Ω, :E, :f)
+        end
+
+        @testset "Round-trip consistency" begin
+            # Create Delaunay coordinates
+            L = 2.0
+            G = 1.8
+            H = 1.6
+            M = π/3
+            del = Delaunay(L, G, H, M, 0.1, 0.2)
+
+            # Test that we can round-trip through the anomalies
+            e_computed = √(1 - (G/L)^2)
+            E = del.E
+            f = del.f
+
+            # Round-trip E -> f -> E
+            f_from_E = eccentricAnomaly2TrueAnomaly(E, e_computed)
+            E_from_f = trueAnomaly2EccentricAnomaly(f_from_E, e_computed)
+            @test E ≈ E_from_f atol=1e-12
+
+            # Round-trip M -> f -> M
+            f_from_M = meanAnomaly2TrueAnomaly(M, e_computed)
+            M_from_f = trueAnomaly2MeanAnomaly(f_from_M, e_computed)
+            @test M ≈ M_from_f atol=1e-12
+        end
+    end
 end

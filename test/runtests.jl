@@ -22,6 +22,7 @@ const _COORDINATE_SETS = [
     Keplerian,
     Milankovich,
     ModEq,
+    ModEqN,
     Cylindrical,
     Spherical,
     USM7,

@@ -3,18 +3,22 @@ export ModEq
     ModEq{T} <: AstroCoord
 
 Modified Equinoctial Orbital Elements. 6D parameterziation of the orbit.
+
+# Fields
 p - semi-parameter
-f - eccetricity projection onto longitude of perigee
-g - eccetricity projection onto ⟂ longitude of perigee
+f - eccentricity projection onto longitude of perigee
+g - eccentricity projection onto ⟂ longitude of perigee
 h - projection of half inclination onto RAAN
 k - projection of half inclination onto ⟂ RAAN
 L - true longitude
 
-Constructors
-ModEq(p, f, g, h, k, l)
-ModEq(X::AbstractArray)
-ModEq(X::AstroCoord, μ::Number)
+# Constructors
+- `ModEq(p, f, g, h, k, L)`
+- `ModEq(X::AbstractArray)`
+- `ModEq(X::AstroCoord, μ::Number)`
 
+# See Also
+- [`ModEqN`](@ref): Modified Equinoctial coordinates with mean motion instead of semi-parameter
 """
 struct ModEq{T} <: AstroCoord{6,T}
     p::T
@@ -48,6 +52,75 @@ end
 function Base.getindex(p::ModEq{T}, i::Int) where {T<:Number}
     if i == 1
         return p.p
+    elseif i == 2
+        return p.f
+    elseif i == 3
+        return p.g
+    elseif i == 4
+        return p.h
+    elseif i == 5
+        return p.k
+    elseif i == 6
+        return p.L
+    else
+        throw(BoundsError(p, i))
+    end
+end
+
+export ModEqN
+"""
+    ModEqN{T} <: AstroCoord
+
+Modified Equinoctial Orbital Elements with Mean Motion. 6D parameterziation of the orbit.
+
+# Fields
+η - mean motion (rad/s)
+f - eccentricity projection onto longitude of perigee
+g - eccentricity projection onto ⟂ longitude of perigee
+h - projection of half inclination onto RAAN
+k - projection of half inclination onto ⟂ RAAN
+L - true longitude
+
+# Constructors
+- `ModEqN(η, f, g, h, k, L)`
+- `ModEqN(X::AbstractArray)`
+- `ModEqN(X::AstroCoord, μ::Number)`
+
+# See Also
+- [`ModEq`](@ref): Modified Equinoctial coordinates with semi-parameter instead of mean motion
+"""
+struct ModEqN{T} <: AstroCoord{6,T}
+    η::T
+    f::T
+    g::T
+    h::T
+    k::T
+    L::T
+    @inline ModEqN{T}(η, f, g, h, k, L) where {T} = new{T}(η, f, g, h, k, L)
+    @inline ModEqN{T}(X::ModEqN{T}) where {T} = new{T}(X.η, X.f, X.g, X.h, X.k, X.L)
+end
+
+# ~~~~~~~~~~~~~~~ Constructors ~~~~~~~~~~~~~~~ #
+ModEqN(X::AbstractVector{T}) where {T} = ModEqN{T}(X[1], X[2], X[3], X[4], X[5], X[6])
+function ModEqN(η::ETA, f::F, g::G, h::H, k::K, L::LT) where {ETA,F,G,H,K,LT}
+    return ModEqN{promote_type(ETA, F, G, H, K, LT)}(η, f, g, h, k, L)
+end
+# More specific than AbstractVector to avoid ambiguity
+ModEqN(g::StaticVector{N,T}) where {N,T} = ModEqN{T}(g[1], g[2], g[3], g[4], g[5], g[6])
+ModEqN{T}(g::StaticVector) where {T} = ModEqN{T}(g[1], g[2], g[3], g[4], g[5], g[6])
+
+# ~~~~~~~~~~~~~~~ Conversions ~~~~~~~~~~~~~~~ #
+params(g::ModEqN{T}) where {T<:Number} = SVector{6,T}(g.η, g.f, g.g, g.h, g.k, g.L)
+
+# ~~~~~~~~~~~~~~~ Initializers ~~~~~~~~~~~~~~~ #
+function Base.one(::Type{M}; T::DataType=Float64) where {M<:ModEqN}
+    return M{T}(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+end
+
+# ~~~~~~~~~~~~~~~ StaticArrays Interface ~~~~~~~~~~~~~~~ #
+function Base.getindex(p::ModEqN{T}, i::Int) where {T<:Number}
+    if i == 1
+        return p.η
     elseif i == 2
         return p.f
     elseif i == 3

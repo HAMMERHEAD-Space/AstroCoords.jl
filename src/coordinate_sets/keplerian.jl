@@ -3,18 +3,23 @@ export Keplerian
     Keplerian{T} <: AstroCoord
 
 Keplerian Orbital Elements. 6D parameterziation of the orbit.
+
+# Fields
 a - semi-major axis
-e - eccetricity 
-i - inclination 
-Ω - Right Ascension of Ascending Node 
+e - eccentricity
+i - inclination
+Ω - Right Ascension of Ascending Node
 ω - Argument of Perigee
 f - True Anomaly
 
-Constructors
-Keplerian(a, e, i, Ω, ω, f)
-Keplerian(X::AbstractArray)
-Keplerian(X::AstroCoord, μ::Number)
+# Exotic Properties
+M - Mean Anomaly (computed from true anomaly and eccentricity)
+E - Eccentric Anomaly (computed from true anomaly and eccentricity)
 
+# Constructors
+- `Keplerian(a, e, i, Ω, ω, f)`
+- `Keplerian(X::AbstractArray)`
+- `Keplerian(X::AstroCoord, μ::Number)`
 """
 struct Keplerian{T} <: AstroCoord{6,T}
     a::T
@@ -65,4 +70,20 @@ function Base.getindex(p::Keplerian{T}, i::Int) where {T<:Number}
     end
 end
 
-#TODO: Return other anomalies
+# ~~~~~~~~~~~~~~~ Property Interface for Exotic Coordinates ~~~~~~~~~~~~~~~ #
+function Base.getproperty(kep::Keplerian, sym::Symbol)
+    if sym === :M
+        # Mean anomaly - computed from true anomaly and eccentricity
+        return trueAnomaly2MeanAnomaly(kep.f, kep.e)
+    elseif sym === :E
+        # Eccentric anomaly - computed from true anomaly and eccentricity
+        return trueAnomaly2EccentricAnomaly(kep.f, kep.e)
+    else
+        # Default behavior for regular fields
+        return getfield(kep, sym)
+    end
+end
+
+function Base.propertynames(::Keplerian)
+    return (:a, :e, :i, :Ω, :ω, :f, :M, :E)
+end

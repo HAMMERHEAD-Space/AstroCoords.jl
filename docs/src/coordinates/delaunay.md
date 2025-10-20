@@ -18,6 +18,15 @@ The Delaunay variables are called action-angle coordinates as the Hamiltonian on
     * Argument of periapsis (ω): The angle between the ascending node and the point of closest approach to the central body (periapsis). It defines the orientation of the orbit within the plane.
     * Longitude of the ascending node (Ω): The angle from a fixed reference direction (typically the vernal equinox) to the point where the satellite crosses the equatorial plane from south to north (ascending node).
 
+## Additional Properties
+
+In addition to the six standard Delaunay elements stored as fields, the `Delaunay` coordinate type provides computed properties for additional anomaly types:
+
+* **Eccentric Anomaly (E)**: Computed property representing an auxiliary angle used in orbital mechanics calculations. Automatically calculated from the mean anomaly and eccentricity (derived from the L and G action variables).
+* **True Anomaly (f)**: Computed property that represents the actual angular position of the satellite relative to periapsis. Also calculated from the mean anomaly and derived eccentricity.
+
+These additional properties are accessible as regular properties (e.g., `del.E`, `del.f`) but are computed on-demand rather than stored. The eccentricity required for these calculations is automatically extracted from the relationship e = √(1 - (G/L)²), ensuring consistency with the canonical action variables while providing convenient access to commonly needed derived quantities.
+
 ## References
 [1]: Laskar, Jacques. "Andoyer construction for Hill and Delaunay variables." Celestial Mechanics and Dynamical Astronomy 128.4 (2017): 475-482.
 [2]: https://www.researchgate.net/publication/2143998_The_Averaged_Dynamics_of_the_Hydrogen_Atom_in_Crossed_Electric_and_Magnetic_Fields_as_a_Perturbed_Kepler_Problem
