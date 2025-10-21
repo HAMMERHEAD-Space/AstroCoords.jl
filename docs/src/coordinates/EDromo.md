@@ -1,6 +1,6 @@
 # EDromo
 
-The EDromo state vector is a non-singular set of 8 orbital elements designed for accurate trajectory propagation, especially in the presence of perturbations. It combines aspects of equinoctial and quaternion elements to avoid singularities associated with near-circular or near-equatorial orbits. It's benefits come from the regularization techniques to make the propagation of the set exceptionally numerically stable.
+The EDromo state vector is a non-singular set of 8 orbital elements designed for accurate trajectory propagation, especially in the presence of perturbations. It combines aspects of equinoctial and quaternion elements to avoid singularities associated with near-circular or near-equatorial orbits. The formulation is valid for all orbit types (elliptic, parabolic, and hyperbolic) and uses regularization techniques that make propagation exceptionally numerically stable.
 
 ## Components
 
@@ -9,7 +9,10 @@ The EDromo state vector `[ζ₁, ζ₂, ζ₃, ζ₄, ζ₅, ζ₆, ζ₇, ζ₈
 *   **In-Plane Elements**
     *   `ζ₁`: In-plane element related to eccentricity and argument of periapsis.
     *   `ζ₂`: In-plane element related to eccentricity and argument of periapsis.
-    *   `ζ₃`: Corresponds to orbital energy.
+    *   `ζ₃`: Related to the orbital energy. Its sign defines the type of orbit:
+        *   `ζ₃ > 0` for elliptic orbits (negative energy).
+        *   `ζ₃ = 0` for parabolic orbits (zero energy).
+        *   `ζ₃ < 0` for hyperbolic orbits (positive energy).
 
 *   **Quaternion Elements (Orientation)**
     *   `ζ₄`: Quaternion element 1.
