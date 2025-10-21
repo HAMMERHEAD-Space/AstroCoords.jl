@@ -46,7 +46,7 @@ unc = CovarianceUncertainty(Σ_pos)
 """
 struct CovarianceUncertainty{T<:Real} <: AbstractUncertainty
     cov::Matrix{T}
-    
+
     function CovarianceUncertainty{T}(cov::Matrix{T}) where {T<:Real}
         if !issymmetric(cov)
             throw(ArgumentError("Covariance matrix must be symmetric"))
@@ -98,4 +98,10 @@ struct UncertainCoord{C<:AstroCoord,U<:AbstractUncertainty}
 end
 
 # Accessor for coordinate
-Base.getproperty(uc::UncertainCoord, sym::Symbol) = sym === :coord || sym === :uncertainty ? getfield(uc, sym) : getproperty(getfield(uc, :coord), sym)
+function Base.getproperty(uc::UncertainCoord, sym::Symbol)
+    if sym === :coord || sym === :uncertainty
+        getfield(uc, sym)
+    else
+        getproperty(getfield(uc, :coord), sym)
+    end
+end

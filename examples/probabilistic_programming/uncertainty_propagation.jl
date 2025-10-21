@@ -59,25 +59,25 @@ unc_cart = propagate_linear(unc_kep, transform, μ)
 function propagate_linear(uc::UncertainCoord, transform_func, μ; atol=1e-10)
     coord_in = uc.coord
     cov_in = uc.uncertainty.cov
-    
+
     # Compute Jacobian using ForwardDiff
     x_in = params(coord_in)
-    
+
     # Wrapper for ForwardDiff (needs to work with arrays)
     f_vec(x) = params(transform_func(typeof(coord_in)(x), μ))
-    
+
     # Compute Jacobian
     J = ForwardDiff.jacobian(f_vec, x_in)
-    
+
     # Propagate covariance: Σ_out = J * Σ_in * J^T
     cov_out = J * cov_in * J'
-    
+
     # Ensure symmetry (numerical errors can break this)
     cov_out = 0.5 * (cov_out + cov_out')
-    
+
     # Transform nominal coordinate
     coord_out = transform_func(coord_in, μ)
-    
+
     return UncertainCoord(coord_out, CovarianceUncertainty(cov_out))
 end
 
@@ -122,41 +122,41 @@ nonlinear systems." *Signal Processing, Sensor Fusion, and Target Recognition VI
 function generate_sigma_points(mean::AbstractVector, cov::Matrix; α=1e-3, β=2.0, κ=0.0)
     n = length(mean)
     λ = α^2 * (n + κ) - n
-    
+
     # Compute matrix square root: √((n+λ)Σ)
     # Use Cholesky decomposition for numerical stability
     sqrt_factor = √(n + λ)
     L = cholesky(Hermitian(cov)).L
     sqrt_cov = sqrt_factor * L
-    
+
     # Initialize sigma points
     sigma_points = zeros(n, 2n + 1)
-    
+
     # First point is the mean
     sigma_points[:, 1] = mean
-    
+
     # Next n points: mean + columns of sqrt_cov
     for i in 1:n
-        sigma_points[:, i+1] = mean + sqrt_cov[:, i]
+        sigma_points[:, i + 1] = mean + sqrt_cov[:, i]
     end
-    
+
     # Last n points: mean - columns of sqrt_cov
     for i in 1:n
-        sigma_points[:, n+i+1] = mean - sqrt_cov[:, i]
+        sigma_points[:, n + i + 1] = mean - sqrt_cov[:, i]
     end
-    
+
     # Compute weights
     weights_mean = zeros(2n + 1)
     weights_cov = zeros(2n + 1)
-    
+
     weights_mean[1] = λ / (n + λ)
     weights_cov[1] = λ / (n + λ) + (1 - α^2 + β)
-    
-    for i in 2:(2n+1)
+
+    for i in 2:(2n + 1)
         weights_mean[i] = 1 / (2 * (n + λ))
         weights_cov[i] = 1 / (2 * (n + λ))
     end
-    
+
     return sigma_points, weights_mean, weights_cov
 end
 
@@ -178,25 +178,27 @@ Reconstruct mean and covariance from transformed sigma points.
 - [`generate_sigma_points`](@ref)
 - [`propagate_unscented`](@ref)
 """
-function reconstruct_statistics(transformed_points::Matrix, weights_mean::Vector, weights_cov::Vector)
+function reconstruct_statistics(
+    transformed_points::Matrix, weights_mean::Vector, weights_cov::Vector
+)
     n, num_points = size(transformed_points)
-    
+
     # Compute weighted mean
     mean = zeros(n)
     for i in 1:num_points
         mean += weights_mean[i] * transformed_points[:, i]
     end
-    
+
     # Compute weighted covariance
     cov = zeros(n, n)
     for i in 1:num_points
         diff = transformed_points[:, i] - mean
         cov += weights_cov[i] * (diff * diff')
     end
-    
+
     # Ensure symmetry
     cov = 0.5 * (cov + cov')
-    
+
     return mean, cov
 end
 
@@ -237,34 +239,38 @@ unc_cart = propagate_unscented(unc_kep, transform, μ)
 function propagate_unscented(uc::UncertainCoord, transform_func, μ; α=1e-3, β=2.0, κ=0.0)
     coord_in = uc.coord
     cov_in = uc.uncertainty.cov
-    
+
     # Generate sigma points
     x_in = Vector(params(coord_in))
-    sigma_points, weights_mean, weights_cov = generate_sigma_points(x_in, cov_in; α=α, β=β, κ=κ)
-    
+    sigma_points, weights_mean, weights_cov = generate_sigma_points(
+        x_in, cov_in; α=α, β=β, κ=κ
+    )
+
     # Propagate sigma points through transformation
     n = length(x_in)
     num_points = 2n + 1
-    
+
     # Transform first point to get output dimension
     test_out = transform_func(typeof(coord_in)(sigma_points[:, 1]), μ)
     m = length(params(test_out))
-    
+
     transformed_points = zeros(m, num_points)
-    
+
     for i in 1:num_points
         coord_i = typeof(coord_in)(sigma_points[:, i])
         transformed_i = transform_func(coord_i, μ)
         transformed_points[:, i] = params(transformed_i)
     end
-    
+
     # Reconstruct statistics
-    mean_out, cov_out = reconstruct_statistics(transformed_points, weights_mean, weights_cov)
-    
+    mean_out, cov_out = reconstruct_statistics(
+        transformed_points, weights_mean, weights_cov
+    )
+
     # Create output coordinate from mean
     CoordType = typeof(test_out)
     coord_out = CoordType(mean_out)
-    
+
     return UncertainCoord(coord_out, CovarianceUncertainty(cov_out))
 end
 
@@ -301,37 +307,39 @@ transform = (k, μ) -> Cartesian(k, μ)
 unc_cart, samples = propagate_monte_carlo(unc_kep, transform, μ; n_samples=10000)
 ```
 """
-function propagate_monte_carlo(uc::UncertainCoord, transform_func, μ; n_samples=10000, rng=Random.GLOBAL_RNG)
+function propagate_monte_carlo(
+    uc::UncertainCoord, transform_func, μ; n_samples=10000, rng=Random.GLOBAL_RNG
+)
     coord_in = uc.coord
     cov_in = uc.uncertainty.cov
-    
+
     # Create multivariate normal distribution
     x_in = Vector(params(coord_in))
     dist = MvNormal(x_in, Hermitian(cov_in))
-    
+
     # Sample from input distribution
     samples_in = rand(rng, dist, n_samples)
-    
+
     # Transform first sample to get output dimension
     test_out = transform_func(typeof(coord_in)(samples_in[:, 1]), μ)
     m = length(params(test_out))
-    
+
     # Transform all samples
     samples_out = zeros(m, n_samples)
-    
+
     for i in 1:n_samples
         coord_i = typeof(coord_in)(samples_in[:, i])
         transformed_i = transform_func(coord_i, μ)
         samples_out[:, i] = params(transformed_i)
     end
-    
+
     # Estimate statistics from samples
-    mean_out = vec(mean(samples_out, dims=2))
-    cov_out = cov(samples_out, dims=2)
-    
+    mean_out = vec(mean(samples_out; dims=2))
+    cov_out = cov(samples_out; dims=2)
+
     # Create output coordinate
     CoordType = typeof(test_out)
     coord_out = CoordType(mean_out)
-    
+
     return UncertainCoord(coord_out, CovarianceUncertainty(cov_out)), samples_out
 end
