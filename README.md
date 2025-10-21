@@ -16,7 +16,6 @@ Currently this package implements:
 - [x] Cartesian
 - [x] Keplerian
 - [x] Delaunay
-    - [ ] Modified Delaunay 
 - [x] Modified Equinoctial
 - [x] Spherical
 - [x] Cylindrical
