@@ -7,7 +7,6 @@ Currently this package implements:
 - [x] Cartesian
 - [x] Keplerian
 - [x] Delaunay
-    - [ ] Modified Delaunay 
 - [x] Modified Equinoctial
 - [x] Spherical
 - [x] Cylindrical
@@ -31,17 +30,21 @@ julia> using Pkg
 julia> Pkg.add("AstroCoords")
 ```
 
+## Documentation
+
+For more information, see the [documentation][docs-dev-url].
+
 ## Citing
 
 If you use `AstroCoords.jl` in your work, please consider citing it.
 
 ```bibtex
-@misc{AstroCoords.jl,
-    author = {Murphy, Jordan},
-    title = {AstroCoords.jl},
-    year = {2024},
-    publisher = {GitHub},
-    journal = {GitHub repository},
-    howpublished = {\\url{https://github.com/HAMMERHEAD-Space/AstroCoords.jl}}
+@software{jordan_murphy_2025_16954330,
+  author       = {Jordan Murphy},
+  title        = {HAMMERHEAD-Space/AstroCoords.jl},
+  publisher    = {Zenodo},
+  doi          = {10.5281/zenodo.16954330},
+  url          = {https://doi.org/10.5281/zenodo.16954330},
 }
+```
 ```
