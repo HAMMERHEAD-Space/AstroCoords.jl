@@ -96,7 +96,11 @@ function cart2StiefelScheifele(
     #* 2. Compute Components
     ##################################################
     totEn0 = 0.5 * dot(xdot, xdot) - Ksq / Rmag + pot0
-    ω = √(-totEn0 / 2)
+    if totEn0 < 0
+        ω = √(-totEn0 / 2)
+    else
+        ω = √(totEn0 / 2)
+    end
 
     if x[1] >= 0
         u₁ = 0.0
