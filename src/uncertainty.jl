@@ -97,10 +97,5 @@ struct UncertainCoord{C<:AstroCoord,U<:AbstractUncertainty}
     uncertainty::U
 end
 
-# Basic constructor
-function UncertainCoord(coord::C, unc::U) where {C<:AstroCoord,U<:AbstractUncertainty}
-    return UncertainCoord{C,U}(coord, unc)
-end
-
 # Accessor for coordinate
 Base.getproperty(uc::UncertainCoord, sym::Symbol) = sym === :coord || sym === :uncertainty ? getfield(uc, sym) : getproperty(getfield(uc, :coord), sym)
