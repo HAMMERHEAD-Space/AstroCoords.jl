@@ -72,14 +72,23 @@ end
 function Base.getproperty(del::Delaunay, sym::Symbol)
     if sym === :E
         # Eccentric anomaly - computed from mean anomaly and eccentricity
-        # Need to extract eccentricity from G and L: e = √(1 - (G/L)²)
-        e_squared = 1 - (del.G / del.L)^2
-        e = √(max(0, e_squared))  # Ensure non-negative under sqrt
+        # For elliptic orbits (G/L < 1): e = √(1 - (G/L)²)
+        # For hyperbolic orbits (G/L > 1): e = √(1 + (G/L)²)
+        G_over_L_sq = (del.G / del.L)^2
+        if G_over_L_sq < 1.0
+            e = √(1.0 - G_over_L_sq)
+        else
+            e = √(1.0 + G_over_L_sq)
+        end
         return meanAnomaly2EccentricAnomaly(del.M, e)
     elseif sym === :f
         # True anomaly - computed from mean anomaly and eccentricity
-        e_squared = 1 - (del.G / del.L)^2
-        e = √(max(0, e_squared))
+        G_over_L_sq = (del.G / del.L)^2
+        if G_over_L_sq < 1.0
+            e = √(1.0 - G_over_L_sq)
+        else
+            e = √(1.0 + G_over_L_sq)
+        end
         return meanAnomaly2TrueAnomaly(del.M, e)
     else
         # Default behavior for regular fields

@@ -101,5 +101,11 @@ function compute_initial_phi(
 
     E = 0.5 * dot(v, v) - Μ / norm(r) - W_non_dim
 
-    return atan(dot(r, v)*√(-2.0*E), 1.0 + 2.0*E*norm(r))
+    if E < 0
+        ϕ₀ = atan(dot(r, v)*√(-2.0*E), 1.0 + 2.0*E*norm(r))
+    else
+        ϕ₀ = atan(dot(r, v)*√(2.0*E), 1.0 + 2.0*E*norm(r))
+    end
+
+    return ϕ₀
 end

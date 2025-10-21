@@ -20,7 +20,7 @@ Computes the Keplerian orbital elements from a cartesian set.
 -`u_koe::SVector{6, <:Number}``: Keplerian orbital element vector [a; e; i; Ω(RAAN); ω(AOP); f(True Anomaly)].
 """
 function cart2koe(
-    u::AbstractVector{T}, μ::V; equatorial_tol::Float64=1E-15, circular_tol::Float64=1E-15
+    u::AbstractVector{T}, μ::V; equatorial_tol::Float64=1E-14, circular_tol::Float64=1E-14
 ) where {T<:Number,V<:Number}
     RT = promote_type(T, V)
 
@@ -52,7 +52,10 @@ function cart2koe(
         if abs(emag) < circular_tol
             Ω = 0.0
             ω = 0.0
-            f = rem2pi(atan(y, x), RoundDown)
+            f_raw = rem2pi(atan(y, x), RoundDown)
+            # For circular equatorial, true longitude is well-defined but can wrap
+            # If very close to 0 or 2π due to numerical errors, set to 0
+            f = (abs(f_raw) < circular_tol || abs(f_raw - 2π) < circular_tol) ? 0.0 : f_raw
         else
             Ω = 0.0
             ω = rem2pi(atan(e[2], e[1]), RoundDown)
@@ -126,6 +129,10 @@ function koe2cart(u::AbstractVector{T}, μ::V) where {T<:Number,V<:Number}
     y = rmag * (sΩ * cθ + cΩ * sθ * ci)
     z = rmag * (sθ * si)
 
+    # Semi-latus rectum p = a(1-e²) is always positive for all orbit types
+    # For elliptic: a > 0, e < 1, so a(1-e²) > 0
+    # For hyperbolic: a < 0, e > 1, so a(1-e²) > 0 (both factors negative)
+    # Angular momentum magnitude: h = √(μ*p)
     h = √(μ * a * (1.0 - e^2))
 
     ẋ = -μ / h * (cΩ * (sθ + e * sω) + sΩ * (cθ + e * cω) * ci)
@@ -156,7 +163,8 @@ function koe2USM7(u::AbstractVector{T}, μ::V) where {T<:Number,V<:Number}
     RT = promote_type(T, V)
     a, e, i, Ω, ω, f = u
 
-    ##TODO: NEED TO ADD PARABOLIC CASE
+    # Semi-latus rectum p = a(1-e²) is always positive for all orbit types
+    # C = √(μ/p) where p is the semi-latus rectum
     C = √(μ / (a * (1.0 - e^2)))
 
     R = e * C
@@ -207,7 +215,8 @@ function USM72koe(u::AbstractVector{T}, μ::V) where {T<:Number,V<:Number}
     a = μ / (2 * C * ve2 - (ve1^2 + ve2^2))
     i = acos(1.0 - 2.0 * (ϵO1^2 + ϵO2^2))
 
-    if (ϵO1 == 0.0 && ϵO2 == 0.0) || (ϵO3 == 0.0 && η0 == 0.0)
+    # Check for equatorial orbit (i ≈ 0, so ϵO1 ≈ 0 and ϵO2 ≈ 0)
+    if (abs(ϵO1) < 1e-10 && abs(ϵO2) < 1e-10) || (abs(ϵO3) < 1e-10 && abs(η0) < 1e-10)
         Ω = 0.0
     else
         Ω = atan(
@@ -219,7 +228,8 @@ function USM72koe(u::AbstractVector{T}, μ::V) where {T<:Number,V<:Number}
         end
     end
 
-    if R == 0.0
+    # Check for circular orbit (e ≈ 0, so R ≈ 0)
+    if abs(R) < 1e-10
         ω = 0.0
         f = λ - Ω
         while f < 0.0
@@ -304,7 +314,14 @@ function USM72USMEM(u::AbstractVector{T}, μ::V) where {T<:Number,V<:Number}
 
     C, Rf1, Rf2, ϵO1, ϵO2, ϵO3, η0 = u
 
-    Φ = 2.0 * acos(η0)
+    Φ = 2.0 * acos(clamp(η0, -1.0, 1.0))
+
+    # Handle singularity for zero rotation (equatorial orbit)
+    if abs(Φ) < 1e-10
+        # For small angles, ϵ ≈ a/2, so a ≈ 2ϵ and em = Φ*a ≈ 0
+        return SVector{6,RT}(C, Rf1, Rf2, zero(RT), zero(RT), zero(RT))
+    end
+
     denom = sin(Φ / 2.0)
     a = SVector{3}(ϵO1 / denom, ϵO2 / denom, ϵO3 / denom)
 
@@ -333,8 +350,15 @@ function USMEM2USM7(u::AbstractVector{T}, μ::V) where {T<:Number,V<:Number}
     a = SVector{3}(a1, a2, a3)
     Φ = norm(a)
 
-    ϵ = sin(Φ / 2.0) / Φ * a
-    η0 = cos(Φ / 2.0)
+    # Handle singularity for zero rotation (equatorial orbit)
+    if abs(Φ) < 1e-10
+        # For small Φ, sin(Φ/2)/Φ → 1/2, so ϵ → a/2
+        ϵ = 0.5 * a
+        η0 = one(RT)  # cos(0) = 1
+    else
+        ϵ = sin(Φ / 2.0) / Φ * a
+        η0 = cos(Φ / 2.0)
+    end
 
     return SVector{7,RT}(C, Rf1, Rf2, ϵ[1], ϵ[2], ϵ[3], η0)
 end
@@ -392,9 +416,34 @@ function ModEq2koe(u::AbstractVector{T}, μ::V) where {T<:Number,V<:Number}
     a = p / (1 - f^2 - g^2)
     e = √(f^2 + g^2)
     i = atan(2 * √(h^2 + k^2), 1 - h^2 - k^2)
-    Ω = atan(k, h)
-    ω = atan(g * h - f * k, f * h + g * k)
-    ν = L - Ω - ω
+
+    # Handle equatorial orbit singularity (i ≈ 0, h ≈ 0, k ≈ 0)
+    # For equatorial orbits, Ω and ω are not individually defined
+    # but their sum (longitude of periapsis) is well-defined
+    equatorial = abs(h) < 1e-10 && abs(k) < 1e-10
+    circular = abs(e) < 1e-10
+
+    if equatorial && circular
+        # Circular equatorial: only true longitude is defined
+        Ω = zero(RT)
+        ω = zero(RT)
+        ν = L
+    elseif equatorial
+        # Eccentric equatorial: Ω undefined, use longitude of periapsis
+        Ω = zero(RT)
+        ω = atan(g, f)
+        ν = L - ω
+    elseif circular
+        # Circular inclined: ω undefined, use argument of latitude
+        Ω = atan(k, h)
+        ω = zero(RT)
+        ν = L - Ω
+    else
+        # General case: all elements well-defined
+        Ω = atan(k, h)
+        ω = atan(g * h - f * k, f * h + g * k)
+        ν = L - Ω - ω
+    end
 
     return SVector{6,RT}(a, e, i, Ω, ω, ν)
 end
@@ -652,7 +701,13 @@ function cart2delaunay(u::AbstractVector{T}, μ::V) where {T<:Number,V<:Number}
 
     h = cross(r, v)
 
-    L = √(μ * a)
+    # For elliptic orbits (a > 0, e < 1): L = √(μ*a), e = √(1 - (G/L)²)
+    # For hyperbolic orbits (a < 0, e > 1): L = √(-μ*a), e = √(1 + (G/L)²)
+    if a > 0
+        L = √(μ * a)
+    else
+        L = √(-μ * a)
+    end
     G = norm(h)
     H = h[3]
 
@@ -676,13 +731,34 @@ Laskar, Jacques. "Andoyer construction for Hill and Delaunay variables." Celesti
 # Returns
 -`u_cart::SVector{6, <:Number}``: The cartesian orbital element vector [x; y; z; ẋ; ẏ; ż].
 """
-function delaunay2cart(u::AbstractVector{T}, μ::V) where {T<:Number,V<:Number}
+function delaunay2cart(
+    u::AbstractVector{T}, μ::V; circular_tol::Float64=1e-14
+) where {T<:Number,V<:Number}
     RT = promote_type(T, V)
 
     L, G, H, M, ω, Ω = u
 
-    a = L^2 / μ
-    e = √(1.0 - (G / L)^2)
+    # Check if orbit is hyperbolic: for hyperbolic orbits, G/L > 1
+    # Elliptic/Circular: L = √(μ*a), e = √(1 - (G/L)²), a > 0
+    # Hyperbolic: L = √(-μ*a), e = √(1 + (G/L)²), a < 0
+    # Note: For circular orbits, G/L = 1 exactly
+    G_over_L_sq = (G / L)^2
+
+    # Check if nearly circular (to handle floating-point errors)
+    if abs(G_over_L_sq - 1.0) < circular_tol
+        # Circular orbit: treat as exactly circular
+        a = L^2 / μ
+        e = 0.0
+    elseif G_over_L_sq < 1.0
+        # Elliptic orbit
+        a = L^2 / μ
+        e = √(1.0 - G_over_L_sq)
+    else
+        # Hyperbolic orbit
+        a = -L^2 / μ
+        e = √(1.0 + G_over_L_sq)
+    end
+
     i = acos(H / G)
 
     f = meanAnomaly2TrueAnomaly(M, e)
