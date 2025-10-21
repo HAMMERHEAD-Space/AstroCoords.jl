@@ -745,11 +745,11 @@ function delaunay2cart(
     G_over_L_sq = (G / L)^2
 
     # Check if nearly circular (to handle floating-point errors)
-    if abs(G_over_L_sq - 1.0) < circular_tol
+    if abs(√(G_over_L_sq) - 1.0) < circular_tol
         # Circular orbit: treat as exactly circular
         a = L^2 / μ
         e = 0.0
-    elseif G_over_L_sq < 1.0
+    elseif √(G_over_L_sq) < 1.0
         # Elliptic orbit
         a = L^2 / μ
         e = √(1.0 - G_over_L_sq)
