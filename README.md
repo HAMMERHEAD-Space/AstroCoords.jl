@@ -52,8 +52,6 @@ If you use `AstroCoords.jl` in your work, please consider citing it.
 @software{jordan_murphy_2025_16954330,
   author       = {Jordan Murphy},
   title        = {HAMMERHEAD-Space/AstroCoords.jl},
-  month        = aug,
-  year         = 2025,
   publisher    = {Zenodo},
   doi          = {10.5281/zenodo.16954330},
   url          = {https://doi.org/10.5281/zenodo.16954330},
