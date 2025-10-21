@@ -47,4 +47,3 @@ If you use `AstroCoords.jl` in your work, please consider citing it.
   url          = {https://doi.org/10.5281/zenodo.16954330},
 }
 ```
-```
