@@ -470,10 +470,10 @@ function ModEq2ModEqN(u::AbstractVector{T}, μ::V) where {T<:Number,V<:Number}
 
     # Compute eccentricity squared
     e_sq = f^2 + g^2
-    
+
     # Compute semi-major axis: a = p / (1 - e²)
     a = p / (1 - e_sq)
-    
+
     # Compute mean motion: 
     # For elliptic orbits (a > 0, e < 1): n = √(μ/a³)
     # For hyperbolic orbits (a < 0, e > 1): n = √(μ/|a|³) = √(-μ/a³)
@@ -509,7 +509,7 @@ function ModEqN2ModEq(u::AbstractVector{T}, μ::V) where {T<:Number,V<:Number}
     # Compute eccentricity squared and eccentricity
     e_sq = f^2 + g^2
     e = √(e_sq)
-    
+
     # Compute semi-major axis from mean motion:
     # For elliptic orbits (e < 1): a = (μ/n²)^(1/3) > 0
     # For hyperbolic orbits (e > 1): a = -(μ/n²)^(1/3) < 0
@@ -521,7 +521,7 @@ function ModEqN2ModEq(u::AbstractVector{T}, μ::V) where {T<:Number,V<:Number}
         # Hyperbolic orbit
         a = -a_mag
     end
-    
+
     # Compute semi-parameter: p = a(1 - e²)
     # For hyperbolic: a < 0, e² > 1, so (1 - e²) < 0, making p > 0
     p = a * (1 - e_sq)
