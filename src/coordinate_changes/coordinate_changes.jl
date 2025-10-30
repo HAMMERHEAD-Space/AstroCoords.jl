@@ -449,6 +449,87 @@ function ModEq2koe(u::AbstractVector{T}, μ::V) where {T<:Number,V<:Number}
 end
 
 """
+    ModEq2ModEqN(u::AbstractVector{T}, μ::V) where {T<:Number,V<:Number}
+
+Converts Modified Equinoctial elements to Modified Equinoctial with mean motion.
+
+!!! note
+    All angles are in radians.
+
+# Arguments
+-`u:AbstractVector{<:Number}`: The Modified Equinoctial state vector [p; f; g; h; k; L].
+-`μ::Number`: Standard graviational parameter of central body.
+
+# Returns
+-`u_ModEqN::SVector{6, <:Number}`: The Modified Equinoctial (mean motion) state vector [η; f; g; h; k; L].
+"""
+function ModEq2ModEqN(u::AbstractVector{T}, μ::V) where {T<:Number,V<:Number}
+    RT = promote_type(T, V)
+
+    p, f, g, h, k, L = u
+
+    # Compute eccentricity squared
+    e_sq = f^2 + g^2
+    
+    # Compute semi-major axis: a = p / (1 - e²)
+    a = p / (1 - e_sq)
+    
+    # Compute mean motion: 
+    # For elliptic orbits (a > 0, e < 1): n = √(μ/a³)
+    # For hyperbolic orbits (a < 0, e > 1): n = √(μ/|a|³) = √(-μ/a³)
+    if a > 0
+        η = √(μ / a^3)
+    else
+        η = √(-μ / a^3)
+    end
+
+    return SVector{6,RT}(η, f, g, h, k, L)
+end
+
+"""
+    ModEqN2ModEq(u::AbstractVector{T}, μ::V) where {T<:Number,V<:Number}
+
+Converts Modified Equinoctial with mean motion to Modified Equinoctial elements.
+
+!!! note
+    All angles are in radians.
+
+# Arguments
+-`u:AbstractVector{<:Number}`: The Modified Equinoctial (mean motion) state vector [η; f; g; h; k; L].
+-`μ::Number`: Standard graviational parameter of central body.
+
+# Returns
+-`u_ModEq::SVector{6, <:Number}`: The Modified Equinoctial state vector [p; f; g; h; k; L].
+"""
+function ModEqN2ModEq(u::AbstractVector{T}, μ::V) where {T<:Number,V<:Number}
+    RT = promote_type(T, V)
+
+    η, f, g, h, k, L = u
+
+    # Compute eccentricity squared and eccentricity
+    e_sq = f^2 + g^2
+    e = √(e_sq)
+    
+    # Compute semi-major axis from mean motion:
+    # For elliptic orbits (e < 1): a = (μ/n²)^(1/3) > 0
+    # For hyperbolic orbits (e > 1): a = -(μ/n²)^(1/3) < 0
+    a_mag = ∛(μ / η^2)
+    if e < 1.0
+        # Elliptic orbit
+        a = a_mag
+    else
+        # Hyperbolic orbit
+        a = -a_mag
+    end
+    
+    # Compute semi-parameter: p = a(1 - e²)
+    # For hyperbolic: a < 0, e² > 1, so (1 - e²) < 0, making p > 0
+    p = a * (1 - e_sq)
+
+    return SVector{6,RT}(p, f, g, h, k, L)
+end
+
+"""
     cart2Mil(u::AbstractVector{T}, μ::V) where {T<:Number,V<:Number}
 
 Converts Cartesian state vector into the Milankovich state vector.
