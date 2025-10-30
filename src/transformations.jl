@@ -56,12 +56,15 @@ end
 @define_transformation_pair Cartesian J2EqOE cart2J2EqOE J2EqOE2cart
 @define_transformation_pair Keplerian USM7 koe2USM7 USM72koe
 @define_transformation_pair Keplerian ModEq koe2ModEq ModEq2koe
+@define_transformation_pair ModEq ModEqN ModEq2ModEqN ModEqN2ModEq
 @define_transformation_pair USM7 USM6 USM72USM6 USM62USM7
 @define_transformation_pair USM7 USMEM USM72USMEM USMEM2USM7
 
 # ~~~~~~~~~~~~~~~ Aliases for Readability ~~~~~~~~~~~~~~~ #
 const KeplerianToModifiedEquinoctial = KeplerianToModEq
 const ModifiedEquinoctialToKeplerian = ModEqToKeplerian
+const ModifiedEquinoctialToModEqN = ModEqToModEqN
+const ModEqNToModifiedEquinoctial = ModEqNToModEq
 
 # ~~~~~~~~~~~~~~~ EDromo Transformations ~~~~~~~~~~~~~~~ #
 export CartesianToEDromo, EDromoToCartesian
@@ -205,6 +208,7 @@ const COORD_TYPES = (
     USMEM,
     Milankovich,
     ModEq,
+    ModEqN,
     Cylindrical,
     Spherical,
     Delaunay,
@@ -221,6 +225,7 @@ const COORD_NAMES = Dict(
     USMEM => :USMEM,
     Milankovich => :Milankovich,
     ModEq => :ModifiedEquinoctial,
+    ModEqN => :ModEqN,
     Cylindrical => :Cylindrical,
     Spherical => :Spherical,
     Delaunay => :Delaunay,
@@ -255,6 +260,7 @@ add_transform_edge(Cartesian, KustaanheimoStiefel)
 add_transform_edge(Cartesian, StiefelScheifele)
 add_transform_edge(Keplerian, USM7)
 add_transform_edge(Keplerian, ModEq)
+add_transform_edge(ModEq, ModEqN)
 add_transform_edge(USM7, USM6)
 add_transform_edge(USM7, USMEM)
 
