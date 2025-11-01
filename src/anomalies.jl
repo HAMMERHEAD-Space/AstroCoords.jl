@@ -2,7 +2,7 @@
 #TODO: DEFINE ADJOINT (IMPLICIT?)
 export KeplerSolver
 """
-    KeplerSolver(M::T, e::Number; tol::Float64=10 * eps(T)) where {T<:Number}
+    KeplerSolver(M::T, e::Number; tol::Float64=10 * eps(T), max_iters::Int=100) where {T<:Number}
 
 Solves for true anomaly given the mean anomaly and eccentricity of an orbit.
 
@@ -12,20 +12,25 @@ Solves for true anomaly given the mean anomaly and eccentricity of an orbit.
 
 # Keyword Arguments
 -`tol::Float64`: Convergence tolerance of Kepler solver. [Default=10*eps(T)]
+-`max_iters::Int`: Maximum number of iterations. [Default=100]
 
 # Returns
 -`f::Number``: True Anomaly of the orbit [radians]
 """
-function KeplerSolver(M::T, e::Number; tol::Float64=10 * eps(T)) where {T<:Number}
+function KeplerSolver(
+    M::T, e::Number; tol::Float64=10 * eps(T), max_iters::Int=100
+) where {T<:Number}
     if e < 1.0
         E_guess = M
         fE = M - (E_guess - e * sin(E_guess))
         dfE = (e * cos(E_guess) - 1)
 
-        while abs(fE) > tol
+        iter = 0
+        while abs(fE) > tol && iter < max_iters
             E_guess -= fE / dfE
             fE = M - (E_guess - e * sin(E_guess))
             dfE = (e * cos(E_guess) - 1)
+            iter += 1
         end
         E_guess = rem2pi(E_guess, RoundDown)
 
@@ -39,10 +44,12 @@ function KeplerSolver(M::T, e::Number; tol::Float64=10 * eps(T)) where {T<:Numbe
         fF = M + (F_guess - e * sinh(F_guess))
         dfF = (1.0 - e * cosh(F_guess))
 
-        while abs(fF) > tol
+        iter = 0
+        while abs(fF) > tol && iter < max_iters
             F_guess -= fF / dfF
             fF = M + (F_guess - e * sinh(F_guess))
             dfF = (1.0 - e * cosh(F_guess))
+            iter += 1
         end
 
         F_guess = rem2pi(F_guess, RoundDown)
@@ -157,7 +164,7 @@ end
 
 export meanAnomaly2TrueAnomaly
 """
-    meanAnomaly2TrueAnomaly(M::T, e::Number; tol::Float64=10 * eps(T)) where {T<:Number}
+    meanAnomaly2TrueAnomaly(M::T, e::Number; tol::Float64=10 * eps(T), max_iters::Int=100) where {T<:Number}
 
 Converts the mean anomaly into the true anomaly.
 
@@ -167,19 +174,20 @@ Converts the mean anomaly into the true anomaly.
 
 # Keyword Arguments
 -`tol::Float64`: Convergence tolerance of Kepler solver. [Default=10*eps(T)]
+-`max_iters::Int`: Maximum number of iterations. [Default=100]
 
 # Returns
 -`f::Number`: Mean anomaly of the orbit [radians].
 """
 @inline function meanAnomaly2TrueAnomaly(
-    M::T, e::Number; tol::Float64=10 * eps(T)
+    M::T, e::Number; tol::Float64=10 * eps(T), max_iters::Int=100
 ) where {T<:Number}
-    return KeplerSolver(M, e; tol=tol)
+    return KeplerSolver(M, e; tol=tol, max_iters=max_iters)
 end
 
 export meanAnomaly2EccentricAnomaly
 """
-    meanAnomaly2EccentricAnomaly(M::T, e::Number; tol::Float64=10 * eps(T)) where {T<:Number}
+    meanAnomaly2EccentricAnomaly(M::T, e::Number; tol::Float64=10 * eps(T), max_iters::Int=100) where {T<:Number}
 
 Converts the Mean Anomaly into the Eccentric Anomaly
 
@@ -189,12 +197,15 @@ Converts the Mean Anomaly into the Eccentric Anomaly
 
 # Keyword Arguments
 -`tol::Float64`: Convergence tolerance of Kepler solver. [Default=10*eps(T)]
+-`max_iters::Int`: Maximum number of iterations. [Default=100]
 
 # Returns
 -`E::Number`: Eccentric Anomaly of the orbit [radians]
 """
 @inline function meanAnomaly2EccentricAnomaly(
-    M::T, e::Number; tol::Float64=10 * eps(T)
+    M::T, e::Number; tol::Float64=10 * eps(T), max_iters::Int=100
 ) where {T<:Number}
-    return trueAnomaly2EccentricAnomaly(meanAnomaly2TrueAnomaly(M, e; tol=tol), e)
+    return trueAnomaly2EccentricAnomaly(
+        meanAnomaly2TrueAnomaly(M, e; tol=tol, max_iters=max_iters), e
+    )
 end
