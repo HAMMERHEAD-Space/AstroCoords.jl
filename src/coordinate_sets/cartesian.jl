@@ -66,3 +66,19 @@ function Base.getindex(p::Cartesian{T}, i::Int) where {T<:Number}
         throw(BoundsError(p, i))
     end
 end
+
+# ~~~~~~~~~~~~~~~ Property Interface for Exotic Coordinates ~~~~~~~~~~~~~~~ #
+function Base.getproperty(cart::Cartesian, sym::Symbol)
+    if sym === :r
+        return norm(SVector{3}(p.x, p.y, p.z))
+    elseif sym === :v
+        return norm(SVector{3}(p.ẋ, p.ẏ, p.ż))
+    else
+        # Default behavior for regular fields
+        return getfield(cart, sym)
+    end
+end
+
+function Base.propertynames(::Cartesian)
+    return (:x, :y, :z, :ẋ, :ẏ, :ż, :r, :v)
+end
