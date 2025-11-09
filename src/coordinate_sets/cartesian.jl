@@ -70,9 +70,9 @@ end
 # ~~~~~~~~~~~~~~~ Property Interface for Exotic Coordinates ~~~~~~~~~~~~~~~ #
 function Base.getproperty(cart::Cartesian, sym::Symbol)
     if sym === :r
-        return norm(SVector{3}(p.x, p.y, p.z))
+        return SVector{3}(cart.x, cart.y, cart.z)
     elseif sym === :v
-        return norm(SVector{3}(p.ẋ, p.ẏ, p.ż))
+        return SVector{3}(cart.ẋ, cart.ẏ, cart.ż)
     else
         # Default behavior for regular fields
         return getfield(cart, sym)
