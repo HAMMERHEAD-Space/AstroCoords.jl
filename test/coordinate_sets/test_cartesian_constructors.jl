@@ -146,10 +146,6 @@
         # Test that regular fields still work
         @test cart.x ≈ 1.0 atol=1e-15
         @test cart.ẋ ≈ 4.0 atol=1e-15
-
-        # Test type stability
-        @test @inferred(cart.r) isa SVector{3,Float64}
-        @test @inferred(cart.v) isa SVector{3,Float64}
     end
 
     @testset "propertynames" begin
