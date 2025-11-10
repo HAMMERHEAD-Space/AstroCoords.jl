@@ -119,4 +119,50 @@
         @test p[5] ≈ 2.0 atol=1e-15
         @test p[6] ≈ 3.0 atol=1e-15
     end
+
+    @testset "Property getters: r and v" begin
+        # Test lines 71-80: getproperty for :r and :v
+        cart = Cartesian(1.0, 2.0, 3.0, 4.0, 5.0, 6.0)
+
+        # Test position vector property :r
+        r = cart.r
+        @test r isa SVector{3,Float64}
+        @test r[1] ≈ 1.0 atol=1e-15  # x
+        @test r[2] ≈ 2.0 atol=1e-15  # y
+        @test r[3] ≈ 3.0 atol=1e-15  # z
+
+        # Test velocity vector property :v
+        v = cart.v
+        @test v isa SVector{3,Float64}
+        @test v[1] ≈ 4.0 atol=1e-15  # ẋ
+        @test v[2] ≈ 5.0 atol=1e-15  # ẏ
+        @test v[3] ≈ 6.0 atol=1e-15  # ż
+
+        # Test with different numeric types
+        cart_f32 = Cartesian{Float32}(1.0f0, 2.0f0, 3.0f0, 4.0f0, 5.0f0, 6.0f0)
+        @test cart_f32.r isa SVector{3,Float32}
+        @test cart_f32.v isa SVector{3,Float32}
+
+        # Test that regular fields still work
+        @test cart.x ≈ 1.0 atol=1e-15
+        @test cart.ẋ ≈ 4.0 atol=1e-15
+    end
+
+    @testset "propertynames" begin
+        # Test line 82-84: propertynames
+        cart = Cartesian(1.0, 2.0, 3.0, 4.0, 5.0, 6.0)
+        pnames = propertynames(cart)
+
+        @test :x in pnames
+        @test :y in pnames
+        @test :z in pnames
+        @test :ẋ in pnames
+        @test :ẏ in pnames
+        @test :ż in pnames
+        @test :r in pnames
+        @test :v in pnames
+
+        # Verify it's the expected tuple
+        @test pnames == (:x, :y, :z, :ẋ, :ẏ, :ż, :r, :v)
+    end
 end
