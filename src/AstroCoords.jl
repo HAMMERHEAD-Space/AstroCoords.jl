@@ -46,5 +46,6 @@ const COORDINATE_SET_ALIASES = Dict(
 )
 
 include("./quantities.jl")
+include("./uncertainty.jl")
 
 end
