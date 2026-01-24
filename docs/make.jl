@@ -29,4 +29,4 @@ makedocs(;
     ],
 )
 
-deploydocs(; repo="github.com/jmurphy6895/AstroCoords.jl.git", target="build")
+deploydocs(; repo="github.com/HAMMERHEAD-Space/AstroCoords.jl.git", target="build")
