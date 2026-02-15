@@ -16,7 +16,7 @@ Currently this package implements:
     - [x] USMEM
 - [x] Milankovich
 - [x] J2 Modified Equinoctial
-- [x] Generalized Equinoctial Orbital Elements (requires AstroForceModels extension)
+- [x] Generalized Equinoctial Orbital Elements
 - [x] EDROMO
 - [x] Kustaanheimo-Stiefel
 - [x] Stiefel-Scheifel

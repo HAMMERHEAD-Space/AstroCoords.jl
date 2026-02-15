@@ -29,7 +29,7 @@ Where:
 # Constructors
 - `GEqOE(ν, p₁, p₂, L, q₁, q₂)`
 - `GEqOE(X::AbstractArray)`
-- `GEqOE(X::Cartesian, μ::Number, model::AbstractDynamicsModel, p::ComponentVector, t::Number)` (requires AstroForceModels extension)
+- `GEqOE(X::Cartesian, μ::Number, config::RegularizedCoordinateConfig)`
 
 # Computed Properties
 - `g`: Generalized eccentricity magnitude √(p₁² + p₂²)
@@ -37,7 +37,8 @@ Where:
 - `L₀(geq, t)`: Generalized mean longitude at epoch L - νt
 
 # Notes
-- Requires a dynamics model for coordinate transformations (AstroCoordsForceModelsExt)
+- The perturbing potential `W` is passed via `RegularizedCoordinateConfig`. For Keplerian
+  orbits use `W = 0`; for perturbed orbits precompute `W = V_total - V_keplerian` externally.
 - Non-singular for circular and equatorial orbits
 - Singular for retrograde equatorial orbits (i = π) and rectilinear motion
 - Defined for negative total energy (E < 0)

@@ -4,7 +4,7 @@ export compute_characteristic_scales, compute_initial_phi
 """
     RegularizedCoordinateConfig{DT,TT,WT,TT2,FT}
 
-Configuration struct for regularized coordinate transformations (EDromo, Kustaanheimo-Stiefel, Stiefel-Scheifele).
+Configuration struct for regularized coordinate transformations (EDromo, GEqOE, Kustaanheimo-Stiefel, Stiefel-Scheifele).
 
 This struct encapsulates the parameters required for regularized coordinate transformations:
 - `DU`: Reference distance unit for non-dimensionalization

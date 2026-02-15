@@ -1247,307 +1247,235 @@ end
     end
 end
 
-const _GEQOE_CART_STATE = [
-    -1076.225324679696,
-    -6765.896364327722,
-    -332.3087833503755,
-    9.356857417032581,
-    -3.3123476319597557,
-    -1.1880157328553503,
-]
-
-const _GEQOE_CART = Cartesian(_GEQOE_CART_STATE)
-
-const _GEQOE_μ = 3.986004415e5
-const _GEQOE_CV = ComponentVector(; JD=2.460310e6)
-const _GEQOE_T = 0.0
-
-const _GEQOE_GRAV_COEFFS = GravityModels.load(IcgemFile, fetch_icgem_file(:EGM96))
-const _GEQOE_EOP_DATA = fetch_iers_eop()
-
-const _GEQOE_DYNAMICS_MODELS = [
-    CentralBodyDynamicsModel(KeplerianGravityAstroModel(; μ=_GEQOE_μ)),
-    CentralBodyDynamicsModel(
-        GravityHarmonicsAstroModel(;
-            gravity_model=_GEQOE_GRAV_COEFFS, eop_data=_GEQOE_EOP_DATA, order=4, degree=4
-        ),
-    ),
-]
-
 @testset "GEqOE Transformation Differentiation" begin
-    for dynamics in _GEQOE_DYNAMICS_MODELS
-        geqoe_state = GEqOE(_GEQOE_CART, _GEQOE_μ, dynamics, _GEQOE_CV, _GEQOE_T)
-        geqoe_state_vec = Array(params(geqoe_state))
+    state = [
+        -1076.225324679696,
+        -6765.896364327722,
+        -332.3087833503755,
+        9.356857417032581,
+        -3.3123476319597557,
+        -1.1880157328553503,
+    ]
+    μ = 3.986004415e5
+    cart_state = Cartesian(state)
+    geqoe_config = RegularizedCoordinateConfig(; W=0.0)
 
-        @testset "Differentiate wrt State" begin
-            for backend in _BACKENDS
-                if backend[1] == "Enzyme"
-                    backend = (
-                        "Enzyme", AutoEnzyme(; function_annotation=Enzyme.Duplicated)
-                    )
-                end
-                @testset "$(backend[1]) Backend" begin
-                    # Forward pass (Cartesian -> GEqOE)
-                    to_geqoe(x) = Array(
-                        params(GEqOE(Cartesian(x), _GEQOE_μ, dynamics, _GEQOE_CV, _GEQOE_T))
-                    )
+    geqoe_state = GEqOE(cart_state, μ, geqoe_config)
+    geqoe_state_vec = Array(params(geqoe_state))
 
-                    f_ad, df_ad = value_and_jacobian(
-                        x -> to_geqoe(x), backend[2], _GEQOE_CART_STATE
-                    )
-                    f_fd, df_fd = value_and_jacobian(
-                        x -> to_geqoe(x), AutoFiniteDiff(), _GEQOE_CART_STATE
-                    )
+    @testset "Differentiate wrt State" begin
+        for backend in _BACKENDS
+            @testset "$(backend[1]) Backend" begin
+                # Forward pass (Cartesian -> GEqOE)
+                to_geqoe(x) = Array(params(GEqOE(Cartesian(x), μ, geqoe_config)))
 
-                    @test f_ad ≈ f_fd rtol = 1e-8
-                    @test df_ad ≈ df_fd rtol = 1e-2
-
-                    # Reverse pass (GEqOE -> Cartesian)
-                    from_geqoe(x) = Array(
-                        params(Cartesian(GEqOE(x), _GEQOE_μ, dynamics, _GEQOE_CV, _GEQOE_T))
-                    )
-
-                    f_ad_rev, df_ad_rev = value_and_jacobian(
-                        x -> from_geqoe(x), backend[2], geqoe_state_vec
-                    )
-                    f_fd_rev, df_fd_rev = value_and_jacobian(
-                        x -> from_geqoe(x), AutoFiniteDiff(), geqoe_state_vec
-                    )
-
-                    @test f_ad_rev ≈ f_fd_rev rtol = 1e-8
-                    @test df_ad_rev ≈ df_fd_rev rtol = 1e-2
-                end
-            end
-        end
-
-        @testset "Differentiate wrt State Zygote" begin
-            # Forward pass (Cartesian -> GEqOE)
-            to_geqoe(x) = Array(
-                params(GEqOE(Cartesian(x), _GEQOE_μ, dynamics, _GEQOE_CV, _GEQOE_T))
-            )
-
-            f_ad, df_ad = value_and_jacobian(
-                x -> to_geqoe(x), AutoZygote(), _GEQOE_CART_STATE
-            )
-            f_fd, df_fd = value_and_jacobian(
-                x -> to_geqoe(x), AutoFiniteDiff(), _GEQOE_CART_STATE
-            )
-
-            @test f_ad ≈ f_fd rtol = 1e-8
-            @test df_ad ≈ df_fd rtol = 1e-2
-
-            # Reverse pass (GEqOE -> Cartesian)
-            from_geqoe(x) = Array(
-                params(Cartesian(GEqOE(x), _GEQOE_μ, dynamics, _GEQOE_CV, _GEQOE_T))
-            )
-
-            f_ad_rev, df_ad_rev = value_and_jacobian(
-                x -> from_geqoe(x), AutoZygote(), geqoe_state_vec
-            )
-            f_fd_rev, df_fd_rev = value_and_jacobian(
-                x -> from_geqoe(x), AutoFiniteDiff(), geqoe_state_vec
-            )
-
-            @test f_ad_rev ≈ f_fd_rev rtol = 1e-8
-            @test df_ad_rev ≈ df_fd_rev rtol = 1e-2
-        end
-
-        @testset "Differentiate wrt μ" begin
-            for backend in _BACKENDS
-                if backend[1] == "Enzyme"
-                    backend = (
-                        "Enzyme", AutoEnzyme(; function_annotation=Enzyme.Duplicated)
-                    )
-                end
-                @testset "$(backend[1]) Backend" begin
-                    f_ad, df_ad = value_and_derivative(
-                        m -> Array(
-                            params(GEqOE(_GEQOE_CART, m, dynamics, _GEQOE_CV, _GEQOE_T))
-                        ),
-                        backend[2],
-                        _GEQOE_μ,
-                    )
-                    f_fd, df_fd = value_and_derivative(
-                        m -> Array(
-                            params(GEqOE(_GEQOE_CART, m, dynamics, _GEQOE_CV, _GEQOE_T))
-                        ),
-                        AutoFiniteDiff(),
-                        _GEQOE_μ,
-                    )
-
-                    @test f_ad ≈ f_fd rtol = 1e-8
-                    @test df_ad ≈ df_fd rtol = 1e-2
-
-                    f_ad_rev, df_ad_rev = value_and_derivative(
-                        m -> Array(
-                            params(
-                                Cartesian(geqoe_state, m, dynamics, _GEQOE_CV, _GEQOE_T)
-                            ),
-                        ),
-                        backend[2],
-                        _GEQOE_μ,
-                    )
-                    f_fd_rev, df_fd_rev = value_and_derivative(
-                        m -> Array(
-                            params(
-                                Cartesian(geqoe_state, m, dynamics, _GEQOE_CV, _GEQOE_T)
-                            ),
-                        ),
-                        AutoFiniteDiff(),
-                        _GEQOE_μ,
-                    )
-
-                    @test f_ad_rev ≈ f_fd_rev rtol = 1e-8
-                    @test df_ad_rev ≈ df_fd_rev rtol = 1e-2
-                end
-            end
-        end
-
-        @testset "Differentiate wrt μ Zygote" begin
-            # Forward pass
-            to_geqoe_μ(m) = Array(
-                params(GEqOE(_GEQOE_CART, m, dynamics, _GEQOE_CV, _GEQOE_T))
-            )
-
-            try
-                f_ad, df_ad = value_and_derivative(
-                    m -> to_geqoe_μ(m), AutoZygote(), _GEQOE_μ
-                )
-                f_fd, df_fd = value_and_derivative(
-                    m -> to_geqoe_μ(m), AutoFiniteDiff(), _GEQOE_μ
-                )
+                f_ad, df_ad = value_and_jacobian(x -> to_geqoe(x), backend[2], state)
+                f_fd, df_fd = value_and_jacobian(x -> to_geqoe(x), AutoFiniteDiff(), state)
 
                 @test f_ad ≈ f_fd rtol = 1e-8
                 @test df_ad ≈ df_fd rtol = 1e-2
-            catch err
-                @test err isa MethodError
-                @test startswith(
-                    sprint(showerror, err),
-                    "MethodError: no method matching iterate(::Nothing)",
-                )
-            end
 
-            # Reverse pass
-            from_geqoe_μ(m) = Array(
-                params(Cartesian(geqoe_state, m, dynamics, _GEQOE_CV, _GEQOE_T))
-            )
+                # Reverse pass (GEqOE -> Cartesian)
+                from_geqoe(x) = Array(params(Cartesian(GEqOE(x), μ, geqoe_config)))
 
-            try
-                f_ad_rev, df_ad_rev = value_and_derivative(
-                    m -> from_geqoe_μ(m), AutoZygote(), _GEQOE_μ
+                f_ad_rev, df_ad_rev = value_and_jacobian(
+                    x -> from_geqoe(x), backend[2], geqoe_state_vec
                 )
-                f_fd_rev, df_fd_rev = value_and_derivative(
-                    m -> from_geqoe_μ(m), AutoFiniteDiff(), _GEQOE_μ
+                f_fd_rev, df_fd_rev = value_and_jacobian(
+                    x -> from_geqoe(x), AutoFiniteDiff(), geqoe_state_vec
                 )
 
                 @test f_ad_rev ≈ f_fd_rev rtol = 1e-8
                 @test df_ad_rev ≈ df_fd_rev rtol = 1e-2
-            catch err
-                @test err isa MethodError
-                @test startswith(
-                    sprint(showerror, err),
-                    "MethodError: no method matching iterate(::Nothing)",
-                )
             end
         end
+    end
 
-        @testset "Differentiate wrt t" begin
-            for backend in _BACKENDS
-                if backend[1] == "Enzyme"
-                    backend = (
-                        "Enzyme", AutoEnzyme(; function_annotation=Enzyme.Duplicated)
-                    )
-                end
-                @testset "$(backend[1]) Backend" begin
-                    f_ad, df_ad = value_and_derivative(
-                        s -> Array(
-                            params(GEqOE(_GEQOE_CART, _GEQOE_μ, dynamics, _GEQOE_CV, s))
-                        ),
-                        backend[2],
-                        _GEQOE_T,
-                    )
-                    f_fd, df_fd = value_and_derivative(
-                        s -> Array(
-                            params(GEqOE(_GEQOE_CART, _GEQOE_μ, dynamics, _GEQOE_CV, s))
-                        ),
-                        AutoFiniteDiff(),
-                        _GEQOE_T,
-                    )
+    @testset "Differentiate wrt State Zygote" begin
+        # Forward pass (Cartesian -> GEqOE)
+        to_geqoe(x) = Array(params(GEqOE(Cartesian(x), μ, geqoe_config)))
 
-                    @test f_ad ≈ f_fd rtol = 1e-8
-                    @test df_ad ≈ df_fd atol = 1e-2
+        f_ad, df_ad = value_and_jacobian(x -> to_geqoe(x), AutoZygote(), state)
+        f_fd, df_fd = value_and_jacobian(x -> to_geqoe(x), AutoFiniteDiff(), state)
 
-                    f_ad_rev, df_ad_rev = value_and_derivative(
-                        s -> Array(
-                            params(
-                                Cartesian(geqoe_state, _GEQOE_μ, dynamics, _GEQOE_CV, s)
-                            ),
-                        ),
-                        backend[2],
-                        _GEQOE_T,
-                    )
-                    f_fd_rev, df_fd_rev = value_and_derivative(
-                        s -> Array(
-                            params(
-                                Cartesian(geqoe_state, _GEQOE_μ, dynamics, _GEQOE_CV, s)
-                            ),
-                        ),
-                        AutoFiniteDiff(),
-                        _GEQOE_T,
-                    )
+        @test f_ad ≈ f_fd rtol = 1e-8
+        @test df_ad ≈ df_fd rtol = 1e-2
 
-                    @test f_ad_rev ≈ f_fd_rev rtol = 1e-8
-                    @test df_fd_rev ≈ df_ad_rev atol = 1e-2
-                end
+        # Reverse pass (GEqOE -> Cartesian)
+        from_geqoe(x) = Array(params(Cartesian(GEqOE(x), μ, geqoe_config)))
+
+        f_ad_rev, df_ad_rev = value_and_jacobian(
+            x -> from_geqoe(x), AutoZygote(), geqoe_state_vec
+        )
+        f_fd_rev, df_fd_rev = value_and_jacobian(
+            x -> from_geqoe(x), AutoFiniteDiff(), geqoe_state_vec
+        )
+
+        @test f_ad_rev ≈ f_fd_rev rtol = 1e-8
+        @test df_ad_rev ≈ df_fd_rev rtol = 1e-2
+    end
+
+    @testset "Differentiate wrt μ" begin
+        for backend in _BACKENDS
+            if backend[1] == "Enzyme"
+                backend = ("Enzyme", AutoEnzyme(; function_annotation=Enzyme.Duplicated))
             end
-        end
-
-        @testset "Differentiate wrt t Zygote" begin
-            # Forward pass
-            to_geqoe_t(s) = Array(
-                params(GEqOE(_GEQOE_CART, _GEQOE_μ, dynamics, _GEQOE_CV, s))
-            )
-
-            try
+            @testset "$(backend[1]) Backend" begin
                 f_ad, df_ad = value_and_derivative(
-                    s -> to_geqoe_t(s), AutoZygote(), _GEQOE_T
+                    m -> Array(params(GEqOE(cart_state, m, geqoe_config))), backend[2], μ
                 )
                 f_fd, df_fd = value_and_derivative(
-                    s -> to_geqoe_t(s), AutoFiniteDiff(), _GEQOE_T
+                    m -> Array(params(GEqOE(cart_state, m, geqoe_config))),
+                    AutoFiniteDiff(),
+                    μ,
                 )
 
                 @test f_ad ≈ f_fd rtol = 1e-8
-                @test df_ad ≈ df_fd atol = 1e-2
-            catch err
-                @test err isa MethodError
-                @test startswith(
-                    sprint(showerror, err),
-                    "MethodError: no method matching iterate(::Nothing)",
-                )
-            end
+                @test df_ad ≈ df_fd rtol = 1e-2
 
-            # Reverse pass
-            from_geqoe_t(s) = Array(
-                params(Cartesian(geqoe_state, _GEQOE_μ, dynamics, _GEQOE_CV, s))
-            )
-
-            try
                 f_ad_rev, df_ad_rev = value_and_derivative(
-                    s -> from_geqoe_t(s), AutoZygote(), _GEQOE_T
+                    m -> Array(params(Cartesian(geqoe_state, m, geqoe_config))),
+                    backend[2],
+                    μ,
                 )
                 f_fd_rev, df_fd_rev = value_and_derivative(
-                    s -> from_geqoe_t(s), AutoFiniteDiff(), _GEQOE_T
+                    m -> Array(params(Cartesian(geqoe_state, m, geqoe_config))),
+                    AutoFiniteDiff(),
+                    μ,
                 )
 
                 @test f_ad_rev ≈ f_fd_rev rtol = 1e-8
-                @test df_ad_rev ≈ df_fd_rev atol = 1e-2
-            catch err
-                @test err isa MethodError
-                @test startswith(
-                    sprint(showerror, err),
-                    "MethodError: no method matching iterate(::Nothing)",
-                )
+                @test df_ad_rev ≈ df_fd_rev rtol = 1e-2
             end
+        end
+    end
+
+    @testset "Differentiate wrt μ Zygote" begin
+        # Forward pass
+        to_geqoe_μ(m) = Array(params(GEqOE(cart_state, m, geqoe_config)))
+
+        try
+            f_ad, df_ad = value_and_derivative(m -> to_geqoe_μ(m), AutoZygote(), μ)
+            f_fd, df_fd = value_and_derivative(m -> to_geqoe_μ(m), AutoFiniteDiff(), μ)
+
+            @test f_ad ≈ f_fd rtol = 1e-8
+            @test df_ad ≈ df_fd rtol = 1e-2
+        catch err
+            @test err isa MethodError
+            @test startswith(
+                sprint(showerror, err), "MethodError: no method matching iterate(::Nothing)"
+            )
+        end
+
+        # Reverse pass
+        from_geqoe_μ(m) = Array(params(Cartesian(geqoe_state, m, geqoe_config)))
+
+        try
+            f_ad_rev, df_ad_rev = value_and_derivative(
+                m -> from_geqoe_μ(m), AutoZygote(), μ
+            )
+            f_fd_rev, df_fd_rev = value_and_derivative(
+                m -> from_geqoe_μ(m), AutoFiniteDiff(), μ
+            )
+
+            @test f_ad_rev ≈ f_fd_rev rtol = 1e-8
+            @test df_ad_rev ≈ df_fd_rev rtol = 1e-2
+        catch err
+            @test err isa MethodError
+            @test startswith(
+                sprint(showerror, err), "MethodError: no method matching iterate(::Nothing)"
+            )
+        end
+    end
+
+    @testset "Differentiate wrt W" begin
+        for backend in _BACKENDS
+            if backend[1] == "Enzyme"
+                backend = ("Enzyme", AutoEnzyme(; function_annotation=Enzyme.Duplicated))
+            end
+            @testset "$(backend[1]) Backend" begin
+                f_ad, df_ad = value_and_derivative(
+                    w -> Array(
+                        params(GEqOE(cart_state, μ, RegularizedCoordinateConfig(; W=w)))
+                    ),
+                    backend[2],
+                    0.0,
+                )
+                f_fd, df_fd = value_and_derivative(
+                    w -> Array(
+                        params(GEqOE(cart_state, μ, RegularizedCoordinateConfig(; W=w)))
+                    ),
+                    AutoFiniteDiff(),
+                    0.0,
+                )
+
+                @test f_ad ≈ f_fd rtol = 1e-8
+                @test df_ad ≈ df_fd rtol = 1e-2
+
+                f_ad_rev, df_ad_rev = value_and_derivative(
+                    w -> Array(
+                        params(
+                            Cartesian(geqoe_state, μ, RegularizedCoordinateConfig(; W=w)),
+                        ),
+                    ),
+                    backend[2],
+                    0.0,
+                )
+                f_fd_rev, df_fd_rev = value_and_derivative(
+                    w -> Array(
+                        params(
+                            Cartesian(geqoe_state, μ, RegularizedCoordinateConfig(; W=w)),
+                        ),
+                    ),
+                    AutoFiniteDiff(),
+                    0.0,
+                )
+
+                @test f_ad_rev ≈ f_fd_rev rtol = 1e-8
+                @test df_ad_rev ≈ df_fd_rev rtol = 1e-2
+            end
+        end
+    end
+
+    @testset "Differentiate wrt W Zygote" begin
+        # Forward pass
+        to_geqoe_w(w) = Array(
+            params(GEqOE(cart_state, μ, RegularizedCoordinateConfig(; W=w)))
+        )
+
+        try
+            f_ad, df_ad = value_and_derivative(w -> to_geqoe_w(w), AutoZygote(), 0.0)
+            f_fd, df_fd = value_and_derivative(w -> to_geqoe_w(w), AutoFiniteDiff(), 0.0)
+
+            @test f_ad ≈ f_fd rtol = 1e-8
+            @test df_ad ≈ df_fd rtol = 1e-2
+        catch err
+            @test err isa MethodError
+            @test startswith(
+                sprint(showerror, err), "MethodError: no method matching iterate(::Nothing)"
+            )
+        end
+
+        # Reverse pass
+        from_geqoe_w(w) = Array(
+            params(Cartesian(geqoe_state, μ, RegularizedCoordinateConfig(; W=w)))
+        )
+
+        try
+            f_ad_rev, df_ad_rev = value_and_derivative(
+                w -> from_geqoe_w(w), AutoZygote(), 0.0
+            )
+            f_fd_rev, df_fd_rev = value_and_derivative(
+                w -> from_geqoe_w(w), AutoFiniteDiff(), 0.0
+            )
+
+            @test f_ad_rev ≈ f_fd_rev rtol = 1e-8
+            @test df_ad_rev ≈ df_fd_rev rtol = 1e-2
+        catch err
+            @test err isa MethodError
+            @test startswith(
+                sprint(showerror, err), "MethodError: no method matching iterate(::Nothing)"
+            )
         end
     end
 end

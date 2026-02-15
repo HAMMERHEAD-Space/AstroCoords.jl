@@ -196,64 +196,31 @@ end
         -1.1880157328553503,
     ])
     μ = 3.986004415e5
-    cv = ComponentVector(JD=2.460310e6)
-    t = 0.0
+    geqoe_config = RegularizedCoordinateConfig(; W=0.0)
 
-    eop_data = fetch_iers_eop()
-    grav_coeffs = GravityModels.load(IcgemFile, fetch_icgem_file(:EGM96))
+    geqoe_state = GEqOE(state, μ, geqoe_config)
 
-    P = LowerTriangularStorage{SatelliteToolboxGravityModels.RowMajor,Float64}(5)
-    dP = LowerTriangularStorage{SatelliteToolboxGravityModels.RowMajor,Float64}(5)
-
-    dynamics_models = [
-        CentralBodyDynamicsModel(KeplerianGravityAstroModel(μ=μ)),
-        CentralBodyDynamicsModel(
-            GravityHarmonicsAstroModel(;
-                gravity_model=grav_coeffs, eop_data=eop_data, order=4, degree=4, P=P, dP=dP
-            ),
+    @test length(
+        check_allocs(GEqOE, (Cartesian{Float64}, Float64, typeof(geqoe_config)))
+    ) == 0
+    @test length(
+        check_allocs(Cartesian, (GEqOE{Float64}, Float64, typeof(geqoe_config)))
+    ) == 0
+    @test length(
+        check_allocs(meanMotion, (GEqOE{Float64}, Float64, typeof(geqoe_config)))
+    ) == 0
+    @test length(
+        check_allocs(orbitalPeriod, (GEqOE{Float64}, Float64, typeof(geqoe_config)))
+    ) == 0
+    @test length(
+        check_allocs(orbitalNRG, (GEqOE{Float64}, Float64, typeof(geqoe_config)))
+    ) == 0
+    @test length(
+        check_allocs(angularMomentumVector, (GEqOE{Float64}, Float64, typeof(geqoe_config)))
+    ) == 0
+    @test length(
+        check_allocs(
+            angularMomentumQuantity, (GEqOE{Float64}, Float64, typeof(geqoe_config))
         ),
-    ]
-
-    for dynamics in dynamics_models
-        geqoe_state = GEqOE(state, μ, dynamics, cv, t)
-
-        @test length(
-            check_allocs(
-                GEqOE, (Cartesian{Float64}, Float64, typeof(dynamics), typeof(cv), Float64)
-            ),
-        ) == 0
-        @test length(
-            check_allocs(
-                Cartesian, (GEqOE{Float64}, Float64, typeof(dynamics), typeof(cv), Float64)
-            ),
-        ) == 0
-        @test length(
-            check_allocs(
-                meanMotion, (GEqOE{Float64}, Float64, typeof(dynamics), typeof(cv), Float64)
-            ),
-        ) == 0
-        @test length(
-            check_allocs(
-                orbitalPeriod,
-                (GEqOE{Float64}, Float64, typeof(dynamics), typeof(cv), Float64),
-            ),
-        ) == 0
-        @test length(
-            check_allocs(
-                orbitalNRG, (GEqOE{Float64}, Float64, typeof(dynamics), typeof(cv), Float64)
-            ),
-        ) == 0
-        @test length(
-            check_allocs(
-                angularMomentumVector,
-                (GEqOE{Float64}, Float64, typeof(dynamics), typeof(cv), Float64),
-            ),
-        ) == 0
-        @test length(
-            check_allocs(
-                angularMomentumQuantity,
-                (GEqOE{Float64}, Float64, typeof(dynamics), typeof(cv), Float64),
-            ),
-        ) == 0
-    end
+    ) == 0
 end

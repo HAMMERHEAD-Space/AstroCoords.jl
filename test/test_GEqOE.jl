@@ -2,20 +2,10 @@
     @testset "GEqOE Round Trip" begin
         μ = 3.986004415e5
 
-        eop_data = fetch_iers_eop()
-        grav_coeffs = GravityModels.load(IcgemFile, fetch_icgem_file(:EGM96))
-
-        dynamics_models = [
-            CentralBodyDynamicsModel(KeplerianGravityAstroModel(μ=μ)),
-            CentralBodyDynamicsModel(
-                GravityHarmonicsAstroModel(;
-                    gravity_model=grav_coeffs, eop_data=eop_data, order=4, degree=4
-                ),
-            ),
+        # W=0 for pure Keplerian, W=1e-3 for a small perturbation
+        configs = [
+            RegularizedCoordinateConfig(; W=0.0), RegularizedCoordinateConfig(; W=1e-3)
         ]
-
-        p = ComponentVector(JD=2.460310e6)
-        t = 0.0
 
         state_elliptical = [
             -1076.225324679696
@@ -72,13 +62,13 @@
             state_retrograde,
         ]
 
-        for dynamics in dynamics_models
+        for config in configs
             for state in states
                 base_cart_state = Cartesian(state)
 
                 @testset "Roundtrip from Cartesian" begin
-                    geqoe_state = GEqOE(base_cart_state, μ, dynamics, p, t)
-                    roundtrip_state = Cartesian(geqoe_state, μ, dynamics, p, t)
+                    geqoe_state = GEqOE(base_cart_state, μ, config)
+                    roundtrip_state = Cartesian(geqoe_state, μ, config)
 
                     @test params(roundtrip_state) ≈ params(base_cart_state) atol = 1e-8
                 end
@@ -88,12 +78,10 @@
 
     @testset "Element properties" begin
         μ = 3.986004415e5
-        dynamics = CentralBodyDynamicsModel(KeplerianGravityAstroModel(μ=μ))
-        p = ComponentVector(JD=2.460310e6)
-        t = 0.0
+        config = RegularizedCoordinateConfig(; W=0.0)
 
         state = [9000.0, 4000.0, 3000.0, -2.0, 4.0, 3.0]
-        geqoe_vec = AstroCoords.cart2geqoe(state, μ, dynamics, p, t)
+        geqoe_vec = AstroCoords.cart2geqoe(state, μ, config)
         geqoe = GEqOE(geqoe_vec)
 
         # Verify all 6 elements are finite
@@ -114,12 +102,11 @@
 
     @testset "L₀ derived quantity" begin
         μ = 3.986004415e5
-        dynamics = CentralBodyDynamicsModel(KeplerianGravityAstroModel(μ=μ))
-        p = ComponentVector(JD=2.460310e6)
+        config = RegularizedCoordinateConfig(; W=0.0)
         t_test = 50.0
 
         state = [7000.0, 0.0, 0.0, 0.0, sqrt(μ / 7000.0), 0.0]
-        geqoe_vec = AstroCoords.cart2geqoe(state, μ, dynamics, p, t_test)
+        geqoe_vec = AstroCoords.cart2geqoe(state, μ, config)
         geqoe = GEqOE(geqoe_vec)
 
         @test AstroCoords.L₀(geqoe, t_test) ≈ geqoe.L - geqoe.ν * t_test

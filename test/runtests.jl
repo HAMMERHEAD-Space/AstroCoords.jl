@@ -1,10 +1,5 @@
 using AstroCoords
-using AstroForceModels:
-    CentralBodyDynamicsModel, KeplerianGravityAstroModel, GravityHarmonicsAstroModel
-using ComponentArrays
 using LinearAlgebra
-using SatelliteToolboxGravityModels
-using SatelliteToolboxTransformations
 using StaticArrays
 using Test
 
@@ -70,9 +65,9 @@ const _COORDINATE_SETS = [
     include("test_GEqOE.jl")
 end
 
-#@testset "Differentiation" begin
-#    include("test_differentiability.jl")
-#end
+@testset "Differentiation" begin
+    include("test_differentiability.jl")
+end
 
 @testset "Code Performance" begin
     include("test_JET.jl")
