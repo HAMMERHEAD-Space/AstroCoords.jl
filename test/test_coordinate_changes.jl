@@ -77,7 +77,7 @@
         state_retrograde,
     ]
 
-    const _excluded = (EDromo, KustaanheimoStiefel, StiefelScheifele, J2EqOE, GEqOE)
+    _excluded = (EDromo, KustaanheimoStiefel, StiefelScheifele, J2EqOE, GEqOE)
 
     @testset "Round Trip Coordinate Changes" begin
         for state in states
