@@ -1,3 +1,6 @@
 [deps]
 AstroCoords = "27fb9038-6a9d-4e07-8d5d-d0805b53c4cb"
 BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
+
+[sources]
+AstroCoords = {path = ".."}

@@ -56,6 +56,7 @@ end
 @define_transformation_pair Cartesian J2EqOE cart2J2EqOE J2EqOE2cart
 @define_transformation_pair Keplerian USM7 koe2USM7 USM72koe
 @define_transformation_pair Keplerian ModEq koe2ModEq ModEq2koe
+@define_transformation_pair Keplerian Poincare koe2poincare poincare2koe
 @define_transformation_pair ModEq ModEqN ModEq2ModEqN ModEqN2ModEq
 @define_transformation_pair USM7 USM6 USM72USM6 USM62USM7
 @define_transformation_pair USM7 USMEM USM72USMEM USMEM2USM7
@@ -258,6 +259,7 @@ const COORD_TYPES = (
     Cylindrical,
     Spherical,
     Delaunay,
+    Poincare,
     J2EqOE,
     EDromo,
     KustaanheimoStiefel,
@@ -276,6 +278,7 @@ const COORD_NAMES = Dict(
     Cylindrical => :Cylindrical,
     Spherical => :Spherical,
     Delaunay => :Delaunay,
+    Poincare => :Poincare,
     J2EqOE => :J2EqOE,
     EDromo => :EDromo,
     KustaanheimoStiefel => :KustaanheimoStiefel,
@@ -309,6 +312,7 @@ add_transform_edge(Cartesian, StiefelScheifele)
 add_transform_edge(Cartesian, GEqOE)
 add_transform_edge(Keplerian, USM7)
 add_transform_edge(Keplerian, ModEq)
+add_transform_edge(Keplerian, Poincare)
 add_transform_edge(ModEq, ModEqN)
 add_transform_edge(USM7, USM6)
 add_transform_edge(USM7, USMEM)

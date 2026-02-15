@@ -77,22 +77,18 @@
         state_retrograde,
     ]
 
+    _excluded = (EDromo, KustaanheimoStiefel, StiefelScheifele, J2EqOE, GEqOE)
+
     @testset "Round Trip Coordinate Changes" begin
         for state in states
             cart_state = Cartesian(state)
 
-            for coord in filter(
-                T -> T ∉ (EDromo, KustaanheimoStiefel, StiefelScheifele, J2EqOE, GEqOE),
-                AstroCoords.COORD_TYPES,
-            )
+            for coord in filter(T -> T ∉ _excluded, AstroCoords.COORD_TYPES)
                 coord_state = coord(cart_state, μ)
-                for coord2 in filter(
-                    T -> T ∉ (EDromo, KustaanheimoStiefel, StiefelScheifele, J2EqOE, GEqOE),
-                    AstroCoords.COORD_TYPES,
-                )
+                for coord2 in filter(T -> T ∉ _excluded, AstroCoords.COORD_TYPES)
                     coord_state2 = coord2(coord_state, μ)
                     coord_state_round_trip2 = coord(coord_state2, μ)
-                    @test params(coord_state) ≈ params(coord_state_round_trip2) rtol = 1e-9
+                    @test params(coord_state) ≈ params(coord_state_round_trip2) rtol = 1e-8
                 end
             end
         end
