@@ -68,13 +68,13 @@
     state_retrograde = [x_retro, 0.0, 0.0, vx_retro, vy_retro, vz_retro]
 
     states = [
-        state_elliptical
-        state_circular_equatorial
-        state_ecc_equatorial
-        state_circ_inclined
-        state_near_parabolic
-        state_hyperbolic
-        state_retrograde
+        state_elliptical,
+        state_circular_equatorial,
+        state_ecc_equatorial,
+        state_circ_inclined,
+        state_near_parabolic,
+        state_hyperbolic,
+        state_retrograde,
     ]
 
     const _excluded = (EDromo, KustaanheimoStiefel, StiefelScheifele, J2EqOE, GEqOE)
