@@ -848,3 +848,190 @@ function delaunay2cart(
 
     return koe2cart(u_koe, μ)
 end
+
+"""
+    koe2poincare(u::AbstractVector{T}, μ::V) where {T<:Number,V<:Number}
+
+Converts Keplerian orbital elements into Poincaré canonical variables.
+Poincaré elements use Cartesian-style canonical coordinate-momentum pairs derived
+from Delaunay variables, and are non-singular for circular (e → 0) and equatorial (i → 0) orbits.
+
+Supports both elliptic (a > 0) and hyperbolic (a < 0) orbits, following the same
+convention as Delaunay: Λ = √(μ|a|). For hyperbolic orbits, the eccentricity action
+is defined as P = Λ + G (instead of Λ - G) to keep √(2P) real.
+
+!!! note
+    All angles are in radians.
+
+# Arguments
+-`u::AbstractVector{<:Number}`: The Keplerian state vector [a; e; i; Ω(RAAN); ω(AOP); ν(True Anomaly)].
+-`μ::Number`: Standard gravitational parameter of central body.
+
+# Returns
+-`u_poincare::SVector{6, <:Number}`: The Poincaré state vector [Λ; λ; ξ; η; p; q].
+
+# References
+- Murray, C.D. and Dermott, S.F. "Solar System Dynamics." Cambridge University Press (1999).
+- Laskar, J. and Robutel, P. "Stability of the Planetary Three-Body Problem." Celestial Mechanics and Dynamical Astronomy 62 (1995): 193-217.
+"""
+function koe2poincare(u::AbstractVector{T}, μ::V) where {T<:Number,V<:Number}
+    RT = promote_type(T, V)
+
+    a, e, i, Ω, ω, ν = u
+
+    # Canonical action for semi-major axis: Λ = √(μ|a|)
+    # Elliptic (a > 0): Λ = √(μa)
+    # Hyperbolic (a < 0): Λ = √(-μa)
+    if a > 0
+        Λ = √(μ * a)
+    else
+        Λ = √(-μ * a)
+    end
+
+    # Mean anomaly from true anomaly
+    M = trueAnomaly2MeanAnomaly(ν, e)
+
+    # Mean longitude: λ = M + ω + Ω (normalized to [0, 2π))
+    λ = rem2pi(M + ω + Ω, RoundDown)
+
+    # Longitude of periapsis
+    ω̃ = ω + Ω
+
+    # Delaunay angular momentum
+    # Elliptic: G = Λ√(1 - e²)
+    # Hyperbolic: G = Λ√(e² - 1)
+    if a > 0
+        G = Λ * √(1 - e^2)
+    else
+        G = Λ * √(e^2 - 1)
+    end
+
+    # Eccentricity action
+    # Elliptic: P = Λ - G ∈ [0, Λ]
+    # Hyperbolic: P = Λ + G ∈ (Λ, ∞)
+    # This convention keeps P > 0 for all orbits and makes the inverse unambiguous:
+    #   P ≤ Λ → elliptic, P > Λ → hyperbolic
+    if a > 0
+        P = Λ - G
+    else
+        P = Λ + G
+    end
+
+    # Delaunay z-angular momentum: H = G cos(i)
+    H = G * cos(i)
+
+    # Inclination action: Q = G - H = G(1 - cos(i))
+    Q = G - H
+
+    # Cartesian-style eccentricity pair
+    # (ξ, η) = √(2P) × (cos(ω̃), -sin(ω̃))
+    sqrt2P = √(2 * P)
+    sω̃, cω̃ = sincos(ω̃)
+    ξ = sqrt2P * cω̃
+    η = -sqrt2P * sω̃
+
+    # Cartesian-style inclination pair
+    # (p, q) = √(2Q) × (cos(Ω), -sin(Ω))
+    sqrt2Q = √(2 * Q)
+    sΩ, cΩ = sincos(Ω)
+    p = sqrt2Q * cΩ
+    q = -sqrt2Q * sΩ
+
+    return SVector{6,RT}(Λ, λ, ξ, η, p, q)
+end
+
+"""
+    poincare2koe(u::AbstractVector{T}, μ::V) where {T<:Number,V<:Number}
+
+Converts Poincaré canonical variables into Keplerian orbital elements.
+
+Supports both elliptic and hyperbolic orbits. The orbit type is determined by comparing
+the eccentricity action P = (ξ² + η²)/2 against Λ:
+- P ≤ Λ → elliptic (a > 0)
+- P > Λ → hyperbolic (a < 0)
+
+!!! note
+    All angles are in radians.
+
+# Arguments
+-`u::AbstractVector{<:Number}`: The Poincaré state vector [Λ; λ; ξ; η; p; q].
+-`μ::Number`: Standard gravitational parameter of central body.
+
+# Returns
+-`u_koe::SVector{6, <:Number}`: The Keplerian state vector [a; e; i; Ω(RAAN); ω(AOP); ν(True Anomaly)].
+
+# References
+- Murray, C.D. and Dermott, S.F. "Solar System Dynamics." Cambridge University Press (1999).
+- Laskar, J. and Robutel, P. "Stability of the Planetary Three-Body Problem." Celestial Mechanics and Dynamical Astronomy 62 (1995): 193-217.
+"""
+function poincare2koe(
+    u::AbstractVector{T}, μ::V; equatorial_tol::Float64=1e-14, circular_tol::Float64=1e-14
+) where {T<:Number,V<:Number}
+    RT = promote_type(T, V)
+
+    Λ, λ, ξ, η, p, q = u
+
+    # Eccentricity action: P = (ξ² + η²) / 2
+    P = (ξ^2 + η^2) / 2
+
+    # Determine orbit type and recover semi-major axis, angular momentum, eccentricity
+    # P ≤ Λ → elliptic: G = Λ - P, a = Λ²/μ
+    # P > Λ → hyperbolic: G = P - Λ, a = -Λ²/μ
+    if P ≤ Λ
+        # Elliptic orbit
+        a = Λ^2 / μ
+        G = Λ - P
+        G_over_Λ = G / Λ
+        e = √(abs(1 - G_over_Λ^2))
+    else
+        # Hyperbolic orbit
+        a = -Λ^2 / μ
+        G = P - Λ
+        G_over_Λ = G / Λ
+        e = √(1 + G_over_Λ^2)
+    end
+
+    # Inclination action: Q = (p² + q²) / 2
+    Q = (p^2 + q^2) / 2
+
+    # Delaunay z-angular momentum: H = G - Q
+    H = G - Q
+
+    # Inclination: cos(i) = H/G
+    i = acos(clamp(H / G, -one(RT), one(RT)))
+
+    # Recover angles with conventions matching cart2koe:
+    # - Equatorial (i ≈ 0): Ω = 0
+    # - Circular (e ≈ 0): ω = 0
+    equatorial = abs(i) < equatorial_tol
+    circular = e < circular_tol
+
+    if equatorial && circular
+        # Circular equatorial: only true longitude is defined
+        Ω = zero(RT)
+        ω = zero(RT)
+        ν = rem2pi(λ, RoundDown)
+    elseif equatorial
+        # Eccentric equatorial: Ω undefined, use longitude of periapsis for ω
+        Ω = zero(RT)
+        ω̃ = atan(-η, ξ)
+        ω = rem2pi(ω̃, RoundDown)
+        M = λ - ω̃
+        ν = meanAnomaly2TrueAnomaly(M, e)
+    elseif circular
+        # Circular inclined: ω undefined, use argument of latitude for ν
+        Ω = rem2pi(atan(-q, p), RoundDown)
+        ω = zero(RT)
+        M = λ - Ω
+        ν = meanAnomaly2TrueAnomaly(M, e)
+    else
+        # General case: all elements well-defined
+        ω̃ = atan(-η, ξ)
+        Ω = rem2pi(atan(-q, p), RoundDown)
+        ω = rem2pi(ω̃ - Ω, RoundDown)
+        M = λ - ω̃
+        ν = meanAnomaly2TrueAnomaly(M, e)
+    end
+
+    return SVector{6,RT}(a, e, i, Ω, ω, ν)
+end

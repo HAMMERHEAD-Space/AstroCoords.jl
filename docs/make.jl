@@ -22,6 +22,7 @@ makedocs(;
             "coordinates/stiefel-scheifele.md",
             "coordinates/milankovich.md",
             "coordinates/modEq.md",
+            "coordinates/poincare.md",
             "coordinates/spherical.md",
             "coordinates/usm.md",
         ],

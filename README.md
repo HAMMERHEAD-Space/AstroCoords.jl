@@ -26,10 +26,10 @@ Currently this package implements:
 - [x] Milankovich
 - [x] J2 Modified Equinoctial
 - [x] Generalized Equinoctial Orbital Elements (requires AstroForceModels extension)
+- [x] Poincaré
 - [x] EDROMO
 - [x] Kustaanheimo-Stiefel
 - [x] Stiefel-Scheifel
-- [ ] Poincare
 
 This package may eventually support Attitude Coordinates as well.
 

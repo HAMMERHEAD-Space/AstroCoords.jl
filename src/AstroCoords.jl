@@ -22,6 +22,7 @@ include("./coordinate_sets/keplerian.jl")
 include("./coordinate_sets/milankovich.jl")
 include("./coordinate_sets/modEq.jl")
 include("./coordinate_sets/geqoe.jl")
+include("./coordinate_sets/poincare.jl")
 include("./coordinate_sets/spherical.jl")
 include("./coordinate_sets/usm.jl")
 include("./coordinate_sets/edromo.jl")
@@ -42,6 +43,7 @@ const COORDINATE_SET_ALIASES = Dict(
     "StiefelScheifele" => StiefelScheifele,
     "Milankovich" => Milankovich,
     "ModifiedEquinoctial" => ModEq,
+    "Poincare" => Poincare,
     "Spherical" => Spherical,
     "USM6" => USM6,
     "USM7" => USM7,
