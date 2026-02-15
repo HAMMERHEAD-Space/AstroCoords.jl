@@ -82,12 +82,12 @@
             cart_state = Cartesian(state)
 
             for coord in filter(
-                T -> T ∉ (EDromo, KustaanheimoStiefel, StiefelScheifele, J2EqOE),
+                T -> T ∉ (EDromo, KustaanheimoStiefel, StiefelScheifele, J2EqOE, GEqOE),
                 AstroCoords.COORD_TYPES,
             )
                 coord_state = coord(cart_state, μ)
                 for coord2 in filter(
-                    T -> T ∉ (EDromo, KustaanheimoStiefel, StiefelScheifele, J2EqOE),
+                    T -> T ∉ (EDromo, KustaanheimoStiefel, StiefelScheifele, J2EqOE, GEqOE),
                     AstroCoords.COORD_TYPES,
                 )
                     coord_state2 = coord2(coord_state, μ)

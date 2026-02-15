@@ -1,5 +1,7 @@
 using AstroCoords
+using AstroForceModels
 using BenchmarkTools
+using ComponentArrays
 
 const SUITE = BenchmarkGroup()
 
@@ -72,6 +74,19 @@ for set in _REGULAR_SETS
         )
     end
 end
+
+# Add benchmarks for GEqOE (requires AstroForceModels extension)
+const _geqoe_cv = ComponentVector(; JD=2.460310e6)
+const _geqoe_t = 0.0
+const _geqoe_dynamics = CentralBodyDynamicsModel(KeplerianGravityAstroModel(; μ=_μ))
+
+SUITE["transformation"]["GEqOE"] = @benchmarkable GEqOE(
+    $_cart_state, $_μ, $_geqoe_dynamics, $_geqoe_cv, $_geqoe_t
+)
+const _geqoe_state = GEqOE(_cart_state, _μ, _geqoe_dynamics, _geqoe_cv, _geqoe_t)
+SUITE["transformation"]["GEqOEreverse"] = @benchmarkable Cartesian(
+    $_geqoe_state, $_μ, $_geqoe_dynamics, $_geqoe_cv, $_geqoe_t
+)
 
 const _anomaly_conversions = [
     meanAnomaly2EccentricAnomaly,

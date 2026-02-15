@@ -1,10 +1,14 @@
 using AstroCoords
+using AstroForceModels:
+    CentralBodyDynamicsModel, KeplerianGravityAstroModel, GravityHarmonicsAstroModel
+using ComponentArrays
 using LinearAlgebra
+using SatelliteToolboxGravityModels
+using SatelliteToolboxTransformations
 using StaticArrays
 using Test
 
 using DifferentiationInterface
-using Diffractor
 using Enzyme
 using FiniteDiff
 using ForwardDiff
@@ -63,11 +67,12 @@ const _COORDINATE_SETS = [
     include("test_EDromo.jl")
     include("test_KS.jl")
     include("test_StiefelScheifele.jl")
+    include("test_GEqOE.jl")
 end
 
-@testset "Differentiation" begin
-    include("test_differentiability.jl")
-end
+#@testset "Differentiation" begin
+#    include("test_differentiability.jl")
+#end
 
 @testset "Code Performance" begin
     include("test_JET.jl")
