@@ -813,7 +813,7 @@ Laskar, Jacques. "Andoyer construction for Hill and Delaunay variables." Celesti
 -`u_cart::SVector{6, <:Number}``: The cartesian orbital element vector [x; y; z; ẋ; ẏ; ż].
 """
 function delaunay2cart(
-    u::AbstractVector{T}, μ::V; circular_tol::Float64=1e-14
+    u::AbstractVector{T}, μ::V; circular_tol::Float64=1e-14, max_iters::Int=100
 ) where {T<:Number,V<:Number}
     RT = promote_type(T, V)
 
@@ -842,7 +842,7 @@ function delaunay2cart(
 
     i = acos(H / G)
 
-    f = meanAnomaly2TrueAnomaly(M, e)
+    f = meanAnomaly2TrueAnomaly(M, e; max_iters=max_iters)
 
     u_koe = SVector{6,RT}(a, e, i, Ω, ω, f)
 

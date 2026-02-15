@@ -199,6 +199,52 @@ const StiefelScheifeleToCartesian = StiefelScheifeleToCartesianTransform()
 Base.inv(::CartesianToStiefelScheifeleTransform) = StiefelScheifeleToCartesianTransform()
 Base.inv(::StiefelScheifeleToCartesianTransform) = CartesianToStiefelScheifeleTransform()
 
+# ~~~~~~~~~~~~~~~ GEqOE Transformations ~~~~~~~~~~~~~~~ #
+export CartesianToGEqOE, GEqOEToCartesian
+
+struct CartesianToGEqOETransform{C<:Union{Nothing,RegularizedCoordinateConfig}} <:
+       AstroCoordTransformation
+    config::C
+end
+function CartesianToGEqOETransform()
+    CartesianToGEqOETransform(nothing)
+end
+function CartesianToGEqOETransform(config::RegularizedCoordinateConfig)
+    CartesianToGEqOETransform{typeof(config)}(config)
+end
+
+struct GEqOEToCartesianTransform{C<:Union{Nothing,RegularizedCoordinateConfig}} <:
+       AstroCoordTransformation
+    config::C
+end
+function GEqOEToCartesianTransform()
+    GEqOEToCartesianTransform(nothing)
+end
+function GEqOEToCartesianTransform(config::RegularizedCoordinateConfig)
+    GEqOEToCartesianTransform{typeof(config)}(config)
+end
+
+function (t::CartesianToGEqOETransform)(
+    x::Cartesian, μ::Number, config::RegularizedCoordinateConfig
+)
+    geqoe_vec = cart2geqoe(params(x), μ, config)
+    return GEqOE(geqoe_vec...)
+end
+
+const CartesianToGEqOE = CartesianToGEqOETransform()
+
+function (t::GEqOEToCartesianTransform)(
+    x::GEqOE, μ::Number, config::RegularizedCoordinateConfig
+)
+    cart_vec = geqoe2cart(params(x), μ, config)
+    return Cartesian(cart_vec...)
+end
+
+const GEqOEToCartesian = GEqOEToCartesianTransform()
+
+Base.inv(::CartesianToGEqOETransform) = GEqOEToCartesianTransform()
+Base.inv(::GEqOEToCartesianTransform) = CartesianToGEqOETransform()
+
 # ~~~~~~~~~~~~~~~ All Composed Transformations ~~~~~~~~~~~~~~~ #
 const COORD_TYPES = (
     Cartesian,
@@ -216,6 +262,7 @@ const COORD_TYPES = (
     EDromo,
     KustaanheimoStiefel,
     StiefelScheifele,
+    GEqOE,
 )
 const COORD_NAMES = Dict(
     Cartesian => :Cartesian,
@@ -233,6 +280,7 @@ const COORD_NAMES = Dict(
     EDromo => :EDromo,
     KustaanheimoStiefel => :KustaanheimoStiefel,
     StiefelScheifele => :StiefelScheifele,
+    GEqOE => :GEqOE,
 )
 
 # Build a graph of transformations to find paths
@@ -258,6 +306,7 @@ add_transform_edge(Cartesian, J2EqOE)
 add_transform_edge(Cartesian, EDromo)
 add_transform_edge(Cartesian, KustaanheimoStiefel)
 add_transform_edge(Cartesian, StiefelScheifele)
+add_transform_edge(Cartesian, GEqOE)
 add_transform_edge(Keplerian, USM7)
 add_transform_edge(Keplerian, ModEq)
 add_transform_edge(ModEq, ModEqN)

@@ -73,6 +73,15 @@ for set in _REGULAR_SETS
     end
 end
 
+# Add benchmarks for GEqOE
+const _geqoe_config = RegularizedCoordinateConfig(; W=0.0)
+
+SUITE["transformation"]["GEqOE"] = @benchmarkable GEqOE($_cart_state, $_μ, $_geqoe_config)
+const _geqoe_state = GEqOE(_cart_state, _μ, _geqoe_config)
+SUITE["transformation"]["GEqOEreverse"] = @benchmarkable Cartesian(
+    $_geqoe_state, $_μ, $_geqoe_config
+)
+
 const _anomaly_conversions = [
     meanAnomaly2EccentricAnomaly,
     meanAnomaly2TrueAnomaly,

@@ -5,10 +5,11 @@ end
 @testset "Transformation Allocations" begin
     # Test over all coordinate sets
     for set1 in filter(
-        T -> T ∉ (EDromo, KustaanheimoStiefel, StiefelScheifele), AstroCoords.COORD_TYPES
+        T -> T ∉ (EDromo, KustaanheimoStiefel, StiefelScheifele, GEqOE),
+        AstroCoords.COORD_TYPES,
     )
         for set2 in filter(
-            T -> T ∉ (EDromo, KustaanheimoStiefel, StiefelScheifele),
+            T -> T ∉ (EDromo, KustaanheimoStiefel, StiefelScheifele, GEqOE),
             AstroCoords.COORD_TYPES,
         )
             @test length(check_allocs(set1, (set2{Float64}, Float64))) == 0
@@ -18,7 +19,8 @@ end
 
 @testset "Quantity Allocations" begin
     for set in filter(
-        T -> T ∉ (EDromo, KustaanheimoStiefel, StiefelScheifele), AstroCoords.COORD_TYPES
+        T -> T ∉ (EDromo, KustaanheimoStiefel, StiefelScheifele, GEqOE),
+        AstroCoords.COORD_TYPES,
     )
         @test length(check_allocs(meanMotion, (set{Float64}, Float64))) == 0
         @test length(check_allocs(orbitalPeriod, (set{Float64}, Float64))) == 0
@@ -182,4 +184,43 @@ end
     # Test allocation for config construction
     config_constructor_ss(state, μ) = RegularizedCoordinateConfig(state, μ)
     @test length(check_allocs(config_constructor_ss, (typeof(state), typeof(μ)))) == 0
+end
+
+@testset "GEqOE Allocs" begin
+    state = Cartesian([
+        -1076.225324679696,
+        -6765.896364327722,
+        -332.3087833503755,
+        9.356857417032581,
+        -3.3123476319597557,
+        -1.1880157328553503,
+    ])
+    μ = 3.986004415e5
+    geqoe_config = RegularizedCoordinateConfig(; W=0.0)
+
+    geqoe_state = GEqOE(state, μ, geqoe_config)
+
+    @test length(
+        check_allocs(GEqOE, (Cartesian{Float64}, Float64, typeof(geqoe_config)))
+    ) == 0
+    @test length(
+        check_allocs(Cartesian, (GEqOE{Float64}, Float64, typeof(geqoe_config)))
+    ) == 0
+    @test length(
+        check_allocs(meanMotion, (GEqOE{Float64}, Float64, typeof(geqoe_config)))
+    ) == 0
+    @test length(
+        check_allocs(orbitalPeriod, (GEqOE{Float64}, Float64, typeof(geqoe_config)))
+    ) == 0
+    @test length(
+        check_allocs(orbitalNRG, (GEqOE{Float64}, Float64, typeof(geqoe_config)))
+    ) == 0
+    @test length(
+        check_allocs(angularMomentumVector, (GEqOE{Float64}, Float64, typeof(geqoe_config)))
+    ) == 0
+    @test length(
+        check_allocs(
+            angularMomentumQuantity, (GEqOE{Float64}, Float64, typeof(geqoe_config))
+        ),
+    ) == 0
 end

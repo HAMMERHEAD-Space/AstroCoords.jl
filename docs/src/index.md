@@ -16,10 +16,11 @@ Currently this package implements:
     - [x] USMEM
 - [x] Milankovich
 - [x] J2 Modified Equinoctial
-- [ ] Generalized Modified Equinoctial Orbital Elements
+- [x] Generalized Equinoctial Orbital Elements
 - [x] EDROMO
 - [x] Kustaanheimo-Stiefel
 - [x] Stiefel-Scheifel
+- [ ] Poincare
 
 This package may eventually support Attitude Coordinates as well.
 

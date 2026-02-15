@@ -11,6 +11,7 @@ include("./attitude_changes.jl")
 
 include("./coordinate_changes/coordinate_changes.jl")
 include("./coordinate_changes/J2EqOE.jl")
+include("./coordinate_changes/GEqOE.jl")
 include("./coordinate_changes/EDromo.jl")
 include("./coordinate_changes/Kustaanheimo-Stiefel.jl")
 include("./coordinate_changes/Stiefel-Scheifele.jl")
@@ -20,6 +21,7 @@ include("./coordinate_sets/delaunay.jl")
 include("./coordinate_sets/keplerian.jl")
 include("./coordinate_sets/milankovich.jl")
 include("./coordinate_sets/modEq.jl")
+include("./coordinate_sets/geqoe.jl")
 include("./coordinate_sets/spherical.jl")
 include("./coordinate_sets/usm.jl")
 include("./coordinate_sets/edromo.jl")
@@ -33,6 +35,7 @@ const COORDINATE_SET_ALIASES = Dict(
     "Cylindrical" => Cylindrical,
     "Delaunay" => Delaunay,
     "EDromo" => EDromo,
+    "GEqOE" => GEqOE,
     "J2EqOE" => J2EqOE,
     "Keplerian" => Keplerian,
     "KustaanheimoStiefel" => KustaanheimoStiefel,
