@@ -117,18 +117,19 @@ end
     kep_state = Array(params(Keplerian(cart_state, μ)))
     state = Array(AstroCoords.koe2IOE(kep_state, μ))
 
-    # Test each step with Mooncake backend
     @testset "Step 1: Keplerian to J2 Elements" begin
         f_fd, df_fd = value_and_jacobian(
             (x) -> collect(AstroCoords._step1(x, μ)), AutoFiniteDiff(), state
         )
 
-        f_ad, df_ad = value_and_jacobian(
-            (x) -> collect(AstroCoords._step1(x, μ)), AutoMooncake(; config=nothing), state
-        )
+        for backend in _BACKENDS
+            f_ad, df_ad = value_and_jacobian(
+                (x) -> collect(AstroCoords._step1(x, μ)), backend[2], state
+            )
 
-        @test f_fd == f_ad
-        @test df_fd ≈ df_ad atol = 1e-2
+            @test f_fd == f_ad
+            @test df_fd ≈ df_ad atol = 1e-2
+        end
     end
 
     @testset "Step 2: J2 Parameters" begin
@@ -140,14 +141,16 @@ end
             [eⱼ₂, aⱼ₂, Iⱼ₂],
         )
 
-        f_ad, df_ad = value_and_jacobian(
-            (x) -> collect(AstroCoords._step2(J2, Req, x[1], x[2], x[3])),
-            AutoMooncake(; config=nothing),
-            [eⱼ₂, aⱼ₂, Iⱼ₂],
-        )
+        for backend in _BACKENDS
+            f_ad, df_ad = value_and_jacobian(
+                (x) -> collect(AstroCoords._step2(J2, Req, x[1], x[2], x[3])),
+                backend[2],
+                [eⱼ₂, aⱼ₂, Iⱼ₂],
+            )
 
-        @test f_fd == f_ad
-        @test df_fd ≈ df_ad atol = 1e-2
+            @test f_fd == f_ad
+            @test df_fd ≈ df_ad atol = 1e-2
+        end
     end
 
     @testset "Step 3: Eccentric Anomaly" begin
@@ -157,14 +160,14 @@ end
             (x) -> collect(AstroCoords._step3(x[1], x[2])), AutoFiniteDiff(), [fⱼ₂, eⱼ₂]
         )
 
-        f_ad, df_ad = value_and_jacobian(
-            (x) -> collect(AstroCoords._step3(x[1], x[2])),
-            AutoMooncake(; config=nothing),
-            [fⱼ₂, eⱼ₂],
-        )
+        for backend in _BACKENDS
+            f_ad, df_ad = value_and_jacobian(
+                (x) -> collect(AstroCoords._step3(x[1], x[2])), backend[2], [fⱼ₂, eⱼ₂]
+            )
 
-        @test f_fd == f_ad
-        @test df_fd ≈ df_ad atol = 1e-2
+            @test f_fd == f_ad
+            @test df_fd ≈ df_ad atol = 1e-2
+        end
     end
 
     @testset "Step 4: Radius and True Anomaly" begin
@@ -178,14 +181,16 @@ end
             [aⱼ₂, eⱼ₂, η, Eⱼ₂, Lⱼ₂],
         )
 
-        f_ad, df_ad = value_and_jacobian(
-            (x) -> collect(AstroCoords._step4(x[1], x[2], x[3], x[4], x[5])),
-            AutoMooncake(; config=nothing),
-            [aⱼ₂, eⱼ₂, η, Eⱼ₂, Lⱼ₂],
-        )
+        for backend in _BACKENDS
+            f_ad, df_ad = value_and_jacobian(
+                (x) -> collect(AstroCoords._step4(x[1], x[2], x[3], x[4], x[5])),
+                backend[2],
+                [aⱼ₂, eⱼ₂, η, Eⱼ₂, Lⱼ₂],
+            )
 
-        @test f_fd == f_ad
-        @test df_fd ≈ df_ad atol = 1e-2
+            @test f_fd == f_ad
+            @test df_fd ≈ df_ad atol = 1e-2
+        end
     end
 
     @testset "Step 5: Semi-major Axis and RAAN Correction" begin
@@ -204,18 +209,20 @@ end
             [aⱼ₂, γ, γ′, θ, rⱼ₂, η, eⱼ₂, gⱼ₂, νⱼ₂, Lⱼ₂],
         )
 
-        f_ad, df_ad = value_and_jacobian(
-            (x) -> collect(
-                AstroCoords._step5(
-                    x[1], x[2], x[3], x[4], x[5], x[6], x[7], x[8], x[9], x[10]
+        for backend in _BACKENDS
+            f_ad, df_ad = value_and_jacobian(
+                (x) -> collect(
+                    AstroCoords._step5(
+                        x[1], x[2], x[3], x[4], x[5], x[6], x[7], x[8], x[9], x[10]
+                    ),
                 ),
-            ),
-            AutoMooncake(; config=nothing),
-            [aⱼ₂, γ, γ′, θ, rⱼ₂, η, eⱼ₂, gⱼ₂, νⱼ₂, Lⱼ₂],
-        )
+                backend[2],
+                [aⱼ₂, γ, γ′, θ, rⱼ₂, η, eⱼ₂, gⱼ₂, νⱼ₂, Lⱼ₂],
+            )
 
-        @test f_fd == f_ad
-        @test df_fd ≈ df_ad atol = 1e-2
+            @test f_fd == f_ad
+            @test df_fd ≈ df_ad atol = 1e-2
+        end
     end
 
     @testset "Step 6: Longitude Sum" begin
@@ -232,15 +239,18 @@ end
             [γ′, θ, νⱼ₂, Lⱼ₂, eⱼ₂, gⱼ₂, hⱼ₂, δh],
         )
 
-        f_ad, df_ad = value_and_jacobian(
-            (x) ->
-                collect(AstroCoords._step6(x[1], x[2], x[3], x[4], x[5], x[6], x[7], x[8])),
-            AutoMooncake(; config=nothing),
-            [γ′, θ, νⱼ₂, Lⱼ₂, eⱼ₂, gⱼ₂, hⱼ₂, δh],
-        )
+        for backend in _BACKENDS
+            f_ad, df_ad = value_and_jacobian(
+                (x) -> collect(
+                    AstroCoords._step6(x[1], x[2], x[3], x[4], x[5], x[6], x[7], x[8])
+                ),
+                backend[2],
+                [γ′, θ, νⱼ₂, Lⱼ₂, eⱼ₂, gⱼ₂, hⱼ₂, δh],
+            )
 
-        @test f_fd == f_ad
-        @test df_fd ≈ df_ad atol = 1e-2
+            @test f_fd == f_ad
+            @test df_fd ≈ df_ad atol = 1e-2
+        end
     end
 
     @testset "Step 7: Eccentricity Corrections" begin
@@ -257,16 +267,20 @@ end
             [νⱼ₂, eⱼ₂, η, aⱼ₂, rⱼ₂, γ, γ′, θ, gⱼ₂],
         )
 
-        f_ad, df_ad = value_and_jacobian(
-            (x) -> collect(
-                AstroCoords._step7(x[1], x[2], x[3], x[4], x[5], x[6], x[7], x[8], x[9])
-            ),
-            AutoMooncake(; config=nothing),
-            [νⱼ₂, eⱼ₂, η, aⱼ₂, rⱼ₂, γ, γ′, θ, gⱼ₂],
-        )
+        for backend in _BACKENDS
+            f_ad, df_ad = value_and_jacobian(
+                (x) -> collect(
+                    AstroCoords._step7(
+                        x[1], x[2], x[3], x[4], x[5], x[6], x[7], x[8], x[9]
+                    ),
+                ),
+                backend[2],
+                [νⱼ₂, eⱼ₂, η, aⱼ₂, rⱼ₂, γ, γ′, θ, gⱼ₂],
+            )
 
-        @test f_fd == f_ad
-        @test df_fd ≈ df_ad atol = 1e-2
+            @test f_fd == f_ad
+            @test df_fd ≈ df_ad atol = 1e-2
+        end
     end
 
     @testset "Step 8: Inclination Corrections" begin
@@ -282,14 +296,17 @@ end
             [γ′, θ, νⱼ₂, eⱼ₂, gⱼ₂, δh, Iⱼ₂],
         )
 
-        f_ad, df_ad = value_and_jacobian(
-            (x) -> collect(AstroCoords._step8(x[1], x[2], x[3], x[4], x[5], x[6], x[7])),
-            AutoMooncake(; config=nothing),
-            [γ′, θ, νⱼ₂, eⱼ₂, gⱼ₂, δh, Iⱼ₂],
-        )
+        for backend in _BACKENDS
+            f_ad, df_ad = value_and_jacobian(
+                (x) ->
+                    collect(AstroCoords._step8(x[1], x[2], x[3], x[4], x[5], x[6], x[7])),
+                backend[2],
+                [γ′, θ, νⱼ₂, eⱼ₂, gⱼ₂, δh, Iⱼ₂],
+            )
 
-        @test f_fd == f_ad
-        @test df_fd ≈ df_ad atol = 1e-2
+            @test f_fd == f_ad
+            @test df_fd ≈ df_ad atol = 1e-2
+        end
     end
 
     @testset "Step 9: Final IOE Elements" begin
@@ -312,18 +329,20 @@ end
             [a, eⱼ₂, δe, e″δL, Lⱼ₂, Iⱼ₂, δI, sin_half_I″_δh, hⱼ₂, Σlgh],
         )
 
-        f_ad, df_ad = value_and_jacobian(
-            (x) -> collect(
-                AstroCoords._step9(
-                    x[1], x[2], x[3], x[4], x[5], x[6], x[7], x[8], x[9], x[10]
+        for backend in _BACKENDS
+            f_ad, df_ad = value_and_jacobian(
+                (x) -> collect(
+                    AstroCoords._step9(
+                        x[1], x[2], x[3], x[4], x[5], x[6], x[7], x[8], x[9], x[10]
+                    ),
                 ),
-            ),
-            AutoMooncake(; config=nothing),
-            [a, eⱼ₂, δe, e″δL, Lⱼ₂, Iⱼ₂, δI, sin_half_I″_δh, hⱼ₂, Σlgh],
-        )
+                backend[2],
+                [a, eⱼ₂, δe, e″δL, Lⱼ₂, Iⱼ₂, δI, sin_half_I″_δh, hⱼ₂, Σlgh],
+            )
 
-        @test f_fd == f_ad
-        @test df_fd ≈ df_ad atol = 1e-2
+            @test f_fd == f_ad
+            @test df_fd ≈ df_ad atol = 1e-2
+        end
     end
 end
 
