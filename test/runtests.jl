@@ -3,14 +3,6 @@ using LinearAlgebra
 using StaticArrays
 using Test
 
-using DifferentiationInterface
-using Enzyme
-using FiniteDiff
-using ForwardDiff
-using Mooncake
-using PolyesterForwardDiff
-using Zygote
-
 using Aqua
 using JET
 using AllocCheck
@@ -66,8 +58,52 @@ const _COORDINATE_SETS = [
     include("test_GEqOE.jl")
 end
 
-@testset "Differentiation" begin
-    include("test_differentiability.jl")
+# ── Gated differentiability tests ────────────────────────────────────────────
+const _DIFF_ENV = get(ENV, "ASTROCOORDS_TEST_DIFF", "false")
+if _DIFF_ENV ∉ ("false", "")
+    using DifferentiationInterface
+    using FiniteDiff
+
+    _run_all = _DIFF_ENV ∈ ("true", "all")
+    _requested = _run_all ? Set{String}() : Set(strip.(split(_DIFF_ENV, ",")))
+    _need(name) = _run_all || name ∈ _requested
+
+    _backend_list = Tuple{String,Any}[]
+
+    if _need("ForwardDiff")
+        using ForwardDiff
+        push!(_backend_list, ("ForwardDiff", AutoForwardDiff()))
+    end
+    if _need("Enzyme")
+        using Enzyme
+        push!(_backend_list, ("Enzyme", AutoEnzyme()))
+    end
+    if _need("Mooncake")
+        using Mooncake
+        push!(_backend_list, ("Mooncake", AutoMooncake(; config=nothing)))
+    end
+    if _need("PolyesterForwardDiff")
+        using PolyesterForwardDiff
+        push!(_backend_list, ("PolyesterForwardDiff", AutoPolyesterForwardDiff()))
+    end
+
+    const _TEST_ZYGOTE = _need("Zygote")
+    if _TEST_ZYGOTE
+        using Zygote
+    end
+
+    isempty(_backend_list) &&
+        !_TEST_ZYGOTE &&
+        error("No matching backend for ASTROCOORDS_TEST_DIFF=\"$_DIFF_ENV\"")
+
+    const _BACKENDS = Tuple(_backend_list)
+    @info "Running differentiability tests with: $(join([b[1] for b in _BACKENDS], ", "))$(_TEST_ZYGOTE ? ", Zygote" : "")"
+
+    @testset "Differentiation" begin
+        include("test_differentiability.jl")
+    end
+else
+    @info "Skipping differentiability tests (set ASTROCOORDS_TEST_DIFF to enable)"
 end
 
 @testset "Code Performance" begin
