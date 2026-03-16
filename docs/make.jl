@@ -16,7 +16,6 @@ makedocs(;
             "coordinates/delaunay.md",
             "coordinates/EDromo.md",
             "coordinates/GEqOE.md",
-            "coordinates/J2EqOE.md",
             "coordinates/keplerian.md",
             "coordinates/kustaanheimo-stiefel.md",
             "coordinates/stiefel-scheifele.md",
