@@ -15,7 +15,6 @@ Currently this package implements:
     - [x] USM6
     - [x] USMEM
 - [x] Milankovich
-- [x] J2 Modified Equinoctial
 - [x] Generalized Equinoctial Orbital Elements
 - [x] Poincaré
 - [x] EDROMO
