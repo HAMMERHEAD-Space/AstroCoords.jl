@@ -2,6 +2,8 @@ module AstroCoords
 
 using LinearAlgebra
 using StaticArrays
+using FrameTransformations
+using Tempo
 
 include("./core_types.jl")
 include("regularized_config.jl")
@@ -51,5 +53,6 @@ const COORDINATE_SET_ALIASES = Dict(
 )
 
 include("./quantities.jl")
+include("./orbit_state.jl")
 
 end

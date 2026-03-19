@@ -1299,6 +1299,214 @@ end
     end
 end
 
+@testset "OrbitState Differentiation" begin
+    state = [
+        -1076.225324679696,
+        -6765.896364327722,
+        -332.3087833503755,
+        9.356857417032581,
+        -3.3123476319597557,
+        -1.1880157328553503,
+    ]
+    μ = 3.986004415e5
+    s = OrbitState(Cartesian(state), 0.0, :ICRF)
+
+    @testset "convert_coords wrt state" begin
+        f_fd, df_fd = value_and_jacobian(
+            x -> Array(
+                params(
+                    coords(
+                        convert_coords(OrbitState(Cartesian(x), 0.0, :ICRF), Keplerian, μ),
+                    ),
+                ),
+            ),
+            AutoFiniteDiff(),
+            state,
+        )
+
+        for backend in _BACKENDS
+            testset_name = "convert_coords " * backend[1]
+            @testset "$testset_name" begin
+                f_ad, df_ad = value_and_jacobian(
+                    x -> Array(
+                        params(
+                            coords(
+                                convert_coords(
+                                    OrbitState(Cartesian(x), 0.0, :ICRF), Keplerian, μ
+                                ),
+                            ),
+                        ),
+                    ),
+                    backend[2],
+                    state,
+                )
+                @test f_fd == f_ad
+                @test df_fd ≈ df_ad atol = 1e-2
+            end
+        end
+    end
+
+    @testset "convert_coords wrt μ" begin
+        f_fd2, df_fd2 = value_and_derivative(
+            m -> Array(params(coords(convert_coords(s, Keplerian, m)))), AutoFiniteDiff(), μ
+        )
+
+        for backend in _BACKENDS
+            testset_name = "convert_coords wrt μ " * backend[1]
+            @testset "$testset_name" begin
+                f_ad2, df_ad2 = value_and_derivative(
+                    m -> Array(params(coords(convert_coords(s, Keplerian, m)))),
+                    backend[2],
+                    μ,
+                )
+                @test f_fd2 == f_ad2
+                @test df_fd2 ≈ df_ad2 atol = 1e-4
+            end
+        end
+    end
+
+    if _TEST_ZYGOTE
+        @testset "convert_coords Zygote" begin
+            try
+                f_ad, df_ad = value_and_jacobian(
+                    x -> Array(
+                        params(
+                            coords(
+                                convert_coords(
+                                    OrbitState(Cartesian(x), 0.0, :ICRF), Keplerian, μ
+                                ),
+                            ),
+                        ),
+                    ),
+                    AutoZygote(),
+                    state,
+                )
+                f_fd, df_fd = value_and_jacobian(
+                    x -> Array(
+                        params(
+                            coords(
+                                convert_coords(
+                                    OrbitState(Cartesian(x), 0.0, :ICRF), Keplerian, μ
+                                ),
+                            ),
+                        ),
+                    ),
+                    AutoFiniteDiff(),
+                    state,
+                )
+                @test f_fd == f_ad
+                @test df_fd ≈ df_ad atol = 1e-2
+            catch err
+                @test err isa MethodError
+                @test startswith(
+                    sprint(showerror, err),
+                    "MethodError: no method matching iterate(::Nothing)",
+                )
+            end
+        end
+    end
+
+    @testset "change_frame wrt state" begin
+        frames = FrameSystem{2,Float64}()
+        add_axes!(frames, :ICRF, 1)
+        add_axes_fixed_angles!(frames, :ITRF, 2, 1, [0.0, 0.0, 0.0], :ZYX)
+        cr_fwd = compile_rotation6(frames, :ICRF, :ITRF)
+
+        f_fd, df_fd = value_and_jacobian(
+            x -> Array(
+                params(
+                    coords(
+                        change_frame(
+                            OrbitState(Cartesian(x), 0.0, :ICRF),
+                            Val{:ITRF}(),
+                            cr_fwd,
+                            μ,
+                        ),
+                    ),
+                ),
+            ),
+            AutoFiniteDiff(),
+            state,
+        )
+
+        for backend in _BACKENDS
+            testset_name = "change_frame " * backend[1]
+            @testset "$testset_name" begin
+                f_ad, df_ad = value_and_jacobian(
+                    x -> Array(
+                        params(
+                            coords(
+                                change_frame(
+                                    OrbitState(Cartesian(x), 0.0, :ICRF),
+                                    Val{:ITRF}(),
+                                    cr_fwd,
+                                    μ,
+                                ),
+                            ),
+                        ),
+                    ),
+                    backend[2],
+                    state,
+                )
+                @test f_fd == f_ad
+                @test df_fd ≈ df_ad atol = 1e-2
+            end
+        end
+    end
+
+    if _TEST_ZYGOTE
+        @testset "change_frame Zygote" begin
+            frames = FrameSystem{2,Float64}()
+            add_axes!(frames, :ICRF, 1)
+            add_axes_fixed_angles!(frames, :ITRF, 2, 1, [0.0, 0.0, 0.0], :ZYX)
+            cr_fwd = compile_rotation6(frames, :ICRF, :ITRF)
+
+            try
+                f_ad, df_ad = value_and_jacobian(
+                    x -> Array(
+                        params(
+                            coords(
+                                change_frame(
+                                    OrbitState(Cartesian(x), 0.0, :ICRF),
+                                    Val{:ITRF}(),
+                                    cr_fwd,
+                                    μ,
+                                ),
+                            ),
+                        ),
+                    ),
+                    AutoZygote(),
+                    state,
+                )
+                f_fd, df_fd = value_and_jacobian(
+                    x -> Array(
+                        params(
+                            coords(
+                                change_frame(
+                                    OrbitState(Cartesian(x), 0.0, :ICRF),
+                                    Val{:ITRF}(),
+                                    cr_fwd,
+                                    μ,
+                                ),
+                            ),
+                        ),
+                    ),
+                    AutoFiniteDiff(),
+                    state,
+                )
+                @test f_fd == f_ad
+                @test df_fd ≈ df_ad atol = 1e-2
+            catch err
+                @test err isa MethodError
+                @test startswith(
+                    sprint(showerror, err),
+                    "MethodError: no method matching iterate(::Nothing)",
+                )
+            end
+        end
+    end
+end
+
 @testset "GEqOE Transformation Differentiation" begin
     state = [
         -1076.225324679696,
