@@ -37,8 +37,8 @@
         frames = FrameSystem{2,Float64}()
         add_axes!(frames, :ICRF, 1)
         add_axes_fixed_angles!(frames, :ITRF, 2, 1, [0.0, 0.0, 0.0], :ZYX)
-        cr_fwd = compile_rotation6(frames, :ICRF, :ITRF)
-        cr_inv = compile_rotation6(frames, :ITRF, :ICRF)
+        cr_fwd = compile_rotation(frames, :ICRF, :ITRF, Val(2))
+        cr_inv = compile_rotation(frames, :ITRF, :ICRF, Val(2))
 
         s_itrf = change_frame(s, Val{:ITRF}(), cr_fwd, μ)
         @test s_itrf isa OrbitState{<:Cartesian,<:Any,:ITRF}
@@ -68,7 +68,7 @@
         frames = FrameSystem{2,Float64}()
         add_axes!(frames, :ICRF, 1)
         add_axes_fixed_angles!(frames, :ITRF, 2, 1, [0.0, 0.0, 0.0], :ZYX)
-        cr_fwd = compile_rotation6(frames, :ICRF, :ITRF)
+        cr_fwd = compile_rotation(frames, :ICRF, :ITRF, Val(2))
 
         s_kep = convert_coords(s, Keplerian, μ)
         s_kep_itrf = change_frame(s_kep, Val{:ITRF}(), cr_fwd, μ)

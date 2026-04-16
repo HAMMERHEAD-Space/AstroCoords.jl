@@ -55,7 +55,7 @@ Rotate an `OrbitState` into `new_frame`. Converts to Cartesian internally, appli
 rotation, then converts back to the original coordinate type.
 
 The `frames` argument may be a `FrameSystem` (computes the rotation at runtime via graph
-lookup) or a pre-compiled `CompiledRotation{2}` (allocation-free; use `compile_rotation6`
+lookup) or a pre-compiled `CompiledRotation{2}` (allocation-free; use `compile_rotation`
 to obtain one from a `FrameSystem` when the rotation is fixed across many calls).
 """
 function change_frame(
@@ -71,7 +71,7 @@ end
 """
     change_frame(state::OrbitState, ::Val{G}, cr::CompiledRotation{2}, μ, args...) -> OrbitState
 
-Allocation-free `change_frame` using a pre-compiled rotation obtained via `compile_rotation6`.
+Allocation-free `change_frame` using a pre-compiled rotation obtained via `compile_rotation`.
 Bypasses the frame graph path lookup, enabling zero-allocation frame changes in hot loops.
 """
 function change_frame(
