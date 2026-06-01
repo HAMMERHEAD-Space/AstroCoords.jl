@@ -29,9 +29,8 @@ struct EDromo{T} <: AstroCoord{8,T}
     @inline function EDromo{T}(ζ₁, ζ₂, ζ₃, ζ₄, ζ₅, ζ₆, ζ₇, ζ₈) where {T}
         return new{T}(ζ₁, ζ₂, ζ₃, ζ₄, ζ₅, ζ₆, ζ₇, ζ₈)
     end
-    @inline EDromo{T}(p::EDromo{T}) where {T} = new{T}(
-        p.ζ₁, p.ζ₂, p.ζ₃, p.ζ₄, p.ζ₅, p.ζ₆, p.ζ₇, p.ζ₈
-    )
+    @inline EDromo{T}(p::EDromo{T}) where {T} =
+        new{T}(p.ζ₁, p.ζ₂, p.ζ₃, p.ζ₄, p.ζ₅, p.ζ₆, p.ζ₇, p.ζ₈)
 end
 
 # ~~~~~~~~~~~~~~~ Constructors ~~~~~~~~~~~~~~~ #
