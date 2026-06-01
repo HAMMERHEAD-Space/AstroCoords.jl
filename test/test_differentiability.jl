@@ -389,9 +389,8 @@ end
                     @test df_ad ≈ df_fd rtol = 1e-6
 
                     # Reverse pass (EDromo -> Cartesian)
-                    from_edromo(x) = Array(
-                        params(Cartesian(EDromo(x), μ, ϕ, edromo_params))
-                    )
+                    from_edromo(x) =
+                        Array(params(Cartesian(EDromo(x), μ, ϕ, edromo_params)))
 
                     f_ad_rev, df_ad_rev = value_and_jacobian(
                         x -> from_edromo(x), backend[2], edromo_state_vec
@@ -510,9 +509,8 @@ end
                 @test df_ad ≈ df_fd rtol = 1e-6
 
                 # Reverse pass (EDromo -> Cartesian)
-                from_edromo(x) = Array(
-                    params(Cartesian(EDromo(edromo_state_vec), μ, x, edromo_params))
-                )
+                from_edromo(x) =
+                    Array(params(Cartesian(EDromo(edromo_state_vec), μ, x, edromo_params)))
 
                 f_ad_rev, df_ad_rev = value_and_derivative(
                     x -> from_edromo(x), AutoZygote(), ϕ
@@ -729,9 +727,8 @@ end
                     @test df_ad ≈ df_fd atol = 1e-1
 
                     # Reverse pass (KustaanheimoStiefel -> Cartesian)
-                    from_ks(x) = Array(
-                        params(Cartesian(KustaanheimoStiefel(x...), μ, ks_params))
-                    )
+                    from_ks(x) =
+                        Array(params(Cartesian(KustaanheimoStiefel(x...), μ, ks_params)))
 
                     f_ad_rev, df_ad_rev = value_and_jacobian(
                         x -> from_ks(x), backend[2], ks_state_vec
@@ -1002,9 +999,8 @@ end
                     @test df_ad ≈ df_fd atol = 1e-1
 
                     # Reverse pass (StiefelScheifele -> Cartesian)
-                    from_ss(x) = Array(
-                        params(Cartesian(StiefelScheifele(x...), μ, ϕ_ss, ss_params))
-                    )
+                    from_ss(x) =
+                        Array(params(Cartesian(StiefelScheifele(x...), μ, ϕ_ss, ss_params)))
 
                     f_ad_rev, df_ad_rev = value_and_jacobian(
                         x -> from_ss(x), backend[2], ss_state_vec
@@ -1044,9 +1040,8 @@ end
                 @test df_ad ≈ df_fd atol = 1e-1
 
                 # Reverse pass (StiefelScheifele -> Cartesian)
-                from_ss(x) = Array(
-                    params(Cartesian(StiefelScheifele(x), μ, ϕ_ss, ss_params))
-                )
+                from_ss(x) =
+                    Array(params(Cartesian(StiefelScheifele(x), μ, ϕ_ss, ss_params)))
 
                 f_ad_rev, df_ad_rev = value_and_jacobian(
                     x -> from_ss(x), AutoZygote(), ss_state_vec
@@ -1088,7 +1083,7 @@ end
 
                     # Reverse pass (StiefelScheifele -> Cartesian)
                     from_ss(x) = Array(
-                        params(Cartesian(StiefelScheifele(ss_state_vec), μ, x, ss_params))
+                        params(Cartesian(StiefelScheifele(ss_state_vec), μ, x, ss_params)),
                     )
 
                     f_ad_rev, df_ad_rev = value_and_derivative(
@@ -1498,9 +1493,8 @@ end
     if _TEST_ZYGOTE
         @testset "Differentiate wrt W Zygote" begin
             # Forward pass
-            to_geqoe_w(w) = Array(
-                params(GEqOE(cart_state, μ, RegularizedCoordinateConfig(; W=w)))
-            )
+            to_geqoe_w(w) =
+                Array(params(GEqOE(cart_state, μ, RegularizedCoordinateConfig(; W=w))))
 
             try
                 f_ad, df_ad = value_and_derivative(w -> to_geqoe_w(w), AutoZygote(), 0.0)
@@ -1519,9 +1513,8 @@ end
             end
 
             # Reverse pass
-            from_geqoe_w(w) = Array(
-                params(Cartesian(geqoe_state, μ, RegularizedCoordinateConfig(; W=w)))
-            )
+            from_geqoe_w(w) =
+                Array(params(Cartesian(geqoe_state, μ, RegularizedCoordinateConfig(; W=w))))
 
             try
                 f_ad_rev, df_ad_rev = value_and_derivative(
