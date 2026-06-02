@@ -69,7 +69,8 @@ jobs:
           echo 'Go to "Actions"->"Benchmark a pull request"->[the most recent run]->"Artifacts" (at the bottom).' >> body.md
 
       - name: Find Comment
-        uses: peter-evans/find-comment@v3
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: peter-evans/find-comment@v4
         id: fcbenchmark
         with:
           issue-number: ${{ github.event.pull_request.number }}
@@ -77,6 +78,7 @@ jobs:
           body-includes: Benchmark Results
 
       - name: Comment on PR
+        if: ${{ github.event_name == 'pull_request' }}
         uses: peter-evans/create-or-update-comment@v5
         with:
           comment-id: ${{ steps.fcbenchmark.outputs.comment-id }}
