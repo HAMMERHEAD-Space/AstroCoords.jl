@@ -106,12 +106,14 @@ function cart2EDromo(
     ##################################################
     #* 4. Time Element
     ##################################################
-    if flag_time isa PhysicalTime
-        ζ₈ = t₀ / TU
+    ζ₈ = if flag_time isa PhysicalTime
+        t₀ / TU
     elseif flag_time isa ConstantTime
-        ζ₈ = t₀ / TU + ζ₃^(1.5) * (ζ₁*sϕ - ζ₂*cϕ - ϕ)
+        t₀ / TU + ζ₃^(1.5) * (ζ₁*sϕ - ζ₂*cϕ - ϕ)
     elseif flag_time isa LinearTime
-        ζ₈ = t₀ / TU + ζ₃^(1.5) * (ζ₁*sϕ - ζ₂*cϕ)
+        t₀ / TU + ζ₃^(1.5) * (ζ₁*sϕ - ζ₂*cϕ)
+    else
+        throw(ArgumentError("Unsupported time formulation: $(flag_time)"))
     end
 
     return SVector{8,RT}(ζ₁, ζ₂, ζ₃, ζ₄, ζ₅, ζ₆, ζ₇, ζ₈)
@@ -210,12 +212,14 @@ function get_EDromo_time(
 
     sϕ, cϕ = sincos(ϕ)
 
-    if flag_time isa PhysicalTime
-        t = u[8]
+    t = if flag_time isa PhysicalTime
+        u[8]
     elseif flag_time isa ConstantTime
-        t = u[8] - u[3]^(1.5) * (u[1]*sϕ - u[2]*cϕ - ϕ)
+        u[8] - u[3]^(1.5) * (u[1]*sϕ - u[2]*cϕ - ϕ)
     elseif flag_time isa LinearTime
-        t = u[8] - u[3]^(1.5) * (u[1]*sϕ - u[2]*cϕ)
+        u[8] - u[3]^(1.5) * (u[1]*sϕ - u[2]*cϕ)
+    else
+        throw(ArgumentError("Unsupported time formulation: $(flag_time)"))
     end
 
     return RT(t * TU + t₀)

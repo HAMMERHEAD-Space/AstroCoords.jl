@@ -58,10 +58,12 @@ function cart2KS(
     h = Μ / r - 0.5 * dot(v_vec, v_vec) - W_non_dim
 
     # Time element
-    if flag_time isa PhysicalTime
-        τ = t
+    τ = if flag_time isa PhysicalTime
+        t
     elseif flag_time isa LinearTime
-        τ = t + dot(SVector{4}(u₁, u₂, u₃, u₄), SVector{4}(u₅, u₆, u₇, u₈)) / h
+        t + dot(SVector{4}(u₁, u₂, u₃, u₄), SVector{4}(u₅, u₆, u₇, u₈)) / h
+    else
+        throw(ArgumentError("Unsupported time formulation: $(flag_time)"))
     end
 
     return SVector{10,RT}(u₁, u₂, u₃, u₄, u₅, u₆, u₇, u₈, h, τ)
@@ -124,13 +126,13 @@ function get_KS_time(
     u::AbstractVector{T}, config::RegularizedCoordinateConfig
 ) where {T<:Number}
     t₀, TU, flag_time = config.t₀, config.TU, config.flag_time
-    if flag_time isa PhysicalTime
-        t = u[10]
+    t = if flag_time isa PhysicalTime
+        u[10]
     elseif flag_time isa LinearTime
-        t =
-            u[10] -
-            dot(SVector{4}(u[1], u[2], u[3], u[4]), SVector{4}(u[5], u[6], u[7], u[8])) /
-            u[9]
+        u[10] -
+        dot(SVector{4}(u[1], u[2], u[3], u[4]), SVector{4}(u[5], u[6], u[7], u[8])) / u[9]
+    else
+        throw(ArgumentError("Unsupported time formulation: $(flag_time)"))
     end
     return t * TU + t₀
 end
