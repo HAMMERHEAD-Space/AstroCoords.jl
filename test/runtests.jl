@@ -1,4 +1,5 @@
 using AstroCoords
+using FrameTransformations
 using LinearAlgebra
 using StaticArrays
 using Test
@@ -47,6 +48,9 @@ const _COORDINATE_SETS = [
     include("test_anomalies.jl")
     include("test_quantities.jl")
     include("test_utils.jl")
+
+    # OrbitState
+    include("test_orbit_state.jl")
 
     # Coordinate Changes
     include("test_attitude_changes.jl")
