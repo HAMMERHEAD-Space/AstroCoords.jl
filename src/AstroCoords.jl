@@ -10,7 +10,6 @@ include("./anomalies.jl")
 include("./attitude_changes.jl")
 
 include("./coordinate_changes/coordinate_changes.jl")
-include("./coordinate_changes/J2EqOE.jl")
 include("./coordinate_changes/GEqOE.jl")
 include("./coordinate_changes/EDromo.jl")
 include("./coordinate_changes/Kustaanheimo-Stiefel.jl")
@@ -37,7 +36,6 @@ const COORDINATE_SET_ALIASES = Dict(
     "Delaunay" => Delaunay,
     "EDromo" => EDromo,
     "GEqOE" => GEqOE,
-    "J2EqOE" => J2EqOE,
     "Keplerian" => Keplerian,
     "KustaanheimoStiefel" => KustaanheimoStiefel,
     "StiefelScheifele" => StiefelScheifele,

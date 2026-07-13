@@ -39,7 +39,7 @@ function Keplerian(a::A, e::E, i::I, Ω::O, ω::W, f::F) where {A,E,I,O,W,F}
 end
 # More specific than AbstractVector to avoid ambiguity
 function Keplerian(g::StaticVector{N,T}) where {N,T}
-    Keplerian{T}(g[1], g[2], g[3], g[4], g[5], g[6])
+    return Keplerian{T}(g[1], g[2], g[3], g[4], g[5], g[6])
 end
 Keplerian{T}(g::StaticVector) where {T} = Keplerian{T}(g[1], g[2], g[3], g[4], g[5], g[6])
 

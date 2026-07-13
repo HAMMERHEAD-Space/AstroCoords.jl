@@ -1,4 +1,4 @@
-@testset "ModEq and J2EqOE Coordinate Sets" begin
+@testset "ModEq Coordinate Sets" begin
     @testset "ModEq - Inner Constructor" begin
         modeq = ModEq{Float64}(7000.0, 0.1, 0.2, 0.05, 0.06, 1.0)
         @test modeq isa ModEq{Float64}
@@ -83,60 +83,6 @@
 
         @test_throws BoundsError modeq[0]
         @test_throws BoundsError modeq[7]
-    end
-
-    @testset "J2EqOE - Inner Constructor" begin
-        j2eq = J2EqOE{Float64}(0.001, 0.1, 0.2, 0.05, 0.06, 1.0)
-        @test j2eq isa J2EqOE{Float64}
-        @test j2eq.n == 0.001
-        @test j2eq.h == 0.1
-        @test j2eq.k == 0.2
-        @test j2eq.p == 0.05
-        @test j2eq.q == 0.06
-        @test j2eq.L == 1.0
-    end
-
-    @testset "J2EqOE - Constructor from Vector" begin
-        vec = [0.001, 0.1, 0.2, 0.05, 0.06, 1.0]
-        j2eq = J2EqOE(vec)
-        @test j2eq isa J2EqOE{Float64}
-        @test j2eq.n == 0.001
-        @test j2eq.L == 1.0
-    end
-
-    @testset "J2EqOE - Type Promotion" begin
-        j2eq = J2EqOE(0.001, 0.1f0, 0.2, 0, 0.06, 1.0)
-        @test j2eq isa J2EqOE
-        @test eltype(j2eq) <: AbstractFloat
-    end
-
-    @testset "J2EqOE - params() Method" begin
-        j2eq = J2EqOE(0.001, 0.1, 0.2, 0.05, 0.06, 1.0)
-        p = params(j2eq)
-
-        @test p isa SVector{6,Float64}
-        @test p[1] == 0.001
-        @test p[6] == 1.0
-    end
-
-    @testset "J2EqOE - Base.one()" begin
-        j2eq_one = one(J2EqOE)
-        @test j2eq_one isa J2EqOE{Float64}
-        @test all(params(j2eq_one) .== 0.0)
-    end
-
-    @testset "J2EqOE - Base.getindex" begin
-        j2eq = J2EqOE(0.001, 0.1, 0.2, 0.05, 0.06, 1.0)
-
-        @test j2eq[1] == 0.001  # n
-        @test j2eq[2] == 0.1    # h
-        @test j2eq[3] == 0.2    # k
-        @test j2eq[4] == 0.05   # p
-        @test j2eq[5] == 0.06   # q
-        @test j2eq[6] == 1.0    # L
-
-        @test_throws BoundsError j2eq[0]
-        @test_throws BoundsError j2eq[7]
     end
 
     @testset "Type Stability" begin

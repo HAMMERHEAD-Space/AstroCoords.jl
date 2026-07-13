@@ -43,7 +43,7 @@ end
 
 # ~~~~~~~~~~~~~~~ Constructors ~~~~~~~~~~~~~~~ #
 function StiefelScheifele(X::AbstractVector{T}) where {T}
-    StiefelScheifele{T}(X[1], X[2], X[3], X[4], X[5], X[6], X[7], X[8], X[9], X[10])
+    return StiefelScheifele{T}(X[1], X[2], X[3], X[4], X[5], X[6], X[7], X[8], X[9], X[10])
 end
 function StiefelScheifele(
     α1::A1, α2::A2, α3::A3, α4::A4, β1::B1, β2::B2, β3::B3, β4::B4, ω::W, t::TT
@@ -53,10 +53,10 @@ function StiefelScheifele(
 end
 # More specific than AbstractVector to avoid ambiguity
 function StiefelScheifele(g::StaticVector{N,T}) where {N,T}
-    StiefelScheifele{T}(g[1], g[2], g[3], g[4], g[5], g[6], g[7], g[8], g[9], g[10])
+    return StiefelScheifele{T}(g[1], g[2], g[3], g[4], g[5], g[6], g[7], g[8], g[9], g[10])
 end
 function StiefelScheifele{T}(g::StaticVector) where {T}
-    StiefelScheifele{T}(g[1], g[2], g[3], g[4], g[5], g[6], g[7], g[8], g[9], g[10])
+    return StiefelScheifele{T}(g[1], g[2], g[3], g[4], g[5], g[6], g[7], g[8], g[9], g[10])
 end
 
 # ~~~~~~~~~~~~~~~ Conversions ~~~~~~~~~~~~~~~ #

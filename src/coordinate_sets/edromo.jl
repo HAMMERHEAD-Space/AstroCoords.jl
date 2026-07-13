@@ -35,7 +35,7 @@ end
 
 # ~~~~~~~~~~~~~~~ Constructors ~~~~~~~~~~~~~~~ #
 function EDromo(X::AbstractVector{T}) where {T}
-    EDromo{T}(X[1], X[2], X[3], X[4], X[5], X[6], X[7], X[8])
+    return EDromo{T}(X[1], X[2], X[3], X[4], X[5], X[6], X[7], X[8])
 end
 function EDromo(
     ζ₁::T1, ζ₂::T2, ζ₃::T3, ζ₄::T4, ζ₅::T5, ζ₆::T6, ζ₇::T7, ζ₈::T8
@@ -45,15 +45,15 @@ function EDromo(
 end
 # More specific than AbstractVector to avoid ambiguity
 function EDromo(g::StaticVector{N,T}) where {N,T}
-    EDromo{T}(g[1], g[2], g[3], g[4], g[5], g[6], g[7], g[8])
+    return EDromo{T}(g[1], g[2], g[3], g[4], g[5], g[6], g[7], g[8])
 end
 function EDromo{T}(g::StaticVector) where {T}
-    EDromo{T}(g[1], g[2], g[3], g[4], g[5], g[6], g[7], g[8])
+    return EDromo{T}(g[1], g[2], g[3], g[4], g[5], g[6], g[7], g[8])
 end
 
 # ~~~~~~~~~~~~~~~ Conversions ~~~~~~~~~~~~~~~ #
 function params(g::EDromo{T}) where {T<:Number}
-    SVector{8,T}(g.ζ₁, g.ζ₂, g.ζ₃, g.ζ₄, g.ζ₅, g.ζ₆, g.ζ₇, g.ζ₈)
+    return SVector{8,T}(g.ζ₁, g.ζ₂, g.ζ₃, g.ζ₄, g.ζ₅, g.ζ₆, g.ζ₇, g.ζ₈)
 end
 
 # ~~~~~~~~~~~~~~~ Initializers ~~~~~~~~~~~~~~~ #

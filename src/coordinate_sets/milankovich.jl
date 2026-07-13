@@ -42,10 +42,10 @@ function Milankovich(
 end
 # More specific than AbstractVector to avoid ambiguity
 function Milankovich(g::StaticVector{N,T}) where {N,T}
-    Milankovich{T}(g[1], g[2], g[3], g[4], g[5], g[6], g[7])
+    return Milankovich{T}(g[1], g[2], g[3], g[4], g[5], g[6], g[7])
 end
 function Milankovich{T}(g::StaticVector) where {T}
-    Milankovich{T}(g[1], g[2], g[3], g[4], g[5], g[6], g[7])
+    return Milankovich{T}(g[1], g[2], g[3], g[4], g[5], g[6], g[7])
 end
 
 # ~~~~~~~~~~~~~~~ Conversions ~~~~~~~~~~~~~~~ #

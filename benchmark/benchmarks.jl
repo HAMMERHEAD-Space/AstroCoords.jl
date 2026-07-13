@@ -18,7 +18,6 @@ const _COORDINATE_SETS = [
     USM7,
     USM6,
     USMEM,
-    J2EqOE,
     Poincare,
 ]
 

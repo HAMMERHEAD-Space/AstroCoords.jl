@@ -53,7 +53,6 @@ end
 @define_transformation_pair Cartesian Cylindrical cart2cylind cylind2cart
 @define_transformation_pair Cartesian Spherical cart2sphere sphere2cart
 @define_transformation_pair Cartesian Delaunay cart2delaunay delaunay2cart
-@define_transformation_pair Cartesian J2EqOE cart2J2EqOE J2EqOE2cart
 @define_transformation_pair Keplerian USM7 koe2USM7 USM72koe
 @define_transformation_pair Keplerian ModEq koe2ModEq ModEq2koe
 @define_transformation_pair Keplerian Poincare koe2poincare poincare2koe
@@ -75,10 +74,10 @@ struct CartesianToEDromoTransform{C<:Union{Nothing,RegularizedCoordinateConfig}}
     config::C
 end
 function CartesianToEDromoTransform()
-    CartesianToEDromoTransform(nothing)
+    return CartesianToEDromoTransform(nothing)
 end
 function CartesianToEDromoTransform(config::RegularizedCoordinateConfig)
-    CartesianToEDromoTransform{typeof(config)}(config)
+    return CartesianToEDromoTransform{typeof(config)}(config)
 end
 
 struct EDromoToCartesianTransform{C<:Union{Nothing,RegularizedCoordinateConfig}} <:
@@ -86,10 +85,10 @@ struct EDromoToCartesianTransform{C<:Union{Nothing,RegularizedCoordinateConfig}}
     config::C
 end
 function EDromoToCartesianTransform()
-    EDromoToCartesianTransform(nothing)
+    return EDromoToCartesianTransform(nothing)
 end
 function EDromoToCartesianTransform(config::RegularizedCoordinateConfig)
-    EDromoToCartesianTransform{typeof(config)}(config)
+    return EDromoToCartesianTransform{typeof(config)}(config)
 end
 
 function (t::CartesianToEDromoTransform)(
@@ -122,7 +121,7 @@ struct CartesianToKustaanheimoStiefelTransform{
     config::CT
 end
 function CartesianToKustaanheimoStiefelTransform()
-    CartesianToKustaanheimoStiefelTransform(nothing)
+    return CartesianToKustaanheimoStiefelTransform(nothing)
 end
 
 struct KustaanheimoStiefelToCartesianTransform{
@@ -131,7 +130,7 @@ struct KustaanheimoStiefelToCartesianTransform{
     config::CT
 end
 function KustaanheimoStiefelToCartesianTransform()
-    KustaanheimoStiefelToCartesianTransform(nothing)
+    return KustaanheimoStiefelToCartesianTransform(nothing)
 end
 
 function (t::CartesianToKustaanheimoStiefelTransform)(
@@ -153,10 +152,10 @@ end
 const KustaanheimoStiefelToCartesian = KustaanheimoStiefelToCartesianTransform()
 
 function Base.inv(::CartesianToKustaanheimoStiefelTransform)
-    KustaanheimoStiefelToCartesianTransform()
+    return KustaanheimoStiefelToCartesianTransform()
 end
 function Base.inv(::KustaanheimoStiefelToCartesianTransform)
-    CartesianToKustaanheimoStiefelTransform()
+    return CartesianToKustaanheimoStiefelTransform()
 end
 
 # ~~~~~~~~~~~~~~~ Stiefel-Scheifele Transformations ~~~~~~~~~~~~~~~ #
@@ -168,7 +167,7 @@ struct CartesianToStiefelScheifeleTransform{
     config::CT
 end
 function CartesianToStiefelScheifeleTransform()
-    CartesianToStiefelScheifeleTransform(nothing)
+    return CartesianToStiefelScheifeleTransform(nothing)
 end
 
 struct StiefelScheifeleToCartesianTransform{
@@ -177,7 +176,7 @@ struct StiefelScheifeleToCartesianTransform{
     config::CT
 end
 function StiefelScheifeleToCartesianTransform()
-    StiefelScheifeleToCartesianTransform(nothing)
+    return StiefelScheifeleToCartesianTransform(nothing)
 end
 
 function (t::CartesianToStiefelScheifeleTransform)(
@@ -208,10 +207,10 @@ struct CartesianToGEqOETransform{C<:Union{Nothing,RegularizedCoordinateConfig}} 
     config::C
 end
 function CartesianToGEqOETransform()
-    CartesianToGEqOETransform(nothing)
+    return CartesianToGEqOETransform(nothing)
 end
 function CartesianToGEqOETransform(config::RegularizedCoordinateConfig)
-    CartesianToGEqOETransform{typeof(config)}(config)
+    return CartesianToGEqOETransform{typeof(config)}(config)
 end
 
 struct GEqOEToCartesianTransform{C<:Union{Nothing,RegularizedCoordinateConfig}} <:
@@ -219,10 +218,10 @@ struct GEqOEToCartesianTransform{C<:Union{Nothing,RegularizedCoordinateConfig}} 
     config::C
 end
 function GEqOEToCartesianTransform()
-    GEqOEToCartesianTransform(nothing)
+    return GEqOEToCartesianTransform(nothing)
 end
 function GEqOEToCartesianTransform(config::RegularizedCoordinateConfig)
-    GEqOEToCartesianTransform{typeof(config)}(config)
+    return GEqOEToCartesianTransform{typeof(config)}(config)
 end
 
 function (t::CartesianToGEqOETransform)(
@@ -260,7 +259,6 @@ const COORD_TYPES = (
     Spherical,
     Delaunay,
     Poincare,
-    J2EqOE,
     EDromo,
     KustaanheimoStiefel,
     StiefelScheifele,
@@ -279,7 +277,6 @@ const COORD_NAMES = Dict(
     Spherical => :Spherical,
     Delaunay => :Delaunay,
     Poincare => :Poincare,
-    J2EqOE => :J2EqOE,
     EDromo => :EDromo,
     KustaanheimoStiefel => :KustaanheimoStiefel,
     StiefelScheifele => :StiefelScheifele,
@@ -297,7 +294,7 @@ function add_transform_edge(T1, T2)
     T1_name = COORD_NAMES[T1]
     T2_name = COORD_NAMES[T2]
     push!(TRANSFORM_GRAPH[T1_name], T2_name)
-    push!(TRANSFORM_GRAPH[T2_name], T1_name)
+    return push!(TRANSFORM_GRAPH[T2_name], T1_name)
 end
 
 add_transform_edge(Cartesian, Keplerian)
@@ -305,7 +302,6 @@ add_transform_edge(Cartesian, Milankovich)
 add_transform_edge(Cartesian, Cylindrical)
 add_transform_edge(Cartesian, Spherical)
 add_transform_edge(Cartesian, Delaunay)
-add_transform_edge(Cartesian, J2EqOE)
 add_transform_edge(Cartesian, EDromo)
 add_transform_edge(Cartesian, KustaanheimoStiefel)
 add_transform_edge(Cartesian, StiefelScheifele)

@@ -35,7 +35,7 @@ function Cartesian(x::X, y::Y, z::Z, ẋ::XV, ẏ::YV, ż::ZV) where {X,Y,Z,XV,
 end
 # More specific than AbstractVector to avoid ambiguity
 function Cartesian(g::StaticVector{N,T}) where {N,T}
-    Cartesian{T}(g[1], g[2], g[3], g[4], g[5], g[6])
+    return Cartesian{T}(g[1], g[2], g[3], g[4], g[5], g[6])
 end
 Cartesian{T}(g::StaticVector) where {T} = Cartesian{T}(g[1], g[2], g[3], g[4], g[5], g[6])
 

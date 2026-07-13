@@ -19,7 +19,6 @@ const _COORDINATE_SETS = [
     USM7,
     USM6,
     USMEM,
-    J2EqOE,
     Poincare,
     EDromo,
     KustaanheimoStiefel,
@@ -51,7 +50,6 @@ const _COORDINATE_SETS = [
     # Coordinate Changes
     include("test_attitude_changes.jl")
     include("test_coordinate_changes.jl")
-    include("test_J2EqOE.jl")
     include("test_EDromo.jl")
     include("test_KS.jl")
     include("test_StiefelScheifele.jl")
