@@ -1,3 +1,5 @@
+# THIS IS NO LONGER MAINTAINED AS I HAVE DROPPED MY PHD WORK
+
 # AstroCoords
 
 [![Build Status](https://github.com/HAMMERHEAD-Space/AstroCoords.jl/actions/workflows/CI.yml/badge.svg?branch=master)](https://github.com/HAMMERHEAD-Space/AstroCoords.jl/actions/workflows/CI.yml?query=branch%3Amaster)
