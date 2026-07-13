@@ -36,7 +36,7 @@ function Spherical(r::R, θ::T, ϕ::P, ṙ::RD, θdot::TD, ϕdot::PD) where {R,T
 end
 # More specific than AbstractVector to avoid ambiguity
 function Spherical(g::StaticVector{N,T}) where {N,T}
-    Spherical{T}(g[1], g[2], g[3], g[4], g[5], g[6])
+    return Spherical{T}(g[1], g[2], g[3], g[4], g[5], g[6])
 end
 Spherical{T}(g::StaticVector) where {T} = Spherical{T}(g[1], g[2], g[3], g[4], g[5], g[6])
 
@@ -109,10 +109,10 @@ function Cylindrical(ρ::R, θ::T, z::Z, ρdot::RD, θdot::TD, ż::ZD) where {R
 end
 # More specific than AbstractVector to avoid ambiguity
 function Cylindrical(g::StaticVector{N,T}) where {N,T}
-    Cylindrical{T}(g[1], g[2], g[3], g[4], g[5], g[6])
+    return Cylindrical{T}(g[1], g[2], g[3], g[4], g[5], g[6])
 end
 function Cylindrical{T}(g::StaticVector) where {T}
-    Cylindrical{T}(g[1], g[2], g[3], g[4], g[5], g[6])
+    return Cylindrical{T}(g[1], g[2], g[3], g[4], g[5], g[6])
 end
 
 # ~~~~~~~~~~~~~~~ Conversions ~~~~~~~~~~~~~~~ #
